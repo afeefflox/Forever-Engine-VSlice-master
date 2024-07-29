@@ -1,0 +1,84 @@
+{
+    "animations": [
+        {
+            "name": "idle",
+            "prefix": "Dad idle dance",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": []
+        },
+        {
+            "name": "singUP",
+            "prefix": "Dad Sing Note UP",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": []
+        },
+        {
+            "name": "singDOWN",
+            "prefix": "Dad Sing Note DOWN",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": []
+        },
+        {
+            "name": "singLEFT",
+            "prefix": "Dad Sing Note LEFT",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": []
+        },
+        {
+            "name": "singRIGHT",
+            "prefix": "Dad Sing Note RIGHT",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": [] 
+        },
+        {
+            "name": "idle-loop",
+            "prefix": "Dad idle dance",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": [10, 11, 12, 12]
+        },
+        {
+            "name": "singUP-loop",
+            "prefix": "Dad Sing Note UP",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": [4,5,6,7]
+        },
+        {
+            "name": "singLEFT-loop",
+            "prefix": "Dad Sing Note LEFT",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": [4,5,6,7]
+        },
+        {
+            "name": "singRIGHT-loop",
+            "prefix": "Dad Sing Note RIGHT",
+            "offsets": [0, 0],
+            "looped": false,
+            "frameRate": 24,
+            "frameIndices": [4,5,6,7]
+        }
+    ],
+    "version": "1.0.0",
+    "name": "Daddy Dearest",
+    "renderType": "atlas",
+    "assetPath": "characters/DADDY_DEAREST",
+    "offsets": [0, 0],
+    "cameraOffsets": [0, 0],
+    "flipX": false,
+    "isPlayer": false
+}

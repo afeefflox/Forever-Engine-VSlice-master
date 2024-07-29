@@ -1,0 +1,107 @@
+import meta.data.events.Events;
+import meta.state.PlayState;
+import Std;
+import flixel.tweens.FlxEase;
+
+class FocusCamera extends Events
+{
+    public function new()
+    {
+        super('Focus Camera');
+    }
+
+    override function returnDescription():String
+    {
+        return 'Move Camera but it disable section camera \nValue 1: X and Y \nValue 2: Character \nValue 3: Ease \nValue 4: Duration';
+    }
+
+    override function initFunction(params:Array<String>)
+    {
+        super.initFunction(params);
+        if(PlayState.isNull()) return;
+
+        var values:Array<String> = params[0].split(',');
+
+        var posX:Float = 0;
+        var posY:Float = 0;
+        if(values[0] != "")
+            posX = Std.parseFloat(values[0]);
+        if(values[1] != "")
+            posY = Std.parseFloat(values[1]);
+
+        switch(params[1])
+        {
+            default:
+                posX += PlayState.instance.stage.getBoyfriend().cameraFocusPoint.x;
+                posY += PlayState.instance.stage.getBoyfriend().cameraFocusPoint.y;
+            case 'dad':
+                posX += PlayState.instance.stage.getDad().cameraFocusPoint.x;
+                posY += PlayState.instance.stage.getDad().cameraFocusPoint.y;
+            case 'gf':
+                posX += PlayState.instance.stage.getGirlfriend().cameraFocusPoint.x;
+                posY += PlayState.instance.stage.getGirlfriend().cameraFocusPoint.y;
+        }
+
+        switch (params[2])
+        {
+            case 'classic': //why it is illegal to call it?
+                PlayState.instance.resetCamera(false, true);
+                PlayState.instance.cameraFollowPoint.setPosition(posX, posY);
+            case 'instant':
+                PlayState.instance.tweenCameraToPosition(posX, posY, 0);
+            default:
+                var durSeconds = Std.parseFloat(params[3]) / 1000;
+                var easeFunction:Null<Float->Float> = getFlxEaseByString(params[2]);
+                if (easeFunction == null)
+                {
+                  trace('Invalid ease function: $params');
+                  return;
+                }
+                PlayState.instance.tweenCameraToPosition(posX, posY, durSeconds, easeFunction);
+        }
+    }
+
+    //Stolen From Psych :/
+    function getFlxEaseByString(?ease:String = '') {
+		switch(ease.toLowerCase()) {
+			case 'backin': return FlxEase.backIn;
+			case 'backinout': return FlxEase.backInOut;
+			case 'backout': return FlxEase.backOut;
+			case 'bouncein': return FlxEase.bounceIn;
+			case 'bounceinout': return FlxEase.bounceInOut;
+			case 'bounceout': return FlxEase.bounceOut;
+			case 'circin': return FlxEase.circIn;
+			case 'circinout': return FlxEase.circInOut;
+			case 'circout': return FlxEase.circOut;
+			case 'cubein': return FlxEase.cubeIn;
+			case 'cubeinout': return FlxEase.cubeInOut;
+			case 'cubeout': return FlxEase.cubeOut;
+			case 'elasticin': return FlxEase.elasticIn;
+			case 'elasticinout': return FlxEase.elasticInOut;
+			case 'elasticout': return FlxEase.elasticOut;
+			case 'expoin': return FlxEase.expoIn;
+			case 'expoinout': return FlxEase.expoInOut;
+			case 'expoout': return FlxEase.expoOut;
+			case 'quadin': return FlxEase.quadIn;
+			case 'quadinout': return FlxEase.quadInOut;
+			case 'quadout': return FlxEase.quadOut;
+			case 'quartin': return FlxEase.quartIn;
+			case 'quartinout': return FlxEase.quartInOut;
+			case 'quartout': return FlxEase.quartOut;
+			case 'quintin': return FlxEase.quintIn;
+			case 'quintinout': return FlxEase.quintInOut;
+			case 'quintout': return FlxEase.quintOut;
+			case 'sinein': return FlxEase.sineIn;
+			case 'sineinout': return FlxEase.sineInOut;
+			case 'sineout': return FlxEase.sineOut;
+			case 'smoothstepin': return FlxEase.smoothStepIn;
+			case 'smoothstepinout': return FlxEase.smoothStepInOut;
+			case 'smoothstepout': return FlxEase.smoothStepInOut;
+			case 'smootherstepin': return FlxEase.smootherStepIn;
+			case 'smootherstepinout': return FlxEase.smootherStepInOut;
+			case 'smootherstepout': return FlxEase.smootherStepOut;
+		}
+		return FlxEase.linear;
+	}
+}
+

@@ -1,0 +1,30 @@
+import meta.state.PlayState;
+import gameObjects.character.AtlasCharacter;
+import gameObjects.character.CharacterType;
+
+
+class Girlfriend extends AtlasCharacter
+{
+    function new() {
+		super('gf');
+	}
+
+    override function onAdd() {
+		if (this.characterType == CharacterType.DAD && PlayState.instance != null) {
+			var pos:FlxPoint = PlayState.instance.stage.getGirlfriendPosition();
+
+			this.x = pos.x - this.characterOrigin.x;
+			this.y = pos.y - this.characterOrigin.y;
+		}
+	}
+
+	override function dance(force:Bool) {
+		// Fix animation glitches with Week 3.
+		// Wait for 'hairBlow' to play, preventing dancing from interrupting it.
+		if (!force && ['hairBlow'].contains(getCurrentAnimation())) return;
+		// Wait for 'hairFall' to finish, preventing dancing from interrupting it.
+		if (!force && ['hairFall'].contains(getCurrentAnimation()) && !isAnimationFinished()) return;
+
+		super.dance(force);
+	}
+}

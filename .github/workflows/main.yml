@@ -1,0 +1,118 @@
+name: Main
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Windows
+  windowsBuild:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          submodules: true
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.2.5
+
+      - name: Installing Libraries
+        run: |
+          haxelib install lime
+          haxelib install openfl
+          haxelib install flixel
+          haxelib run lime setup flixel
+          haxelib run lime setup
+          haxelib install flixel-tools
+          haxelib run flixel-tools setup
+          haxelib install hxcpp-debug-server
+          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
+
+      - name: Building
+        run: haxelib run lime build windows -final
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: windowsBuild
+          path: export/release/windows/bin
+          if-no-files-found: error
+
+  # Linux
+  linuxBuild:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          submodules: true
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.2.5
+
+      - name: Installing Libraries
+        run: |
+          haxelib install lime
+          haxelib install openfl
+          haxelib install flixel
+          haxelib run lime setup flixel
+          haxelib run lime setup
+          haxelib install flixel-tools
+          haxelib run flixel-tools setup
+          haxelib install hxcpp-debug-server
+          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
+
+      - name: Building
+        run: haxelib run lime build linux -final
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: linuxBuild
+          path: export/release/linux/bin
+          if-no-files-found: error
+
+  # Mac
+  macBuild:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          submodules: true
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.2.5
+
+      - name: Installing Libraries
+        run: |
+          haxelib install lime
+          haxelib install openfl
+          haxelib install flixel
+          haxelib run lime setup flixel
+          haxelib run lime setup
+          haxelib install flixel-tools
+          haxelib run flixel-tools setup
+          haxelib install hxcpp-debug-server
+          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
+
+      - name: Building
+        run: haxelib run lime build mac -final
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: macBuild
+          path: export/release/macos/bin
+          if-no-files-found: error

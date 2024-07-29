@@ -1,0 +1,17 @@
+{
+  "name": "stickers-set-2",
+  "artist": "RozeBud",
+  "stickers": {
+    "skid": ["skidSticker"],
+    "pump": ["pumpSticker"],
+    "spirit": ["spiritSticker"],
+    "tankman": ["tankmanSticker"],
+    "senpai": ["senpaiSticker"]
+  },
+  "stickerPacks": {
+    "spooky-kidz": ["skid", "pump"],
+    "senpais": ["senpai", "spirit"],
+    "newgrounds": ["tankman", "skid", "pump"],
+    "all": ["skid", "pump", "spirit", "tankman", "senpai"]
+  }
+}
