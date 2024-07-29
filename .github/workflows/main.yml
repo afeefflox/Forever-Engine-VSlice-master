@@ -1,118 +1,108 @@
-name: Main
+# This is a basic workflow to help you get started with Actions
 
+name: Build
+
+
+# Controls when the action will run.
 on:
+  # Triggers the workflow on push or pull request events but only for the master branch
   push:
+    branches: [ main]
   pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Windows
-  windowsBuild:
+  # This workflow contains a single job called "build"
+  buildLinux:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: latest
+      # Runs a set of commands using the runners shell
+      - name: Install Haxelib
+        run: |
+          sudo apt-get install libvlc-dev
+          sudo apt-get install libvlccore-dev
+          haxelib setup ~/haxelib
+          haxelib install hxcpp > /dev/null --quiet
+          haxe -cp ./setup -D analyzer-optimize -main Main --interp
+      - name: Skip SScript setup mode
+        run: echo 'oy9:showMacroty8:loopCosti25y10:includeAllfg' >> ~/settings.cocoa
+      - name: Create Version Tag
+        run: echo "${{github.run_id}}" > VERSION
+      - name: Compile
+        run: |
+          haxelib fixrepo
+          haxelib run lime build Project.xml linux --app-version="4.0.0-${{ github.run_id}}"
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: linuxBuild
+          path: 'export/release/linux/bin'
+  buildWindows:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@main
-        with:
-          submodules: true
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2.3.0
 
-      - name: Setup Haxe
-        uses: krdlab/setup-haxe@master
+      - uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.2.5
-
-      - name: Installing Libraries
+          haxe-version: latest
+      # Runs a set of commands using the runners shell
+      - name: Install Haxelib
         run: |
-          haxelib install lime
-          haxelib install openfl
-          haxelib install flixel
-          haxelib run lime setup flixel
-          haxelib run lime setup
-          haxelib install flixel-tools
-          haxelib run flixel-tools setup
-          haxelib install hxcpp-debug-server
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
-
-      - name: Building
-        run: haxelib run lime build windows -final
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@main
+          haxelib setup C:/haxelib
+          haxelib install hxcpp > /dev/null --quiet
+          haxe -cp ./setup -D analyzer-optimize -main Main --interp
+        shell: cmd
+      - name: Skip SScript setup mode
+        run: echo 'oy9:showMacroty8:loopCosti25y10:includeAllfg' >> %USERPROFILE%/settings.cocoa
+        shell: cmd
+      - name: Create Version Tag
+        run: echo "${{github.run_id}}" > VERSION
+      - name: Compile
+        run: haxelib run lime build windows --app-version="4.0.0-${{ github.run_id}}"
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: windowsBuild
           path: export/release/windows/bin
-          if-no-files-found: error
-
-  # Linux
-  linuxBuild:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@main
-        with:
-          submodules: true
-
-      - name: Setup Haxe
-        uses: krdlab/setup-haxe@master
-        with:
-          haxe-version: 4.2.5
-
-      - name: Installing Libraries
-        run: |
-          haxelib install lime
-          haxelib install openfl
-          haxelib install flixel
-          haxelib run lime setup flixel
-          haxelib run lime setup
-          haxelib install flixel-tools
-          haxelib run flixel-tools setup
-          haxelib install hxcpp-debug-server
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
-
-      - name: Building
-        run: haxelib run lime build linux -final
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@main
-        with:
-          name: linuxBuild
-          path: export/release/linux/bin
-          if-no-files-found: error
-
-  # Mac
-  macBuild:
+  buildMac:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@main
-        with:
-          submodules: true
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
-      - name: Setup Haxe
-        uses: krdlab/setup-haxe@master
+      - uses: krdlab/setup-haxe@master
         with:
           haxe-version: 4.2.5
-
-      - name: Installing Libraries
+      # Runs a set of commands using the runners shell
+      - name: Install Haxelib
         run: |
-          haxelib install lime
-          haxelib install openfl
-          haxelib install flixel
-          haxelib run lime setup flixel
-          haxelib run lime setup
-          haxelib install flixel-tools
-          haxelib run flixel-tools setup
-          haxelib install hxcpp-debug-server
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
-
-      - name: Building
-        run: haxelib run lime build mac -final
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@main
+          haxelib setup ~/haxelib
+          haxelib install hxcpp > /dev/null --quiet
+          haxe -cp ./setup -D analyzer-optimize -main Main --interp
+      - name: Skip SScript setup mode
+        run: echo 'oy9:showMacroty8:loopCosti25y10:includeAllfg' >> ~/settings.cocoa
+      - name: Create Version Tag
+        run: echo "${{github.run_id}}" > VERSION
+      - name: Compile
+        run: haxelib run lime build mac --app-version="4.0.0-${{ github.run_id}}"
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: macBuild
           path: export/release/macos/bin
-          if-no-files-found: error
