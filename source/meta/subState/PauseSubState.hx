@@ -24,12 +24,14 @@ class PauseSubState extends MusicBeatSubState
 		{text: 'Restart Song', callback: restartPlayState},
 		{text: 'Change Difficulty', callback: switchMode.bind(_, Difficulty)},
 		{text: 'Enable Practice Mode', callback: enablePracticeMode, filter: () -> !(PlayState.instance?.isPracticeMode ?? false)},
+		{text: 'Options', callback: openOption},
 		{text: 'Exit to Menu', callback: quitToMenu},
 	];
 
 	static final PAUSE_MENU_ENTRIES_CHARTING:Array<PauseMenuEntry> = [
 		{text: 'Resume', callback: resume},
 		{text: 'Restart Song', callback: restartPlayState},
+		{text: 'Options', callback: openOption},
 		{text: 'Return to Chart Editor', callback: quitToChartEditor},
 	];
 
@@ -42,6 +44,7 @@ class PauseSubState extends MusicBeatSubState
 		{text: 'Resume', callback: resume},
 		{text: 'Skip Cutscene', callback: skipVideoCutscene},
 		{text: 'Restart Cutscene', callback: restartVideoCutscene},
+		{text: 'Options', callback: openOption},
 		{text: 'Exit to Menu', callback: quitToMenu},
 	];
 
@@ -245,7 +248,7 @@ class PauseSubState extends MusicBeatSubState
 			var entries:Array<PauseMenuEntry> = [];
 			for (i in 0...Constants.DEFAULT_DIFFICULTY_LIST.length)
 			{
-				entries.push({text: CoolUtil.difficultyFromNumber(i), callback: (state) -> changeDifficulty(state, i)});
+				entries.push({text: CoolUtil.difficultyFromNumber(i), callback: (state) -> changeDifficulty(state, CoolUtil.difficultyFromNumber(i))});
 			}
 			// Add the back button.
 			currentMenuEntries = entries.concat(PAUSE_MENU_ENTRIES_DIFFICULTY.clone());
@@ -317,18 +320,24 @@ class PauseSubState extends MusicBeatSubState
 		state.regenerateMenu(targetMode);
 	}
 
-	static function changeDifficulty(state:PauseSubState, curSelected:Int):Void
+	static function openOption(state:PauseSubState):Void
 	{
-		var poop = Highscore.formatSong(PlayState.SONG.song, curSelected);
-		PlayState.SONG = Song.loadFromJson(poop, PlayState.SONG.song);
-		PlayState.storyDifficulty = curSelected;
-		FlxG.resetState();
+		meta.state.menus.OptionsMenuState.isPlayState = true;
+		Main.switchState(new meta.state.menus.OptionsMenuState());
+		state.close();
+	}
+
+	static function changeDifficulty(state:PauseSubState, curSelected:String):Void
+	{
+		PlayState.SONG = Song.loadFromJson(curSelected, PlayState.SONG.song);
+		PlayState.curDifficulty = curSelected;
+		state.openSubState(new StickerSubState(null, (sticker) -> new PlayState(sticker)));
 		state.close();
 	}
 
 	static function restartPlayState(state:PauseSubState):Void
 	{
-		FlxG.resetState();
+		state.openSubState(new StickerSubState(null, (sticker) -> new PlayState(sticker)));
 		state.close();
 	}
 

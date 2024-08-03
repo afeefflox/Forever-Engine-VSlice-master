@@ -102,13 +102,7 @@ class FreeplayState extends MusicBeatState
 			{
 				if (!existingSongs.contains(songId.toLowerCase()))
 				{
-					var icon:String = 'bf';
-					if (Paths.exists(Paths.songJson(songId, songId), TEXT))
-					{
-						var castSong:SwagSong = Song.loadFromJson(songId, songId);
-						icon = (castSong != null) ? castSong.characters[1] : 'bf';
-						addSong(CoolUtil.spaceToDash(castSong.song), level.id, icon, FlxColor.WHITE);
-					}
+					addSong(CoolUtil.spaceToDash(songId), level.id, 'face', FlxColor.WHITE);
 				}				
 			}
 		}
@@ -183,8 +177,7 @@ class FreeplayState extends MusicBeatState
 		///*
 		var coolDifficultyArray = [];
 		for (i in Constants.DEFAULT_DIFFICULTY_LIST)
-			if (Paths.exists(Paths.songJson(songName, songName + '-' + i), TEXT)
-				|| (Paths.exists(Paths.songJson(songName, songName), TEXT) && i == "normal"))
+			if (Paths.exists(Paths.charts(songName, i), TEXT))
 				coolDifficultyArray.push(i);
 
 		if (coolDifficultyArray.length > 0)
@@ -228,12 +221,9 @@ class FreeplayState extends MusicBeatState
 
 		if (accepted)
 		{
-			var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(),
-				Constants.DEFAULT_DIFFICULTY_LIST.indexOf(existingDifficulties[curSelected][curDifficulty]));
-
-			PlayState.SONG = Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase());
+			PlayState.SONG = Song.loadFromJson(existingDifficulties[curSelected][curDifficulty], songs[curSelected].songName.toLowerCase());
 			PlayState.isStoryMode = false;
-			PlayState.storyDifficulty = curDifficulty;
+			PlayState.curDifficulty = existingDifficulties[curSelected][curDifficulty];
 
 			PlayState.storyWeek = songs[curSelected].week;
 			trace('CUR WEEK' + PlayState.storyWeek);
@@ -284,7 +274,7 @@ class FreeplayState extends MusicBeatState
 		if (curDifficulty > existingDifficulties[curSelected].length - 1)
 			curDifficulty = 0;
 
-		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
+		intendedScore = Highscore.getScore(songs[curSelected].songName, existingDifficulties[curSelected][curDifficulty]);
 
 		diffText.text = '< ' + existingDifficulties[curSelected][curDifficulty] + ' >';
 		lastDifficulty = existingDifficulties[curSelected][curDifficulty];
@@ -295,12 +285,10 @@ class FreeplayState extends MusicBeatState
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		curSelected = flixel.math.FlxMath.wrap(curSelected + change, 0, songs.length - 1);
-		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
+		intendedScore = Highscore.getScore(songs[curSelected].songName, existingDifficulties[curSelected][curDifficulty]);
 
-		// set up color stuffs
+
 		mainColor = songs[curSelected].songColor;
-
-		// song switching stuffs
 
 		var bullShit:Int = 0;
 
@@ -317,17 +305,8 @@ class FreeplayState extends MusicBeatState
 			bullShit++;
 
 			item.alpha = 0.6;
-			// item.setGraphicSize(Std.int(item.width * 0.8));
-
-			if (item.targetY == 0)
-			{
-				item.alpha = 1;
-				// item.setGraphicSize(Std.int(item.width));
-			}
+			if (item.targetY == 0) item.alpha = 1;
 		}
-		//
-
-		//trace("curSelected: " + curSelected);
 
 		changeDiff();
 		#if target.threaded
@@ -343,19 +322,13 @@ class FreeplayState extends MusicBeatState
 			{
 				while (true)
 				{
-					if (!threadActive)
-					{
-						//trace("Killing thread");
-						return;
-					}
+					if (!threadActive) return;
 
 					var index:Null<Int> = Thread.readMessage(false);
 					if (index != null)
 					{
 						if (index == curSelected && index != curSongPlaying)
 						{
-							//trace("Loading index " + index);
-
 							var inst:Sound = Paths.inst(songs[curSelected].songName);
 
 							if (index == curSelected && threadActive)
@@ -365,15 +338,7 @@ class FreeplayState extends MusicBeatState
 								mutex.release();
 								curSongPlaying = curSelected;
 							}
-							/*
-							else
-								trace("Nevermind, skipping " + index);
-							*/
 						}
-						/*
-						else
-							trace("Skipping " + index);
-						*/
 					}
 				}
 			});

@@ -7,6 +7,11 @@ class PlayAnimation  extends Events
     public function new()
     {
         super('Play Animation');
+        this.values = [
+            "bf",
+            "hey",
+            true
+        ];
     }
 
     override function returnDescription():String
@@ -14,18 +19,12 @@ class PlayAnimation  extends Events
         return 'Basically Play Animation during Mid Song \nValue 1: Character or Props \nValue 2: Animation Name \nValue 3: Force Animation';
     }
 
-    override function initFunction(params:Array<String>)
+    override function initFunction(params:Array<Dynamic>)
     {
         super.initFunction(params);
         if(PlayState.isNull()) return;
-        
-        var character:BaseCharacter;
-        var prop:StageProp;
 
-        var stupidBool:Bool = false;
-        if(params[2] == "true" || params[2] == "yes")
-            stupidBool = true;
-
+        var stupidBool:Bool = params[2];
         switch(params[0])
         {
             case 'bf':

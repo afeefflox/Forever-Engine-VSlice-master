@@ -71,6 +71,18 @@ class NoteTypeRegistry extends BaseRegistry<NoteCustom, NoteTypeData>
       }
       return parser.value;
     }
+
+    public function listNoteTypes():Array<String>
+    {
+      return ["default", "default-alt", "default-gf", "default-noAnim"];
+    }
+
+    public function listModdedNoteTypes():Array<String>
+    {
+      return listEntryIds().filter(function(id:String):Bool {
+          return listNoteTypes().indexOf(id) == -1;
+      });
+    }
   
     function createScriptedEntry(clsName:String):NoteCustom
     {

@@ -23,7 +23,7 @@ class StoryMenuState extends MusicBeatState
 {
 	static final DEFAULT_BACKGROUND_COLOR:FlxColor = FlxColor.fromString('#F9CF51');
 	static final BACKGROUND_HEIGHT:Int = 400;
-	var curDifficulty:Int = 2;
+	var currentDifficultyId:String = 'normal';
 	var currentLevelId:String = 'tutorial';
 	var currentLevel:Level;
 	var isLevelUnlocked:Bool;
@@ -92,12 +92,13 @@ class StoryMenuState extends MusicBeatState
 
 		// Explicitly define the background color.
 		this.bgColor = FlxColor.BLACK;
+
+		updateBackground();
 	
 		var black:FlxSprite = new FlxSprite(levelBackground.x, 0).makeGraphic(FlxG.width, Std.int(400 + levelBackground.y), FlxColor.BLACK);
 		add(black);
+	
 		
-		updateBackground();
-
 		levelTitles = new FlxTypedGroup<LevelTitle>();
 		levelTitles.zIndex = 15;
 		add(levelTitles);
@@ -111,6 +112,7 @@ class StoryMenuState extends MusicBeatState
 		leftDifficultyArrow.animation.play('idle');
 		add(leftDifficultyArrow);
 	
+		buildDifficultySprite(Constants.DEFAULT_DIFFICULTY);
 		buildDifficultySprite();
 	
 		rightDifficultyArrow = new FlxSprite(1245, leftDifficultyArrow.y);
@@ -165,9 +167,9 @@ class StoryMenuState extends MusicBeatState
 		isLevelUnlocked = currentLevel == null ? false : currentLevel.isUnlocked();
 	}
 
-	function buildDifficultySprite(?id:Int = 2):Void
+	function buildDifficultySprite(?diff:String):Void
 	{
-		var diff = CoolUtil.difficultyFromNumber(id);
+		if (diff == null) diff = currentDifficultyId;
 		remove(difficultySprite);
 		difficultySprite = difficultySprites.get(diff);
 		if (difficultySprite == null)
@@ -296,14 +298,18 @@ class StoryMenuState extends MusicBeatState
 
 	function changeDifficulty(change:Int = 0):Void
 	{
-		curDifficulty += change;
+		var currentIndex:Int = Constants.DEFAULT_DIFFICULTY_LIST.indexOf(currentDifficultyId);
 
-		if (curDifficulty < 0)
-			curDifficulty = CoolUtil.difficultyLength - 1;
-		if (curDifficulty > CoolUtil.difficultyLength - 1)
-			curDifficulty = 0;
+		currentIndex += change;
 
-		if (change != 0) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+		if (currentIndex < 0) currentIndex = CoolUtil.difficultyLength - 1;
+		if (currentIndex >= CoolUtil.difficultyLength) currentIndex = 0;
+
+		if (currentDifficultyId != CoolUtil.difficultyFromNumber(currentIndex))
+		{
+			FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+			buildDifficultySprite();
+		} 
 
 		if (CoolUtil.difficultyLength <= 1)
 			leftDifficultyArrow.visible = rightDifficultyArrow.visible = false;
@@ -311,7 +317,6 @@ class StoryMenuState extends MusicBeatState
 		    leftDifficultyArrow.visible = rightDifficultyArrow.visible = true;
 
 		updateText();
-		buildDifficultySprite(curDifficulty);
 	}
 
 	public override function dispatchEvent(event:ScriptEvent):Void
@@ -351,12 +356,8 @@ class StoryMenuState extends MusicBeatState
 
 		PlayState.storyPlaylist = currentLevel.getSongs();
 		PlayState.isStoryMode = true;
-
-		var diffic:String = '-' + CoolUtil.difficultyFromNumber(curDifficulty).toLowerCase();
-		diffic = diffic.replace('-normal', '');
-		PlayState.storyDifficulty = curDifficulty;
-
-		PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + diffic, PlayState.storyPlaylist[0].toLowerCase());
+		PlayState.curDifficulty = currentDifficultyId;
+		PlayState.SONG = Song.loadFromJson(PlayState.curDifficulty, PlayState.storyPlaylist[0].toLowerCase());
 		PlayState.storyWeek = currentLevel.id;
 		PlayState.campaignScore = 0;
 		new FlxTimer().start(1, function(tmr:FlxTimer) {
@@ -440,12 +441,12 @@ class StoryMenuState extends MusicBeatState
 	function updateText():Void
 	{
 		tracklistText.text = 'TRACKS\n\n';
-		tracklistText.text += currentLevel.getSongDisplayNames(CoolUtil.difficultyFromNumber(curDifficulty)).join('\n');
+		tracklistText.text += currentLevel.getSongDisplayNames(currentDifficultyId).join('\n');
 	  
 		tracklistText.screenCenter(X);
 		tracklistText.x -= FlxG.width * 0.35;
 	  
-		highScore = Highscore.getWeekScore(currentLevel.id, curDifficulty);
+		highScore = Highscore.getWeekScore(currentLevel.id, currentDifficultyId);
 		// levelScore.accuracy
 	}
 }

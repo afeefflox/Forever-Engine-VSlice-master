@@ -36,7 +36,7 @@ class UIStaticArrow extends FlxSprite
 	public var yTo:Float;
 	public var angleTo:Float;
 
-	public var setAlpha:Float = (Init.trueSettings.get('Opaque Arrows')) ? 1 : 0.8;
+	public var setAlpha:Float = (Init.trueSettings.get('Opaque Arrows')) ? 1 : 0.6;
 	public var texture(default, set):String = null;
 	private function set_texture(value:String):String {
 		if(texture != value) {
@@ -186,7 +186,6 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 	//
 	public var receptors:FlxTypedGroup<UIStaticArrow>;
 	public var splashNotes:FlxTypedGroup<NoteSplash>;
-	public var holdsCoverNotes:FlxTypedGroup<NoteHoldCover>;
 	public var notesGroup:FlxTypedGroup<Note>;
 	public var holdsGroup:FlxTypedGroup<Note>;
 	public var allNotes:FlxTypedGroup<Note>;
@@ -201,7 +200,6 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 
 		receptors = new FlxTypedGroup<UIStaticArrow>();
 		splashNotes = new FlxTypedGroup<NoteSplash>();
-		holdsCoverNotes = new FlxTypedGroup<NoteHoldCover>(); 
 		notesGroup = new FlxTypedGroup<Note>();
 		holdsGroup = new FlxTypedGroup<Note>();
 
@@ -238,8 +236,6 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 		add(notesGroup);
 		if (splashNotes != null)
 			add(splashNotes);
-		if(holdsCoverNotes != null)
-			add(holdsCoverNotes);
 	}
 
 	public function createSplash(coolNote:Note)
@@ -250,23 +246,6 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 			if(strum != null)
 				spawnNoteSplash(this, strum.x, strum.y, coolNote.noteData, coolNote);
 		}
-	}
-	
-	public function createHoldCover(coolNote:Note)
-	{
-		if(coolNote != null && noteSplashes) 
-		{
-			var strum:UIStaticArrow = receptors.members[coolNote.noteData];
-			if(strum != null)
-				spawnHoldCover(this, strum.x, strum.y, coolNote.noteData, coolNote);
-		}
-	}
-
-	public function spawnHoldCover(strumline:Strumline, x:Float, y:Float, data:Int, ?note:Note = null) 
-	{
-		var splash:NoteHoldCover = holdsCoverNotes.recycle(NoteHoldCover);
-		splash.setupNoteHoldCover(x, y, data, note);
-		holdsCoverNotes.add(splash);
 	}
 
 	public function spawnNoteSplash(strumline:Strumline, x:Float, y:Float, data:Int, ?note:Note = null) {

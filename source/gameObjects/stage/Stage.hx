@@ -22,6 +22,8 @@ import data.registry.StageRegistry;
 import gameObjects.stage.StageProp;
 import meta.util.SortUtil;
 import meta.util.assets.FlxAnimationUtil;
+import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.graphics.frames.FlxFramesCollection;
 
 typedef StagePropGroup = FlxTypedSpriteGroup<StageProp>;
 
@@ -168,7 +170,25 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
         propSprite = new StageProp();
 
       if (isAnimated)
-        propSprite.frames = Paths.getAtlas(dataProp.assetPath);
+      {
+        var texture:FlxAtlasFrames = Paths.getAtlas(dataProp.assetPath);
+        FlxAnimationUtil.addAtlasAnimations(propSprite, dataProp.animations);
+        var assetList = [];
+        for (anim in dataProp.animations)
+        {
+          if (anim.assetPath != null && !assetList.contains(anim.assetPath))
+          {
+            assetList.push(anim.assetPath);
+          }
+        }
+  
+        for (asset in assetList)
+        {
+          var subTexture:FlxAtlasFrames = Paths.getAtlas(asset);
+          texture.addAtlas(subTexture);
+        }
+        propSprite.frames = texture;
+      }
       else if (isSolidColor)
       {
         var width:Int = 1;
@@ -229,7 +249,6 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
 
       propSprite.zIndex = dataProp.zIndex;
 
-      FlxAnimationUtil.addAtlasAnimations(propSprite, dataProp.animations);
       if (Std.isOfType(propSprite, Bopper))
       {
         for (propAnim in dataProp.animations)
@@ -329,17 +348,17 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
       case BF:
         this.characters.set('bf', character);
         stageCharData = _data.characters.bf;
-        character.flipX = !character.getDataFlipX();
+        character.setFlipX(!character._data.flipX);
         character.name = 'bf';
       case GF:
         this.characters.set('gf', character);
         stageCharData = _data.characters.gf;
-        character.flipX = character.getDataFlipX();
+        character.setFlipX(character._data.flipX);
         character.name = 'gf';
       case DAD:
         this.characters.set('dad', character);
         stageCharData = _data.characters.dad;
-        character.flipX = character.getDataFlipX();
+        character.setFlipX(character._data.flipX);
         character.name = 'dad';
       default:
         this.characters.set(id, character);
@@ -359,8 +378,8 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
       character.x = stageCharData.position[0] - character.characterOrigin.x + character.globalOffsets[0];
       character.y = stageCharData.position[1] - character.characterOrigin.y + character.globalOffsets[1];
 
-      //character.scrollFactor.x = stageCharData.scroll[0];
-      //character.scrollFactor.y = stageCharData.scroll[1];
+      character.scrollFactor.x = stageCharData.scroll[0];
+      character.scrollFactor.y = stageCharData.scroll[1];
 
       var finalScale = character.getBaseScale() * stageCharData.scale;
       character.setScale(finalScale); // Don't use scale.set for characters!

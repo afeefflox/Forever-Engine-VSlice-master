@@ -175,7 +175,7 @@ class Note extends FNFSprite
 		if(noteData > -1 && noteType != value) 
 		{
 			noteSplashData.texture = PlayState.SONG != null ? PlayState.SONG.splashSkin : 'noteSplashes';
-			if (value != 'default' && value != null && value.length > 1) NoteTypeRegistry.instance.fetchEntry(value).initFunction(this);
+			if (NoteTypeRegistry.instance.hasEntry(value) && value != null && value.length > 1) NoteTypeRegistry.instance.fetchEntry(value).initFunction(this);
 			noteType = value;
 		}
 		return value;

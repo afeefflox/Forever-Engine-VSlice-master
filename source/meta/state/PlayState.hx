@@ -56,6 +56,8 @@ class PlayState extends MusicBeatState
 	public static var isStoryMode:Bool = false;
 	public static var storyWeek:String = "";
 	public static var storyPlaylist:Array<String> = [];
+	public static var curDifficulty:String = 'normal';
+
 	public static var storyDifficulty:Int = 2;
 
 	public static var songMusic:FlxSound;
@@ -178,7 +180,15 @@ class PlayState extends MusicBeatState
 	public var strumLines:FlxTypedGroup<Strumline>;
 
 	public var comboGroup:FlxSpriteGroup;
-
+	var stickerSubState:StickerSubState;
+	
+	public function new(?stickers:StickerSubState)
+	{
+		super();
+		if (stickers != null)
+			stickerSubState = stickers;
+	}
+	
 	function resetStatics()
 	{
 		// reset any values and variables that are static
@@ -198,8 +208,7 @@ class PlayState extends MusicBeatState
 		FlxG.fixedTimestep = false;
 
 		// default song
-		if (SONG == null)
-			SONG = Song.loadFromJson('test', 'test');
+		SONG = Song.checkSong(SONG, null);
 
 		Conductor.mapBPMChanges(SONG);
 		Conductor.bpm = SONG.bpm;
@@ -252,6 +261,14 @@ class PlayState extends MusicBeatState
 		{
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyPress);
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyRelease);
+		}
+
+		
+		if (stickerSubState != null)
+		{
+			this.persistentUpdate = this.persistentDraw = true;
+			openSubState(stickerSubState);
+			stickerSubState.degenStickers();
 		}
 
 		Paths.clearUnusedMemory();
@@ -658,7 +675,7 @@ class PlayState extends MusicBeatState
 		super.debug_refreshModules();		
 
 		var event:ScriptEvent = new ScriptEvent(CREATE, false);
-		ScriptEventDispatcher.callEvent(SongHandler.getSong(curSong), event);
+		if(SongHandler.existsSong(curSong)) ScriptEventDispatcher.callEvent(SongHandler.getSong(curSong), event);
 	}
 
 	var lastBar:Int = 0;
@@ -866,12 +883,8 @@ class PlayState extends MusicBeatState
 			if(Conductor.songPosition < leStrumTime) {
 				return;
 			}
-
-			var values:Array<String> = ['', '', '', ''];
-			if(eventList[0].values != null)
-				values = eventList[0].values;
-
-			EventsHandler.getEvents(eventList[0].name).initFunction(values);
+			if(EventsHandler.existsEvents(eventList[0].name)) 
+				EventsHandler.getEvents(eventList[0].name).initFunction(eventList[0].values);
 			eventList.shift();
 		}
 	}
@@ -1052,7 +1065,7 @@ class PlayState extends MusicBeatState
 			coolNote.wasGoodHit = true;
 			vocals.volume = 1;
 
-			if(coolNote.noteType != "default" && coolNote.noteType != null && coolNote.noteType.length > 1)
+			if(NoteTypeRegistry.instance.hasEntry(coolNote.noteType) && coolNote.noteType != null && coolNote.noteType.length > 1)
 				NoteTypeRegistry.instance.fetchEntry(coolNote.noteType).hitFunction(coolNote);
 
 			if (characterStrums.receptors.members[coolNote.noteData] != null)
@@ -1094,11 +1107,10 @@ class PlayState extends MusicBeatState
 				}
 				else if (coolNote.isSustainNote)
 				{
+					
 					// call updated accuracy stuffs
 					if (coolNote.parentNote != null)
 					{
-						if(foundRating == "sick")
-							characterStrums.createHoldCover(coolNote);
 						Timings.updateAccuracy(100, true, coolNote.parentNote.childrenNotes.length);
 						health += Constants.HEALTH_HOLD_BONUS_PER_SECOND * FlxG.elapsed;
 						songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * FlxG.elapsed);
@@ -1121,7 +1133,7 @@ class PlayState extends MusicBeatState
 
 		if (event.eventCanceled) return;
 
-		if(daNote.noteType != "default" && daNote.noteType != null && daNote.noteType.length > 1)
+		if(NoteTypeRegistry.instance.hasEntry(daNote.noteType) && daNote.noteType != null && daNote.noteType.length > 1)
 			NoteTypeRegistry.instance.fetchEntry(daNote.noteType).hitFunction(daNote);
 
 		vocals.volume = 0;
@@ -1301,7 +1313,7 @@ class PlayState extends MusicBeatState
 
 		ScriptEventDispatcher.callEvent(stage, event);
 		if (stage != null) stage.dispatchToCharacters(event);
-		ScriptEventDispatcher.callEvent(SongHandler.getSong(curSong), event);
+		if(SongHandler.existsSong(curSong)) ScriptEventDispatcher.callEvent(SongHandler.getSong(curSong), event);
 	}
 
 	override public function onFocus():Void
@@ -1339,8 +1351,7 @@ class PlayState extends MusicBeatState
 		var score:Int = 50;
 
 		// notesplashes
-		if (baseRating == "sick")
-			// create the note splash if you hit a sick
+		if (baseRating == "sick") 
 			strumline.createSplash(coolNote);
 		else
 			// if it isn't a sick, and you had a sick combo, then it becomes not sick :(
@@ -1566,7 +1577,7 @@ class PlayState extends MusicBeatState
 		
 
 		// String that contains the mode defined here so it isn't necessary to call changePresence for each mode
-		songDetails = CoolUtil.dashToSpace(SONG.song) + ' - ' + CoolUtil.difficultyFromNumber(storyDifficulty);
+		songDetails = CoolUtil.dashToSpace(SONG.song) + ' - ' + curDifficulty.toUpperCase();
 
 		// String for when the game is paused
 		detailsPausedText = "Paused - " + songDetails;
@@ -1577,37 +1588,22 @@ class PlayState extends MusicBeatState
 		// Updating Discord Rich Presence.
 		updateRPC(false);
 		var suffix:String = (SONG.variation != null && SONG.variation != '' && SONG.variation != 'default') ? '-${SONG.variation}' : '';
-		var voiceList:Array<String> = CoolUtil.buildVoiceList(SONG);
+		var voiceList:Array<String> = CoolUtil.buildVoiceList(SONG, suffix);
 		curSong = songData.song;
-		SongHandler.getSong(curSong).data = songData;
+		if(SongHandler.existsSong(curSong)) SongHandler.getSong(curSong).data = songData;
 		songMusic = new FlxSound().loadEmbedded(Paths.inst(SONG.song, suffix), false, true);
-		vocals = new FlxSound();
-		vocalsDad = new FlxSound();
-		if (SONG.needsVoices)
+		vocals = vocalsDad = new FlxSound();
+		if (SONG.needsVoices && voiceList[0] != null && voiceList[1] != null)
 		{
-			if(voiceList[0] != null && voiceList[1] != null)
-			{
-				vocals.loadEmbedded(voiceList[0], false, true);
-				vocalsDad.loadEmbedded(voiceList[1], false, true);
-			}
-			else
-				vocals.loadEmbedded(Paths.voices(SONG.song, suffix), false, true);
+			vocals = FlxG.sound.load(voiceList[0]);
+			vocalsDad = FlxG.sound.load(voiceList[1]);
 		}
-			
 
 		FlxG.sound.list.add(songMusic);
 		FlxG.sound.list.add(vocals);
 		FlxG.sound.list.add(vocalsDad);
 		// generate the chart
-		unspawnNotes = ChartLoader.generateChartType(SONG, determinedChartType);
-		if (Paths.exists(Paths.songJson(SONG.song.toLowerCase(), 'events')))
-		{
-			var eventsData:Array<Dynamic> = Song.loadFromJson('events', SONG.song).events;
-			for (event in eventsData) //Event Notes
-				for (i in 0...event[1].length)
-					ChartLoader.makeEvent(event, i);
-		}
-
+		unspawnNotes = ChartLoader.generateChartType(SONG);
 		if(eventList.length > 1) 
 			eventList.sort(sortByShit);
 		// sometime my brain farts dont ask me why these functions were separated before
@@ -1763,7 +1759,7 @@ class PlayState extends MusicBeatState
 		songMusic.volume = vocals.volume = vocalsDad.volume = 0;
 		
 		if (SONG.validScore)
-			Highscore.saveScore(SONG.song, songScore, storyDifficulty);
+			Highscore.saveSongScore(SONG.song, curDifficulty, songScore);
 
 		deathCounter = 0;
 
@@ -1794,7 +1790,7 @@ class PlayState extends MusicBeatState
 
 				// save the week's score if the score is valid
 				if (SONG.validScore)
-					Highscore.saveWeekScore(storyWeek, campaignScore, storyDifficulty);
+					Highscore.saveWeekScore(SONG.song, curDifficulty, campaignScore);
 
 				// flush the save
 				FlxG.save.flush();
@@ -1806,13 +1802,8 @@ class PlayState extends MusicBeatState
 
 	private function callDefaultSongEnd()
 	{
-		var difficulty:String = '-' + CoolUtil.difficultyFromNumber(storyDifficulty).toLowerCase();
-		difficulty = difficulty.replace('-normal', '');
-
-		FlxTransitionableState.skipNextTransIn = true;
-		FlxTransitionableState.skipNextTransOut = true;
-
-		PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + difficulty, PlayState.storyPlaylist[0]);
+		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
+		PlayState.SONG = Song.loadFromJson(PlayState.curDifficulty, PlayState.storyPlaylist[0]);
 		ForeverTools.killMusic([songMusic, vocals, vocalsDad]);
 
 		// deliberately did not use the main.switchstate as to not unload the assets

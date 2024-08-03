@@ -31,6 +31,15 @@ class MainMenuState extends MusicBeatState
 
 	var optionShit:Array<String> = ['story mode', 'freeplay', 'options'];
 	var canSnap:Array<Float> = [];
+	var stickerSubState:StickerSubState;
+	public function new(?stickers:StickerSubState)
+	{
+		super();
+		
+		if (stickers != null)
+			stickerSubState = stickers;
+
+	}
 
 	// the create 'state'
 	override function create()
@@ -133,6 +142,14 @@ class MainMenuState extends MusicBeatState
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
+
+		
+		if (stickerSubState != null)
+		{
+			this.persistentUpdate = this.persistentDraw = true;
+			openSubState(stickerSubState);
+			stickerSubState.degenStickers();
+		}
 
 		//
 	}

@@ -30,6 +30,7 @@ class OptionsMenuState extends MusicBeatState
 	var curCategory:String;
 
 	var lockedMovement:Bool = false;
+	public static var isPlayState:Bool = false;
 
 	override public function create():Void
 	{
@@ -305,7 +306,7 @@ class OptionsMenuState extends MusicBeatState
 			if (curCategory != 'main')
 				loadSubgroup('main');
 			else
-				Main.switchState(new MainMenuState());
+				openSubState(new StickerSubState(null, (sticker) -> isPlayState ? new PlayState(sticker) : new MainMenuState(sticker)));
 		}
 	}
 
@@ -535,7 +536,7 @@ class OptionsMenuState extends MusicBeatState
 			lockedMovement = true;
 			FlxFlicker.flicker(activeSubgroup.members[curSelection], 0.5, 0.06 * 2, true, false, function(flick:FlxFlicker)
 			{
-				Main.switchState(new MainMenuState());
+				openSubState(new StickerSubState(null, (sticker) -> isPlayState ? new PlayState(sticker) : new MainMenuState(sticker)));
 				lockedMovement = false;
 			});
 		}

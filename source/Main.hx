@@ -179,3 +179,7 @@ class Main extends Sprite
 		Sys.exit(1);
 	}
 }
+
+class GlobalGraphic extends FlxGraphic {
+	override function destroy() {} // Lol
+}

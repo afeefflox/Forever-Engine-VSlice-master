@@ -1,0 +1,15 @@
+{
+    "version": "1.0.0",
+    "texture": "",
+    "mustPress": true,
+    "canBeHit": true,
+    "tooLate": false,
+    "wasGoodHit": false,
+    "animSuffix": "",
+    "gfNote": false,
+    "ignoreNote": false,
+    "hitByOpponent": false,
+    "noAnimation": false,
+    "noMissAnimation": false,
+    "hitCausesMiss": false
+}

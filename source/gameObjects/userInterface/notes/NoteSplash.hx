@@ -48,8 +48,10 @@ class NoteSplash extends FNFSprite
 		setPosition(x - Note.swagWidth * 0.95, y - Note.swagWidth);
 
 		var texture:String = null;
-		if(note != null && note.noteSplashData.texture != null) texture = note.noteSplashData.texture;
-		else if(PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0) texture = PlayState.SONG.splashSkin;
+		if(note != null && note.noteSplashData.texture != null) 
+			texture = note.noteSplashData.texture;
+		else if(PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0) 
+			texture = PlayState.SONG.splashSkin;
 		else texture = 'noteSplashes';
 
 		var config:NoteSplashConfig = null;
@@ -95,6 +97,7 @@ class NoteSplash extends FNFSprite
 			offset.x += -58;
 			offset.y += -55;
 		}
+		alpha = (Init.trueSettings.get('Opaque Arrows')) ? 1 : 0.6;
 
 		if(animation.curAnim != null)
 			animation.curAnim.frameRate = FlxG.random.int(minFps, maxFps);

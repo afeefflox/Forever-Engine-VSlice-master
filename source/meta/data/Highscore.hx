@@ -6,31 +6,30 @@ using StringTools;
 
 class Highscore
 {
-	public static var weekScores:Map<String, Int> = new Map();
-	public static var songScores:Map<String, Int> = new Map<String, Int>();
+	public static var songScores:Map<String, Int>;
 
-	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0):Void
+	public static function saveSongScore(song:String, diff:String, score:Int = 0):Void
 	{
-		var daSong:String = formatSong(song, diff);
-
-		if (songScores.exists(daSong)) 
-			if (songScores.get(daSong) < score) 
+		var daSong:String = formatSave(formatSong(song), diff);
+		if (songScores.exists(daSong)) {
+			if (songScores.get(daSong) < score) {
 				setScore(daSong, score);
-		else 
-			setScore(daSong, score);
+				return;
+			}
+		}
+		setScore(daSong, score);
 	}
 
-	public static function saveWeekScore(week:String, score:Int = 0, ?diff:Int = 0):Void
+	public static function saveWeekScore(week:String, diff:String, score:Int = 0):Void
 	{
-		var daWeek:String = formatSong(week, diff);
-
-		if (weekScores.exists(daWeek))
-		{
-			if (weekScores.get(daWeek) < score)
-				setWeekScore(daWeek, score);
+		var daWeek:String = formatSave(formatWeek(week), diff);
+		if (songScores.exists(daWeek)) {
+			if (songScores.get(daWeek) < score) {
+				setScore(daWeek, score);
+				return;
+			}
 		}
-		else
-			setWeekScore(daWeek, score);
+		setScore(daWeek, score);
 	}
 
 	/**
@@ -43,52 +42,29 @@ class Highscore
 		FlxG.save.data.songScores = songScores;
 		FlxG.save.flush();
 	}
-	static function setWeekScore(week:String, score:Int):Void
+
+	public static function getScore(song:String, diff:String):Int
 	{
-		// Reminder that I don't need to format this song, it should come formatted!
-		weekScores.set(week, score);
-		FlxG.save.data.weekScores = weekScores;
-		FlxG.save.flush();
+		var daSong:String = formatSave(formatSong(song), diff);
+		if (!songScores.exists(daSong))
+			setScore(daSong, 0);
+		return songScores.get(daSong);
 	}
 
-	public static function formatSong(song:String, diff:Int):String
+    public static function getWeekScore(week:String, diff:String):Int
 	{
-		var daSong:String = song;
-
-		var difficulty:String = '-' + CoolUtil.difficultyFromNumber(diff).toLowerCase();
-		difficulty = difficulty.replace('-normal', '');
-
-		daSong += difficulty;
-
-		return daSong;
+		var daWeek:String = formatSave(formatWeek(week), diff);
+		if (!songScores.exists(daWeek))
+			setScore(daWeek, 0);
+		return songScores.get(daWeek);
 	}
 
-	public static function getScore(song:String, diff:Int):Int
-	{
-		if (!songScores.exists(formatSong(song, diff)))
-			setScore(formatSong(song, diff), 0);
-
-		return songScores.get(formatSong(song, diff));
-	}
-
-    public static function getWeekScore(week:String, diff:Int):Int
-	{
-		var daWeek:String = formatSong(week, diff);
-		if (!weekScores.exists(daWeek))
-			setWeekScore(daWeek, 0);
-
-		return weekScores.get(daWeek);
-	}
+	inline static function formatSong(song:String):String return 'song-$song';
+	inline static function formatWeek(week:String):String return 'week-$week';
+	inline static function formatSave(input:String, diff:String):String return '${input.toLowerCase()}-$diff';
 
 	public static function load():Void
 	{
-        if (FlxG.save.data.weekScores != null)
-		{
-			weekScores = FlxG.save.data.weekScores;
-		}
-		if (FlxG.save.data.songScores != null)
-		{
-			songScores = FlxG.save.data.songScores;
-		}
+		if (FlxG.save.data.songScores != null) songScores = FlxG.save.data.songScores;
 	}
 }

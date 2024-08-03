@@ -47,6 +47,7 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
    * for characters/players, it should be false so it doesn't cut off their animations!!!!!
    */
   public var shouldBop:Bool = true;
+  public var flippedOffsets:Bool = false; 
 
   function set_idleSuffix(value:String):String
   {
@@ -289,7 +290,10 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
   {
     var offsets = animOffsets.get(name);
     if (animOffsets.exists(name) && !(offsets[0] == 0 && offsets[1] == 0))
+    {
       this.offset.set(offsets[0], offsets[1]);
+      if (flippedOffsets) this.offset.x = -this.offset.x;
+    }
     else
       this.offset.set(0, 0);
   }
@@ -329,7 +333,7 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
 
   public function isAnimationNull():Bool
   {
-    return (this.animation == null);
+    return (this.animation == null || this.animation.curAnim == null);
   }
 
   public function setAnimationOffsets(name:String, xOffset:Float, yOffset:Float):Void

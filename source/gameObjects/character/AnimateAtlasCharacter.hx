@@ -96,7 +96,7 @@ class AnimateAtlasCharacter extends BaseCharacter
 
     override function isAnimationNull():Bool
     {
-      return (this.mainSprite.anim == null);
+      return (this.mainSprite.anim == null || this.mainSprite.anim.curSymbol == null);
     }
 
     function loadAtlasSprite():FlxAnimate
@@ -146,5 +146,19 @@ class AnimateAtlasCharacter extends BaseCharacter
     override function update(elapsed:Float)
     {
         this.mainSprite.update(elapsed);
+    }
+
+    override function switchAnim(anim1:String, anim2:String):Void
+    {
+      if (hasAnimation(anim1) && hasAnimation(anim2))
+      {
+        final oldAnim1 = this.mainSprite.anim.getByName(anim1).instance.symbol;
+        final oldOffset1 = animOffsets[anim1];
+    
+        this.mainSprite.anim.getByName(anim1).instance.symbol = this.mainSprite.anim.getByName(anim2).instance.symbol;
+        animOffsets[anim1] = animOffsets[anim2];
+        this.mainSprite.anim.getByName(anim2).instance.symbol = oldAnim1;
+        animOffsets[anim2] = oldOffset1;
+      }
     }
 }

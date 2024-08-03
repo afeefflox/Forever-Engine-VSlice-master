@@ -166,6 +166,15 @@ class Paths
 		return currentTrackedSounds.get(gottenPath);
 	}
 
+	public static function returnSoundAlt(key:String)
+	{
+		// I hate this so god damn much
+		if (!currentTrackedSounds.exists(key))
+			currentTrackedSounds.set(key, OpenFlAssets.getSound(key));
+		localTrackedAssets.push(key);
+		return currentTrackedSounds.get(key);
+	}
+
 	//
 	inline public static function getPath(file:String, type:AssetType, ?library:Null<String>)
 	{
@@ -203,6 +212,12 @@ class Paths
 		return false;
 	}
 
+	inline static public function getFileContent(key:String) {
+		if(OpenFlAssets.exists(key, TEXT))
+			return OpenFlAssets.getText(key);
+		return null;
+	}
+
 	inline static public function animateAtlas(key:String, ?library:String) 
 	{
 		return getPath('images/$key', IMAGE, library);
@@ -228,8 +243,8 @@ class Paths
 		return getPath('$key.json', TEXT, library);
 	}
 
-	inline static public function songJson(song:String, secondSong:String, ?library:String)
-		return getPath('songs/${song.toLowerCase()}/${secondSong.toLowerCase()}.json', TEXT, library);
+	inline static public function charts(song:String, diffculty:String, ?library:String)
+		return getPath('songs/${song.toLowerCase()}/charts/${diffculty.toLowerCase()}.json', TEXT, library);
 
 	static public function sound(key:String, ?library:String):Dynamic
 	{
@@ -248,23 +263,21 @@ class Paths
 		return file;
 	}
 
-	inline static public function voices(song:String, ?suffix:String = ""):Any
+	inline static public function voices(song:String, ?suffix:String = "")
 	{
-		var path = '${CoolUtil.swapSpaceDash(song.toLowerCase())}/Voices$suffix';
-		return returnSound('songs', path);
+		if (suffix == null) suffix = '';
+		return getPath('songs/${CoolUtil.swapSpaceDash(song.toLowerCase())}/audio/Voices$suffix.${Constants.EXT_SOUND}', SOUND);
 	}
 
 	inline static public function inst(song:String, ?suffix:String = ""):Any
 	{
-		var path = '${CoolUtil.swapSpaceDash(song.toLowerCase())}/Inst$suffix';
-		return returnSound('songs', path);
-	}
+		if (suffix == null) suffix = '';
 
-	inline static public function songPaths(song:String, key:String, ?suffix:String = "")
-	{
-		return 'songs/${CoolUtil.swapSpaceDash(song.toLowerCase())}/$key$suffix.${Constants.EXT_SOUND}';
+		var songKey:String = '${CoolUtil.swapSpaceDash(song.toLowerCase())}/audio/Inst$suffix';
+		var inst = returnSound('songs', songKey);
+		return inst;
 	}
-
+	
 	inline static public function soundPaths(key:String, ?library:String)
 	{
 		return getPath('sound/$key.${Constants.EXT_SOUND}', SOUND, library);

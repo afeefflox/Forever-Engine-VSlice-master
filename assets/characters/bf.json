@@ -129,7 +129,7 @@
     "name": "Boyfriend",
     "renderType": "multiatlas",
     "assetPath": "characters/BOYFRIEND",
-    "offsets": [0, 0],
+    "offsets": [0, 50],
     "cameraOffsets": [0, 0],
     "flipX": true,
     "isPlayer": true

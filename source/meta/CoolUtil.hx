@@ -1,6 +1,6 @@
 package meta;
 
-import lime.utils.Assets;
+import openfl.utils.Assets;
 import meta.state.PlayState;
 
 using StringTools;
@@ -41,18 +41,6 @@ class CoolUtil
 		return daList;
 	}
 
-	public static inline function getOffsetsFromTxt(path:String):Array<Array<String>>
-	{
-		var fullText:String = Assets.getText(path);
-		var firstArray:Array<String> = fullText.split('\n');
-		var swagOffsets:Array<Array<String>> = [];
-
-		for (i in firstArray)
-			swagOffsets.push(i.split(' '));
-
-		return swagOffsets;
-	}
-
 	public static inline function returnAssetsLibrary(library:String, ?subDir:String = 'assets/images'):Array<String>
 	{
 		var libraryArray:Array<String> = [];
@@ -87,65 +75,70 @@ class CoolUtil
 		return [for (i in min...max) i];
 	}
 
-	public static function buildVoiceList(SONG:SwagSong):Array<String>
+	public static function buildVoiceList(SONG:SwagSong, ?suffix:String = ""):Array<String>
 	{
-		var suffix:String = (SONG.variation != null && SONG.variation != '' && SONG.variation != 'default') ? '-${SONG.variation}' : '';
-
 		var playerId:String = SONG.characters[0];
-		var voicePlayer:String = Paths.songPaths(SONG.song, 'Voices', '-$playerId$suffix');
-		while (voicePlayer != null && !Paths.exists(voicePlayer, SOUND))
+		var voicePlayer:String = Paths.voices(SONG.song, '-$playerId$suffix');
+		while (voicePlayer != null && !Paths.exists(voicePlayer))
 		{
 		  // Remove the last suffix.
 		  // For example, bf-car becomes bf.
 		  playerId = playerId.split('-').slice(0, -1).join('-');
 		  // Try again.
-		  voicePlayer = playerId == '' ? null : Paths.songPaths(SONG.song, 'Voices', '-${playerId}$suffix');
+		  voicePlayer = playerId == '' ? null : Paths.voices(SONG.song, '-${playerId}$suffix');
 		}
 		if (voicePlayer == null)
 		{
 		  // Try again without $suffix.
 		  playerId = SONG.characters[0];
-		  voicePlayer = Paths.songPaths(SONG.song, 'Voices', '-$playerId');
-		  while (voicePlayer != null && !Paths.exists(voicePlayer, SOUND))
+		  voicePlayer = Paths.voices(SONG.song, '-${playerId}');
+		  while (voicePlayer != null && !Paths.exists(voicePlayer))
 		  {
 			// Remove the last suffix.
 			playerId = playerId.split('-').slice(0, -1).join('-');
 			// Try again.
-			
-
-			voicePlayer = playerId == '' ? null : Paths.songPaths(SONG.song, 'Voices', '-${playerId}$suffix');
+			voicePlayer = playerId == '' ? null : Paths.voices(SONG.song, '-${playerId}$suffix');
 		  }
 		}
 	
 		var opponentId:String = SONG.characters[1];
-		var voiceOpponent:String = Paths.songPaths(SONG.song, 'Voices', '-${opponentId}$suffix');
-		while (voiceOpponent != null && !Paths.exists(voiceOpponent, SOUND))
+		var voiceOpponent:String = Paths.voices(SONG.song, '-${opponentId}$suffix');
+		while (voiceOpponent != null && !Paths.exists(voiceOpponent))
 		{
 		  // Remove the last suffix.
 		  opponentId = opponentId.split('-').slice(0, -1).join('-');
 		  // Try again.
-		  voiceOpponent = opponentId == '' ? null : Paths.songPaths(SONG.song, 'Voices', '-${opponentId}$suffix');
+		  voiceOpponent = opponentId == '' ? null : Paths.voices(SONG.song, '-${opponentId}$suffix');
 		}
 		if (voiceOpponent == null)
 		{
 		  // Try again without $suffix.
 		  opponentId = SONG.characters[1];
-		  voiceOpponent = Paths.songPaths(SONG.song, 'Voices', '-${opponentId}');
-		  while (voiceOpponent != null && !Paths.exists(voiceOpponent, SOUND))
+		  voiceOpponent = Paths.voices(SONG.song, '-${opponentId}');
+		  while (voiceOpponent != null && !Paths.exists(voiceOpponent))
 		  {
 			// Remove the last suffix.
 			opponentId = opponentId.split('-').slice(0, -1).join('-');
 			// Try again.
-			voiceOpponent = opponentId == '' ? null : Paths.songPaths(SONG.song, 'Voices', '-${opponentId}$suffix');
+			voiceOpponent = opponentId == '' ? null : Paths.voices(SONG.song, '-${opponentId}$suffix');
 		  }
 		}
 	
 		var result:Array<String> = [];
 		if (voicePlayer != null) result.push(voicePlayer);
 		if (voiceOpponent != null) result.push(voiceOpponent);
-		if(voicePlayer == null && Paths.exists(Paths.songPaths(SONG.song, 'Voices', 'bf$suffix'), SOUND)) result.push(Paths.songPaths(SONG.song, 'Voices', '-bf$suffix'));
-		if(voiceOpponent == null && Paths.exists(Paths.songPaths(SONG.song, 'Voices', 'dad$suffix'), SOUND)) result.push(Paths.songPaths(SONG.song, 'Voices', '-dad$suffix'));
+		if (voicePlayer == null && voiceOpponent == null)
+		{
+		  // Try to use `Voices.ogg` if no other voices are found.
+		  if(Paths.exists(Paths.voices(SONG.song, '-bf$suffix'))) result.push(Paths.voices(SONG.song, '-bf$suffix'));
+		  if(Paths.exists(Paths.voices(SONG.song, '-dad$suffix'))) result.push(Paths.voices(SONG.song, '-dad$suffix'));
 
+		  if(Paths.exists(Paths.voices(SONG.song, '-player$suffix'))) result.push(Paths.voices(SONG.song, '-player$suffix'));
+		  if(Paths.exists(Paths.voices(SONG.song, '-opponent$suffix'))) result.push(Paths.voices(SONG.song, '-opponent$suffix'));	
+		  if(Paths.exists(Paths.voices(SONG.song, '$suffix'))) result.push(Paths.voices(SONG.song, '$suffix'));		  	  
+
+		}
+		trace('result: $result');
 		return result;
 	}
 }

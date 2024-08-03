@@ -43,6 +43,26 @@ class Conductor
 		return lastChange;
 	}
 
+	public static var dummyBPMChange:BPMChangeEvent;
+	public static function getLastBpmChange(?time:Float, ?autoBPM:Float):BPMChangeEvent
+	{
+		var lastChange:BPMChangeEvent = null;
+		time ??= songPosition;
+
+		for (i in 0...Conductor.bpmChangeMap.length)
+		{
+			if (time >= Conductor.bpmChangeMap[i].songTime)
+				lastChange = Conductor.bpmChangeMap[i];
+		}
+
+		if (lastChange == null) {
+			dummyBPMChange.bpm = autoBPM ?? bpm;
+			lastChange = dummyBPMChange;
+		}
+
+		return lastChange;
+	}
+
 	public static function getBPMFromStep(step:Float){
 		var lastChange:BPMChangeEvent = {
 			stepTime: 0,

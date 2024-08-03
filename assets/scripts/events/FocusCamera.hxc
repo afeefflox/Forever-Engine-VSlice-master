@@ -8,6 +8,16 @@ class FocusCamera extends Events
     public function new()
     {
         super('Focus Camera');
+        this.values = [
+            "0, 0",
+            [
+                "boyfriend",
+                "dad",
+                "gf"
+            ],
+            "classic",
+            1
+        ];
     }
 
     override function returnDescription():String
@@ -15,10 +25,12 @@ class FocusCamera extends Events
         return 'Move Camera but it disable section camera \nValue 1: X and Y \nValue 2: Character \nValue 3: Ease \nValue 4: Duration';
     }
 
-    override function initFunction(params:Array<String>)
+    override function initFunction(params:Array<Dynamic>)
     {
         super.initFunction(params);
         if(PlayState.isNull()) return;
+        
+        PlayState.instance.disableCamera = true;
 
         var values:Array<String> = params[0].split(',');
 

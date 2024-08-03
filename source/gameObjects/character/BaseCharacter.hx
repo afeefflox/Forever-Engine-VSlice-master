@@ -17,7 +17,6 @@ class BaseCharacter extends Bopper
     public var holdTimer:Float = 0;
     public var isDead:Bool = false;
     public var _data:CharacterData;
-
     public var characterOrigin(get, never):FlxPoint;
     function get_characterOrigin():FlxPoint
     {
@@ -98,6 +97,27 @@ class BaseCharacter extends Bopper
         this.danceEvery = 2;
         this.shouldBop = false;
     }
+
+    public function flipCharOffsets():Void 
+    {
+        this.flippedOffsets = true;
+		this.cameraFocusPoint.x = -this.cameraFocusPoint.x;
+        this.scale.x = -this.scale.x;
+        switchAnim('danceLeft', 'danceRight');
+        for (i in animOffsets.keys()) {
+            if (i.startsWith("singRIGHT")) {
+                var prefix = i.split("singRIGHT")[1];
+                switchAnim('singRIGHT$prefix', 'singLEFT$prefix');
+            }
+        }
+    }
+
+    inline public function setFlipX(value:Bool):Void {
+		this.flippedOffsets = false;
+		if ((this.characterType == BF) != this._data.isPlayer)
+			flipCharOffsets();
+		this.flipX = value;
+	}
 
     public function getDeathCameraOffsets():Array<Float>
         return _data.death?.cameraOffsets ?? [0.0, 0.0];
