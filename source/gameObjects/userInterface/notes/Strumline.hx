@@ -189,10 +189,12 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 	public var notesGroup:FlxTypedGroup<Note>;
 	public var holdsGroup:FlxTypedGroup<Note>;
 	public var allNotes:FlxTypedGroup<Note>;
-
+	var notesVwoosh:FlxTypedGroup<Note>;
+	var holdsVwoosh:FlxTypedGroup<Note>;
 	public var autoplay:Bool = true;
 	public var displayJudgements:Bool = false;
 	public var noteSplashes:Bool = false;
+	public var downscroll:Bool = false;
 	public function new(x:Float = 0, ?displayJudgements:Bool = true, ?autoplay:Bool = true,
 			?noteSplashes:Bool = false, ?keyAmount:Int = 4, ?downscroll:Bool = false, ?parent:Strumline)
 	{
@@ -200,14 +202,11 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 
 		receptors = new FlxTypedGroup<UIStaticArrow>();
 		splashNotes = new FlxTypedGroup<NoteSplash>();
-		notesGroup = new FlxTypedGroup<Note>();
-		holdsGroup = new FlxTypedGroup<Note>();
-
-		allNotes = new FlxTypedGroup<Note>();
-
+		holdsVwoosh = notesVwoosh = allNotes = notesGroup = holdsGroup = new FlxTypedGroup<Note>();
 		this.autoplay = autoplay;
 		this.displayJudgements = displayJudgements;
 		this.noteSplashes = noteSplashes;
+		this.downscroll = downscroll;
 
 		for (i in 0...keyAmount)
 		{
@@ -229,13 +228,73 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 		}
 
 		if (Init.trueSettings.get("Clip Style").toLowerCase() == 'stepmania')
+		{
 			add(holdsGroup);
+			add(holdsVwoosh);
+		}
+			
 		add(receptors);
 		if (Init.trueSettings.get("Clip Style").toLowerCase() == 'fnf')
+		{
 			add(holdsGroup);
+			add(holdsVwoosh);
+		}
 		add(notesGroup);
-		if (splashNotes != null)
-			add(splashNotes);
+		add(notesVwoosh);
+		add(splashNotes);
+	}
+
+	public function vwooshNotes():Void
+	{
+		var i:Int = notesGroup.length - 1;
+		while (i >= 0) 
+		{
+			var note:Note = notesGroup.members[i];
+			notesGroup.remove(note);
+			notesVwoosh.add(note);
+			var targetY:Float = FlxG.height + note.y;
+			if (downscroll) targetY = 0 - note.height;
+			FlxTween.tween(note, {y: targetY}, 0.5,
+			{
+				ease: FlxEase.expoIn,
+				onComplete: function(twn) {
+				  note.kill();
+				  notesVwoosh.remove(note, true);
+				  note.destroy();
+				}
+			});
+			--i;
+		}
+
+
+		i = holdsGroup.length - 1;
+		while (i >= 0) 
+		{
+			var note:Note = holdsGroup.members[i];
+			holdsGroup.remove(note);
+			holdsVwoosh.add(note);
+			var targetY:Float = FlxG.height + note.y;
+			if (downscroll) targetY = 0 - note.height;
+			FlxTween.tween(note, {y: targetY}, 0.5,
+			{
+				ease: FlxEase.expoIn,
+				onComplete: function(twn) {
+				  note.kill();
+				  holdsVwoosh.remove(note, true);
+				  note.destroy();
+				}
+			});
+			--i;
+		}
+	}
+
+	public function clean():Void
+	{
+		for (note in allNotes.members)
+		{
+			if (note == null) continue;
+			destroyNote(note);
+		}
 	}
 
 	public function createSplash(coolNote:Note)
@@ -244,11 +303,11 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 		{
 			var strum:UIStaticArrow = receptors.members[coolNote.noteData];
 			if(strum != null)
-				spawnNoteSplash(this, strum.x, strum.y, coolNote.noteData, coolNote);
+				spawnNoteSplash(strum.x, strum.y, coolNote.noteData, coolNote);
 		}
 	}
 
-	public function spawnNoteSplash(strumline:Strumline, x:Float, y:Float, data:Int, ?note:Note = null) {
+	public function spawnNoteSplash(x:Float, y:Float, data:Int, ?note:Note = null) {
 		var splash:NoteSplash = splashNotes.recycle(NoteSplash);
 		splash.setupNoteSplash(x, y, data, PlayState.assetModifier, note);
 		splashNotes.add(splash);
@@ -256,10 +315,22 @@ class Strumline extends FlxTypedGroup<FlxBasic>
 
 	public function push(newNote:Note)
 	{
-		//
 		var chosenGroup = (newNote.isSustainNote ? holdsGroup : notesGroup);
 		chosenGroup.add(newNote);
 		allNotes.add(newNote);
-		chosenGroup.sort(FlxSort.byY, (!Init.trueSettings.get('Downscroll')) ? FlxSort.DESCENDING : FlxSort.ASCENDING);
+		chosenGroup.sort(FlxSort.byY, (!downscroll) ? FlxSort.DESCENDING : FlxSort.ASCENDING);
+	}
+
+	public function destroyNote(daNote:Note)
+	{
+		daNote.active = daNote.exists = false;
+		var chosenGroup = (daNote.isSustainNote ? this.holdsGroup : this.notesGroup);
+		// note damage here I guess
+		daNote.kill();
+		if (this.allNotes.members.contains(daNote))
+			this.allNotes.remove(daNote, true);
+		if (chosenGroup.members.contains(daNote))
+			chosenGroup.remove(daNote, true);
+		daNote.destroy();
 	}
 }

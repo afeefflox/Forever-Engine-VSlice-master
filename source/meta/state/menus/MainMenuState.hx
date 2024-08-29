@@ -11,7 +11,6 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
-import meta.MusicBeat.MusicBeatState;
 import meta.data.dependency.Discord;
 
 using StringTools;
@@ -196,27 +195,6 @@ class MainMenuState extends MusicBeatState
 
 						FlxG.sound.play(Paths.sound('scrollMenu'));
 					}
-					/* idk something about it isn't working yet I'll rewrite it later
-						else
-						{
-							// paaaaaaaiiiiiiiinnnn
-							var curDir:Int = 0;
-							if (i == 0)
-								curDir = -1;
-							else if (i == 1)
-								curDir = 1;
-
-							if (counterControl < 2)
-								counterControl += 0.05;
-
-							if (counterControl >= 1)
-							{
-								curSelected += (curDir * (counterControl * 0.54));
-								if (curSelected % 1 == 0)
-									FlxG.sound.play(Paths.sound('scrollMenu'));
-							}
-					}*/
-
 					if (curSelected < 0)
 						curSelected = optionShit.length - 1;
 					else if (curSelected >= optionShit.length)

@@ -79,7 +79,7 @@ class Song implements IPlayStateScriptedClass
         sectionEvents: [],
         sectionBeats: 4,
         mustHitSection: true,
-        bpm: 0,
+        bpm: 150,
         changeBPM: false
 	};
 
@@ -225,12 +225,15 @@ class Song implements IPlayStateScriptedClass
 				for (note in sec.sectionNotes) {
 					if (note[3] == null) continue;
 					final type:String = note[3]; // hl is gay
-					if (type == "default" || type == "0") note = note.pop(); 
+					if (type == "default") note = note.pop(); 
 				}
 				sec.sectionNotes.sort(sortNotes);
 			}
 			if (sec.sectionEvents.length <= 0 || metaClear)
 				Reflect.deleteField(sec, 'sectionEvents');
+
+			if(sec.sectionBeats == 4)
+				Reflect.deleteField(sec, 'sectionBeats');
 
 			if (sec.mustHitSection)
 				Reflect.deleteField(sec, 'mustHitSection');

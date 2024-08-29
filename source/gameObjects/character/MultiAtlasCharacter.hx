@@ -25,16 +25,16 @@ class MultiAtlasCharacter extends BaseCharacter
 
     function loadSpritesheet()
     {
-        var assetList = [];
-        for (anim in _data.animations)
+      var assetList = [];
+      for (anim in _data.animations)
+      {
+        if (anim.assetPath != null && !assetList.contains(anim.assetPath))
         {
-          if (anim.assetPath != null && !assetList.contains(anim.assetPath))
-          {
-            assetList.push(anim.assetPath);
-          }
+          assetList.push(anim.assetPath);
         }
+      }
     
-        var texture:FlxAtlasFrames = Paths.getAtlas(_data.assetPath);
+      var texture:FlxAtlasFrames = Paths.getAtlas(_data.assetPath);
     
         if (texture == null)
         {

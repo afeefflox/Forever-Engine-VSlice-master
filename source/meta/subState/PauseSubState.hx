@@ -10,7 +10,6 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
-import meta.MusicBeat.MusicBeatSubState;
 import meta.data.font.Alphabet;
 import meta.state.*;
 import meta.state.menus.*;
@@ -33,6 +32,7 @@ class PauseSubState extends MusicBeatSubState
 		{text: 'Restart Song', callback: restartPlayState},
 		{text: 'Options', callback: openOption},
 		{text: 'Return to Chart Editor', callback: quitToChartEditor},
+		{text: 'Exit to Menu', callback: quitToMenu}, //imagine stuck in a loop forever lmao
 	];
 
 	static final PAUSE_MENU_ENTRIES_DIFFICULTY:Array<PauseMenuEntry> = [
@@ -133,16 +133,13 @@ class PauseSubState extends MusicBeatSubState
 	
 		var metadataSong:FlxText = new FlxText(20, 15, FlxG.width - 40, 'Song Name');
 		metadataSong.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
-		if (PlayState.SONG != null)
-		{
-		  metadataSong.text = '${PlayState.SONG.song}';
-		}
+		metadataSong.text = '${PlayState.SONG.song}';
 		metadataSong.scrollFactor.set(0, 0);
 		metadata.add(metadataSong);		
 
 		var metadataDifficulty:FlxText = new FlxText(20, metadataSong.y + 32, FlxG.width - 40, 'Difficulty: ');
 		metadataDifficulty.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
-		metadataDifficulty.text += CoolUtil.difficultyFromNumber(PlayState.storyDifficulty);
+		metadataDifficulty.text += PlayState.curDifficulty.toUpperCase();
 		metadataDifficulty.scrollFactor.set(0, 0);
 		metadata.add(metadataDifficulty);
 	
@@ -311,8 +308,8 @@ class PauseSubState extends MusicBeatSubState
 
 	static function resume(state:PauseSubState):Void
 	{
+		VideoCutscene.resume();
 		state.close();
-
 	}
 
 	static function switchMode(state:PauseSubState, targetMode:PauseMode):Void
@@ -331,44 +328,48 @@ class PauseSubState extends MusicBeatSubState
 	{
 		PlayState.SONG = Song.loadFromJson(curSelected, PlayState.SONG.song);
 		PlayState.curDifficulty = curSelected;
-		state.openSubState(new StickerSubState(null, (sticker) -> new PlayState(sticker)));
+		PlayState.instance.needsReset = true;
 		state.close();
 	}
 
 	static function restartPlayState(state:PauseSubState):Void
 	{
-		state.openSubState(new StickerSubState(null, (sticker) -> new PlayState(sticker)));
+		PlayState.instance.needsReset = true;
 		state.close();
 	}
 
 	static function enablePracticeMode(state:PauseSubState):Void
 	{
+		if (PlayState.instance == null) return;
 		PlayState.instance.isPracticeMode = true;
 		state.regenerateMenu();
 	}
 
 	static function restartVideoCutscene(state:PauseSubState):Void
 	{
+		VideoCutscene.restart();
 		state.close();
-
 	}
 
 	static function skipVideoCutscene(state:PauseSubState):Void
 	{
+		VideoCutscene.finish();
 		state.close();
 	}
 
 	static function quitToMenu(state:PauseSubState):Void
 	{
 		state.allowInput = false;
-
+		PlayState.instance.deathCounter = 0;
+		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
 		PlayState.resetMusic();
 		state.openSubState(new StickerSubState(null, (sticker) -> PlayState.isStoryMode ? new StoryMenuState(sticker) :  new FreeplayState(sticker)));
 	}
 
 	static function quitToChartEditor(state:PauseSubState):Void
 	{
-		Main.switchState(new meta.state.editors.ChartingState());
+		if (FlxG.sound.music != null) FlxG.sound.music.pause(); // Don't reset song position!
+		FlxG.switchState(new meta.state.editors.ChartingState());
 		state.close();
 	}
 }

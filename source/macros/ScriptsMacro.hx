@@ -11,7 +11,11 @@ import haxe.macro.Expr;
 class ScriptsMacro {
 	public static function addAdditionalClasses() {
 		for(inc in [
-			"data", "gameObjects", "meta",
+			//BASE SOURCE CODE
+			"meta", 'data', 'gameObjects',
+			//HAXEUI
+			"haxe.ui.backend.flixel.components", "haxe.ui.containers.dialogs", "haxe.ui.containers.menus", 
+			"haxe.ui.containers.properties", "haxe.ui.core", "haxe.ui.components", "haxe.ui.containers",
 			// FLIXEL
 			"flixel.util", "flixel.ui", "flixel.tweens", "flixel.tile", "flixel.text",
 			"flixel.system", "flixel.sound", "flixel.path", "flixel.math", "flixel.input",
@@ -24,6 +28,12 @@ class ScriptsMacro {
 			"DateTools", "EReg", "Lambda", "StringBuf", "haxe.crypto", "haxe.display", "haxe.exceptions", "haxe.extern", "scripting"
 		])
 		Compiler.include(inc);
+
+		for(inc in [#if sys "sys", "openfl.net" #end]) {
+			#if !hl
+			Compiler.include(inc);
+			#end
+		}
 
 		#if hl HashLinkFixer.init(); #end
 		// Todo rewrite this to use if(Context.defined(""))

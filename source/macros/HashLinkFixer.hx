@@ -20,8 +20,10 @@ class HashLinkFixer {
 	public static var buildMacroString = '@:build(macros.HashLinkFixer.build())';
 
 	public static var applyOn:Array<String> = [
-		"flixel",
-		"openfl.display.BlendMode"
+		"lime",
+		"std",
+		"Math",
+		"",
 	];
 
 	public static var modifiedClasses:Array<String> = [];
@@ -48,99 +50,118 @@ class HashLinkFixer {
 		if (clRef == null) return fields;
 		var cl = clRef.get();
 
-		if (cl.name.endsWith("_Impl_") && cl.params.length <= 0 && !cl.meta.has(":multiType") && !cl.name.contains("_HSC")) {
+		if (cl.isAbstract || cl.isExtern || cl.isInterface) return fields;
+		if (!cl.name.endsWith("_Impl_") && !cl.name.endsWith("_HSX") && !cl.name.endsWith("_HSC") && !cl.name.endsWith("_HLFHelper")) {
 			var metas = cl.meta.get();
 
-			var trimEnum = cl.name.substr(0, cl.name.length - 6);
+			if(cl.params.length > 0)
+				return fields;
 
-			var key = cl.module;
-			var fkey = cl.module + "." + trimEnum;
-			if(key == "lime.system.Locale") return fields; // Error: Unknown identifier : currentLocale, Due to Func
-			if(key == "cpp.Function") return fields; // Error: Unknown identifier : nativeGetProcAddress, Due to Func
-			if(key == "haxe.ds.Vector") return fields; // Error: haxe.ds._Vector.VectorData<blit.T> has no field blit, Due to Func
-			if(key == "haxe.display.Display") return fields; // Error: haxe.display.DisplayItemKind<haxe.display.DisplayLiteral<Dynamic>> has no field Null, Due to Func
-			if(key == "cpp.Callable") return fields; // Error: cpp.Function.fromStaticFunction must be called on static function, Due to Func
-			if(key == "haxe.display.JsonAnonStatusKind") return fields; // Error: cannot initialize a variable of type 'char *' with an rvalue of type 'const char *', Due to Func
-			if(key == "cpp.CharStar") return fields; // Error: cannot initialize a variable of type 'char *' with an rvalue of type 'const char *', Due to Func
-			if(cl.module.contains("_")) return fields; // Weird issue, sorry
+			if(cl.module == "EReg") return fields; // private typedef in same class
+			if(cl.module == "hl.Format") return fields; // enum in same class
 
-			var shadowClass = macro class {
+			var definedFields = [];
+
+			var helperClass = macro class {
 
 			};
-			shadowClass.kind = TDClass();
-			shadowClass.params = switch(cl.params.length) {
-				case 0:
-					null;
-				case 1:
-					[{
-						name: "T",
-					}];
-				default:
-					[for(k=>e in cl.params) {
-						name: "T" + Std.int(k+1)
-					}];
-			};
-			shadowClass.name = '${cl.name.substr(0, cl.name.length - 6)}_HSC';
 
-			var imports = Context.getLocalImports().copy();
-			Utils.setupMetas(shadowClass, imports);
-			//trace(cl.module);
+			helperClass.pos = cl.pos;
 
-			for(f in fields)
+			var module = cl.module + "_HLFHelper";
+			var hcClassName = cl.name + "_HLFHelper";
+
+			for(f in fields.copy()) {
+				if (f == null)
+					continue;
+				if (f.name == "new")
+					continue;
+
+				if(definedFields.contains(f.name)) continue; // no duplicate fields
+
+				var hasHlNative = false;
+				for(m in f.meta)
+					if (m.name == ":hlNative") {
+						hasHlNative = true;
+						break;
+					}
+
+				if(!hasHlNative) continue;
+
 				switch(f.kind) {
 					case FFun(fun):
-						if (f.access.contains(AStatic)) {
-							if (fun.expr != null) {
-								fun.expr = macro @:privateAccess $e{fun.expr};
-								shadowClass.fields.push(f);
-							}
-						}
-					case FProp(get, set, t, e):
-						if (get == "default" && (set == "never" || set == "null")) {
-							shadowClass.fields.push(f);
-						}
-					case FVar(t, e):
-						if (f.access.contains(AStatic) || cl.meta.has(":enum") || f.name.toUpperCase() == f.name) {
-							var name:String = f.name;
-							var enumType:String = cl.name;
-							var pack = cl.module.split(".");
+						if (fun == null)
+							continue;
+						if (fun.params != null && fun.params.length > 0) // TODO: Support for this maybe?
+							continue;
 
-							//trace(pack, cl.name, name, cl.module);
+						if(fun.params == null)
+							fun.params = [];
 
-							if(pack[pack.length - 1] == trimEnum)
-								pack.pop();
+						var overrideExpr:Expr;
+						var returns:Bool = !fun.ret.match(TPath({name: "Void"}));
 
-							var complexType:ComplexType = t;
-							if(complexType == null && e != null) {
-								complexType = switch(e.expr) {
-									case EConst(CRegexp(_)): TPath({ name: "EReg", pack: [] });
+						var name = 'hlf_${f.name}';
 
-									default: null;
-								}
-							}
-							if(complexType == null) {
-								complexType = TPath({
-									name: trimEnum,
-									pack: [],//pack
-								});
-							}
+						var arguments = fun.args == null ? [] : [for(a in fun.args) macro $i{a.name}];
 
-							var code = Context.parse('@:privateAccess ($trimEnum.$name)', f.pos); // '${pack.join(".")}.${trimEnum}.$name'
+						var funcExpr:Expr = returns ? {
+							//macro return $i{name}($a{arguments});
+							macro return @:privateAccess $i{hcClassName}.$name($a{arguments});
+						} : {
+							macro @:privateAccess $i{hcClassName}.$name($a{arguments});
+						};
 
-							var field:Field = {
-								pos: f.pos,
-								name: f.name,
-								meta: f.meta,
-								kind: FVar(null, code),
-								doc: f.doc,
-								access: [APublic, AStatic]
+						var fiel:Field = {
+							name: name,
+							pos: Context.currentPos(),
+							kind: FFun({
+								ret: fun.ret,
+								params: fun.params.copy(),
+								expr: fun.expr,
+								args: fun.args.copy()
+							}),
+							access: f.access.copy(),
+							meta: f.meta.copy()
+						};
+						helperClass.fields.push(fiel);
+						definedFields.push(f.name);
+
+						for(m in f.meta.copy())
+							if (m.name == ":hlNative") {
+								f.meta.remove(m);
 							}
 
-							shadowClass.fields.push(field);
-						}
+						fun.expr = funcExpr;
 					default:
 				}
-			Context.defineModule(cl.module, [shadowClass], imports);
+			}
+
+			helperClass.pack = cl.pack.copy();
+			helperClass.pos = cl.pos;
+			helperClass.name = hcClassName;
+
+			if(definedFields.length > 0) {
+				trace(cl.module);
+
+				/*for(m in metas.copy()) {
+					trace("   " + m.name);
+					if(m.name == ":coreApi") {
+						metas.remove(m);
+					}
+				}*/
+
+				var imports = Context.getLocalImports().copy();
+				Context.defineModule(module, [helperClass], imports);
+
+				Context.getLocalImports().push({
+					path: [for(m in module.split(".")) {
+						name: m,
+						pos: Context.currentPos()
+					}],
+					mode: INormal
+				});
+			}
 		}
 
 		return fields;

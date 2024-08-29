@@ -58,9 +58,9 @@ class FocusCamera extends Events
         {
             case 'classic': //why it is illegal to call it?
                 PlayState.instance.resetCamera(false, true);
-                PlayState.instance.cameraFollowPoint.setPosition(posX, posY);
+                PlayState.instance.cameraFollowPoint.setPosition(posX + PlayState.instance.camDisplaceX, posY + PlayState.instance.camDisplaceY);
             case 'instant':
-                PlayState.instance.tweenCameraToPosition(posX, posY, 0);
+                PlayState.instance.tweenCameraToPosition(posX + PlayState.instance.camDisplaceX, posY + PlayState.instance.camDisplaceY, 0);
             default:
                 var durSeconds = Std.parseFloat(params[3]) / 1000;
                 var easeFunction:Null<Float->Float> = getFlxEaseByString(params[2]);
@@ -69,7 +69,7 @@ class FocusCamera extends Events
                   trace('Invalid ease function: $params');
                   return;
                 }
-                PlayState.instance.tweenCameraToPosition(posX, posY, durSeconds, easeFunction);
+                PlayState.instance.tweenCameraToPosition(posX + PlayState.instance.camDisplaceX, posY + PlayState.instance.camDisplaceY, durSeconds, easeFunction);
         }
     }
 

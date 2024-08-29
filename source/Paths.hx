@@ -188,23 +188,26 @@ class Paths
 		return getPreloadPath(file);
 	}
 
-	static public function getLibraryPath(file:String, library = "preload")
+	inline public static function getPathAlt(file:String, ?library:Null<String>)
 	{
-		return if (library == "preload" || library == "default") getPreloadPath(file); else getLibraryPathForce(file, library);
+		if (library != null)
+			return getLibraryPath(file, library);
+
+		var levelPath = getLibraryPathForce(file, "shared");
+		if (exists(levelPath))
+			return levelPath;
+
+		return getPreloadPath(file);
 	}
+
+	static public function getLibraryPath(file:String, library = "preload")
+		return if (library == "preload" || library == "default") getPreloadPath(file); else getLibraryPathForce(file, library);
 
 	inline static function getLibraryPathForce(file:String, library:String)
-	{
-		return '$library/$file';
-	}
+		return 'assets/$library/$file';
 
 	inline static function getPreloadPath(file:String)
-	{
-		var returnPath:String = 'assets/$file';
-		if (!exists(returnPath))
-			returnPath = CoolUtil.swapSpaceDash(returnPath);
-		return returnPath;
-	}
+		return 'assets/$file';
 
 	inline static public function exists(key:String, ?type:AssetType) {
 		if(OpenFlAssets.exists(key, type))
@@ -219,28 +222,34 @@ class Paths
 	}
 
 	inline static public function animateAtlas(key:String, ?library:String) 
-	{
 		return getPath('images/$key', IMAGE, library);
-	}
 
 	inline static public function file(file:String, type:AssetType = TEXT, ?library:String)
-	{
 		return getPath(file, type, library);
-	}
 
 	inline static public function txt(key:String, ?library:String)
-	{
 		return getPath('$key.txt', TEXT, library);
-	}
 
 	inline static public function xml(key:String, ?library:String)
-	{
 		return getPath('$key.xml', TEXT, library);
-	}
 
 	inline static public function json(key:String, ?library:String)
-	{
 		return getPath('$key.json', TEXT, library);
+
+	inline static public function video(key:String, ?library:String)
+		return getPathAlt('videos/$key.${Constants.EXT_VIDEO}', library);
+
+	public static function frag(key:String, ?library:String):String
+		return getPath('shaders/$key.frag', TEXT, library);
+		
+	public static function vert(key:String, ?library:String):String
+		return getPath('shaders/$key.vert', TEXT, library);
+
+	public static function shader(key:String, ?library:String):String
+	{
+		if(exists(vert(key, library), TEXT))
+			return vert(key, library);
+		return frag(key, library);
 	}
 
 	inline static public function charts(song:String, diffculty:String, ?library:String)
@@ -253,9 +262,7 @@ class Paths
 	}
 
 	inline static public function soundRandom(key:String, min:Int, max:Int, ?library:String)
-	{
 		return sound(key + FlxG.random.int(min, max), library);
-	}
 
 	inline static public function music(key:String, ?library:String):Dynamic
 	{
@@ -266,33 +273,26 @@ class Paths
 	inline static public function voices(song:String, ?suffix:String = "")
 	{
 		if (suffix == null) suffix = '';
-		return getPath('songs/${CoolUtil.swapSpaceDash(song.toLowerCase())}/audio/Voices$suffix.${Constants.EXT_SOUND}', SOUND);
+		return getPath('songs/${song.toLowerCase()}/audio/Voices$suffix.${Constants.EXT_SOUND}', SOUND);
 	}
 
 	inline static public function inst(song:String, ?suffix:String = ""):Any
 	{
 		if (suffix == null) suffix = '';
 
-		var songKey:String = '${CoolUtil.swapSpaceDash(song.toLowerCase())}/audio/Inst$suffix';
+		var songKey:String = '${song.toLowerCase()}/audio/Inst$suffix';
 		var inst = returnSound('songs', songKey);
 		return inst;
 	}
 	
 	inline static public function soundPaths(key:String, ?library:String)
-	{
 		return getPath('sound/$key.${Constants.EXT_SOUND}', SOUND, library);
-	}
 
 	inline static public function musicPaths(key:String, ?library:String)
-	{
 		return getPath('music/$key.${Constants.EXT_SOUND}', SOUND, library);
-	}
 
-	
 	inline static public function imagePaths(key:String, ?library:String)
-	{
-		return getPath('images/$key.png', TEXT, library);
-	}
+		return getPath('images/$key.png', IMAGE, library);
 
 	inline static public function image(key:String, ?library:String, ?textureCompression:Bool = false)
 	{
@@ -301,17 +301,15 @@ class Paths
 	}
 
 	inline static public function font(key:String)
-	{
 		return 'assets/fonts/$key';
-	}
 
 	public static function getAtlas(key:String, ?library:String):FlxAtlasFrames {
 		if(exists(json('images/$key', library), TEXT))
 			return getAsepriteAtlas(key, library);
-		else if(exists(txt('images/$key', library), TEXT))
-			return getPackerAtlas(key, library);
+		else if(exists(xml('images/$key', library), TEXT))
+			return getSparrowAtlas(key, library);
 
-		return getSparrowAtlas(key, library);
+		return getPackerAtlas(key, library);
 	}
 
 	public static function getExistAtlas(key:String, ?library:String):Bool {

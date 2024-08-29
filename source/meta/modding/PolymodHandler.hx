@@ -60,7 +60,8 @@ class PolymodHandler
       trace('Attempting to load ${ids.length} mods...');
     }
 
-    //buildImports();
+    buildImports();
+
 
     if (modFileSystem == null) modFileSystem = buildFileSystem();
 
@@ -194,6 +195,13 @@ class PolymodHandler
       });
     trace('Found ${modMetadata.length} mods when scanning.');
     return modMetadata;
+  }
+
+  static function buildImports():Void
+  {
+    Polymod.addImportAlias('flixel.math.FlxPoint', Type.resolveClass('flixel.math.FlxPoint_HSC'));
+    Polymod.addImportAlias('flixel.util.FlxAxes', Type.resolveClass('flixel.util.FlxAxes_HSC'));
+    Polymod.addImportAlias('flixel.util.FlxColor', Type.resolveClass('flixel.util.FlxColor_HSC'));
   }
 
   /**

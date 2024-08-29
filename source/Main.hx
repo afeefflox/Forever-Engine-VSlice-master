@@ -23,7 +23,7 @@ import openfl.events.UncaughtErrorEvent;
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.Process;
-
+import haxe.ui.Toolkit;
 // Here we actually import the states and metadata, and just the metadata.
 // It's nice to have modularity so that we don't have ALL elements loaded at the same time.
 // at least that's how I think it works. I could be stupid!
@@ -76,6 +76,8 @@ class Main extends Sprite
 
 	function setupGame():Void
 	{
+		initHaxeUI();
+
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 
 		var game:FlxGame = new FlxGame(gameWidth, gameHeight, Init, framerate, framerate, skipSplash);
@@ -177,6 +179,16 @@ class Main extends Sprite
 		#end
 		Application.current.window.alert(errMsg, "Error!");
 		Sys.exit(1);
+	}
+
+	function initHaxeUI():Void
+	{
+		Toolkit.init();
+		Toolkit.theme = 'dark'; // don't be cringe
+		Toolkit.autoScale = false;
+		haxe.ui.focus.FocusManager.instance.autoFocus = false;
+		Cursor.registerHaxeUICursors();
+		haxe.ui.tooltips.ToolTipManager.defaultDelay = 200;
 	}
 }
 

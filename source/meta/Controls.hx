@@ -52,6 +52,9 @@ enum abstract Action(String) to String from String
 	var PAUSE = "pause";
 	var RESET = "reset";
 	var CHEAT = "cheat";
+	var FREEPLAY_LEFT = 'freeplay_left';
+	var FREEPLAY_RIGHT = 'freeplay_right';
+	var FREEPLAY_FAVORITE = 'freeplay_favorite';
 }
 
 enum Device
@@ -80,6 +83,9 @@ enum Control
 	BACK;
 	PAUSE;
 	CHEAT;
+	FREEPLAY_LEFT;
+	FREEPLAY_RIGHT;
+	FREEPLAY_FAVORITE;
 }
 
 enum KeyboardScheme
@@ -125,7 +131,9 @@ class Controls extends FlxActionSet
 	var _pause = new FlxActionDigital(Action.PAUSE);
 	var _reset = new FlxActionDigital(Action.RESET);
 	var _cheat = new FlxActionDigital(Action.CHEAT);
-
+	var _freeplay_left = new FlxActionDigital(Action.FREEPLAY_LEFT);
+	var _freeplay_right = new FlxActionDigital(Action.FREEPLAY_RIGHT);
+	var _freeplay_favorite = new FlxActionDigital(Action.FREEPLAY_FAVORITE);
 	#if (haxe >= "4.0.0")
 	var byName:Map<String, FlxActionDigital> = [];
 	#else
@@ -280,6 +288,21 @@ class Controls extends FlxActionSet
 	inline function get_CHEAT()
 		return _cheat.check();
 
+	public var FREEPLAY_LEFT(get, never):Bool;
+
+	inline function get_FREEPLAY_LEFT()
+		return _freeplay_left.check();
+
+	public var FREEPLAY_RIGHT(get, never):Bool;
+
+	inline function get_FREEPLAY_RIGHT()
+		return _freeplay_right.check();
+
+	public var FREEPLAY_FAVORITE(get, never):Bool;
+
+	inline function get_FREEPLAY_FAVORITE()
+		return _freeplay_favorite.check();
+
 	public function new(name, scheme = None)
 	{
 		super(name);
@@ -313,7 +336,9 @@ class Controls extends FlxActionSet
 		add(_pause);
 		add(_reset);
 		add(_cheat);
-
+		add(_freeplay_favorite);
+		add(_freeplay_left);
+		add(_freeplay_right);
 		for (action in digitalActions)
 			byName[action.name] = action;
 
@@ -368,6 +393,9 @@ class Controls extends FlxActionSet
 			case PAUSE: _pause;
 			case RESET: _reset;
 			case CHEAT: _cheat;
+			case FREEPLAY_FAVORITE: _freeplay_favorite;
+			case FREEPLAY_LEFT: _freeplay_left;
+			case FREEPLAY_RIGHT: _freeplay_right;
 		}
 	}
 
@@ -429,6 +457,13 @@ class Controls extends FlxActionSet
 				func(_reset, JUST_PRESSED);
 			case CHEAT:
 				func(_cheat, JUST_PRESSED);
+			case FREEPLAY_FAVORITE:
+				func(_freeplay_favorite, JUST_PRESSED);
+			case FREEPLAY_LEFT:
+				func(_freeplay_left, JUST_PRESSED);
+			case FREEPLAY_RIGHT:
+				func(_freeplay_right, JUST_PRESSED);
+			
 		}
 	}
 
@@ -587,76 +622,9 @@ class Controls extends FlxActionSet
 		]);
 		inline bindKeys(Control.PAUSE, [Init.gameControls.get('PAUSE')[0][0], Init.gameControls.get('PAUSE')[0][1]]);
 		inline bindKeys(Control.RESET, [Init.gameControls.get('RESET')[0][0], Init.gameControls.get('RESET')[0][1]]);
-
-		/* 
-			#if (haxe >= "4.0.0")
-			switch (scheme)
-			{
-				case Solo:
-					inline bindKeys(Control.UP, [J, FlxKey.UP]);
-					inline bindKeys(Control.DOWN, [F, FlxKey.DOWN]);
-					inline bindKeys(Control.LEFT, [D, FlxKey.LEFT]);
-					inline bindKeys(Control.RIGHT, [K, FlxKey.RIGHT]);
-					inline bindKeys(Control.ACCEPT, [Z, SPACE, ENTER]);
-					inline bindKeys(Control.BACK, [BACKSPACE, ESCAPE]);
-					inline bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);
-					inline bindKeys(Control.RESET, [R]);
-				case Duo(true):
-					inline bindKeys(Control.UP, [W]);
-					inline bindKeys(Control.DOWN, [S]);
-					inline bindKeys(Control.LEFT, [A]);
-					inline bindKeys(Control.RIGHT, [D]);
-					inline bindKeys(Control.ACCEPT, [G, Z]);
-					inline bindKeys(Control.BACK, [H, X]);
-					inline bindKeys(Control.PAUSE, [ONE]);
-					inline bindKeys(Control.RESET, [R]);
-				case Duo(false):
-					inline bindKeys(Control.UP, [FlxKey.UP]);
-					inline bindKeys(Control.DOWN, [FlxKey.DOWN]);
-					inline bindKeys(Control.LEFT, [FlxKey.LEFT]);
-					inline bindKeys(Control.RIGHT, [FlxKey.RIGHT]);
-					inline bindKeys(Control.ACCEPT, [O]);
-					inline bindKeys(Control.BACK, [P]);
-					inline bindKeys(Control.PAUSE, [ENTER]);
-					inline bindKeys(Control.RESET, [BACKSPACE]);
-				case None: // nothing
-				case Custom: // nothing
-			}
-			#else
-			switch (scheme)
-			{
-				case Solo:
-					bindKeys(Control.UP, [W, FlxKey.UP]);
-					bindKeys(Control.DOWN, [S, FlxKey.DOWN]);
-					bindKeys(Control.LEFT, [A, FlxKey.LEFT]);
-					bindKeys(Control.RIGHT, [D, FlxKey.RIGHT]);
-					bindKeys(Control.ACCEPT, [Z, SPACE, ENTER]);
-					bindKeys(Control.BACK, [BACKSPACE, ESCAPE]);
-					bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);
-					bindKeys(Control.RESET, [R]);
-				case Duo(true):
-					bindKeys(Control.UP, [W]);
-					bindKeys(Control.DOWN, [S]);
-					bindKeys(Control.LEFT, [A]);
-					bindKeys(Control.RIGHT, [D]);
-					bindKeys(Control.ACCEPT, [G, Z]);
-					bindKeys(Control.BACK, [H, X]);
-					bindKeys(Control.PAUSE, [ONE]);
-					bindKeys(Control.RESET, [R]);
-				case Duo(false):
-					bindKeys(Control.UP, [FlxKey.UP]);
-					bindKeys(Control.DOWN, [FlxKey.DOWN]);
-					bindKeys(Control.LEFT, [FlxKey.LEFT]);
-					bindKeys(Control.RIGHT, [FlxKey.RIGHT]);
-					bindKeys(Control.ACCEPT, [O]);
-					bindKeys(Control.BACK, [P]);
-					bindKeys(Control.PAUSE, [ENTER]);
-					bindKeys(Control.RESET, [BACKSPACE]);
-				case None: // nothing
-				case Custom: // nothing
-			}
-			#end
-		 */
+		inline bindKeys(Control.FREEPLAY_FAVORITE, [Init.gameControls.get('FREEPLAY_FAVORITE')[0][0], Init.gameControls.get('FREEPLAY_FAVORITE')[0][1]]);
+		inline bindKeys(Control.FREEPLAY_RIGHT, [Init.gameControls.get('FREEPLAY_RIGHT')[0][0], Init.gameControls.get('FREEPLAY_RIGHT')[0][1]]);
+		inline bindKeys(Control.FREEPLAY_LEFT, [Init.gameControls.get('FREEPLAY_LEFT')[0][0], Init.gameControls.get('FREEPLAY_LEFT')[0][1]]);
 	}
 
 	function removeKeyboard()
@@ -726,7 +694,10 @@ class Controls extends FlxActionSet
 			Control.LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
 			Control.RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
 			Control.PAUSE => [START],
-			Control.RESET => [Y]
+			Control.RESET => [Y],
+			Control.FREEPLAY_FAVORITE =>  [FlxGamepadInputID.BACK],
+			Control.FREEPLAY_LEFT => [LEFT_SHOULDER],
+			Control.FREEPLAY_RIGHT => [RIGHT_SHOULDER],
 		]);
 		#else
 		addGamepadLiteral(id, [
@@ -740,7 +711,10 @@ class Controls extends FlxActionSet
 			Control.PAUSE => [START],
 			// Swap Y and X for switch
 			Control.RESET => [Y],
-			Control.CHEAT => [X]
+			Control.CHEAT => [X],
+			Control.FREEPLAY_FAVORITE =>  [FlxGamepadInputID.BACK],
+			Control.FREEPLAY_LEFT => [LEFT_SHOULDER],
+			Control.FREEPLAY_RIGHT => [RIGHT_SHOULDER],
 		]);
 		#end
 	}

@@ -17,7 +17,6 @@ import flixel.addons.ui.FlxUINumericStepper;
 import flixel.addons.ui.FlxUIDropDownMenu;
 import gameObjects.userInterface.notes.Note;
 import gameObjects.userInterface.notes.NoteSplash;
-import meta.MusicBeat.MusicBeatState;
 
 using StringTools;
 

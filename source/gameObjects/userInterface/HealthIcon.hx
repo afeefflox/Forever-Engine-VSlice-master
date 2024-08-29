@@ -26,49 +26,54 @@ class HealthIcon extends FlxSprite
 		super();
 		this.char = char;
 		this.scrollFactor.set();
-		this.isPlayer = isPlayer;
-		this.flipX = isPlayer;
+		this.flipX = this.isPlayer = isPlayer;
 	}
 
 	function set_char(value:Null<String>):Null<String>
 	{
 		if (value == char) return value;
-
 		char = value ?? Constants.DEFAULT_HEALTH_ICON;
 		updateIcon(char);
 		return char;
 	}
 
-	public function updateIcon(char:String = 'bf')
+	public function updateIcon(id:String = 'bf')
 	{
-		var trimmedCharacter:String = char;
-		if (trimmedCharacter.contains('-'))
-			trimmedCharacter = trimmedCharacter.substring(0, trimmedCharacter.indexOf('-'));
-
-		var iconPath = char;
-		if (!Paths.exists('assets/images/icons/icon-$iconPath.png', IMAGE))
+		if (id == null || correctCharacterId(id) != id)
 		{
-			if (iconPath != trimmedCharacter)
-				iconPath = trimmedCharacter;
-			else
-				iconPath = 'face';
-			trace('$char icon trying $iconPath instead you fuck');
+			char = correctCharacterId(id);
+			return;
 		}
 
-		if (Paths.getExistAtlas('icons/icon-$iconPath'))	
+		if (Paths.getExistAtlas('icons/icon-$id'))	
 		{
-			frames = Paths.getAtlas('icons/icon-$iconPath');
+			frames = Paths.getAtlas('icons/icon-$id');
 			loadAnimationNew();
 		}
 		else
 		{
-			var iconGraphic:FlxGraphic = Paths.image('icons/icon-$iconPath');
+			var iconGraphic:FlxGraphic = Paths.image('icons/icon-$id');
 			loadGraphic(iconGraphic, true, Std.int(iconGraphic.width * 0.5), iconGraphic.height);
 			loadAnimationOld();
 		}
 
 		initialWidth = this.width;
 		initialHeight = this.height;
+
+		playAnimation(Idle);
+	}
+
+	function correctCharacterId(charId:Null<String>):String
+	{
+		if (charId == null)  return Constants.DEFAULT_HEALTH_ICON;
+
+		if (!Paths.exists(Paths.imagePaths('icons/icon-$charId')))
+		{
+			FlxG.log.warn('No icon for character: $charId : using face instead!');
+			return Constants.DEFAULT_HEALTH_ICON;
+		}
+
+		return charId;
 	}
 
 	function loadAnimationOld():Void
@@ -93,55 +98,43 @@ class HealthIcon extends FlxSprite
 		this.animation.addByPrefix(FromLosing, FromLosing, 24, false);
 	}
 
+	public function switchAnim(anim1:String, anim2:String):Void
+	{
+		if (hasAnimation(anim1) && hasAnimation(anim2))
+		{
+			final oldAnim1 = animation.getByName(anim1).frames;
+			animation.getByName(anim1).frames = animation.getByName(anim2).frames;
+			animation.getByName(anim2).frames = oldAnim1;
+		}		
+	}
+
 	public dynamic function updateAnim(health:Float)
 	{
 		switch (getCurrentAnimation())
 		{
 		  case Idle:
 			if (health < LOSING_THRESHOLD)
-			{
-			  playAnimation(ToLosing, Losing);
-			}
+				playAnimation(ToLosing, Losing);
 			else if (health > WINNING_THRESHOLD)
-			{
-			  playAnimation(ToWinning, Winning);
-			}
+				playAnimation(ToWinning, Winning);
 			else
-			{
-			  playAnimation(Idle);
-			}
+				playAnimation(Idle);
 		  case Winning:
 			if (health < WINNING_THRESHOLD)
-			{
-			  playAnimation(FromWinning, Idle);
-			}
+				playAnimation(FromWinning, Idle);
 			else
-			{
-			  playAnimation(Winning, Idle);
-			}
+				playAnimation(Winning, Idle);
 		  case Losing:
-			if (health > LOSING_THRESHOLD) playAnimation(FromLosing, Idle);
+			if (health > LOSING_THRESHOLD) 
+				playAnimation(FromLosing, Idle);
 			else
-			{
-			  playAnimation(Losing, Idle);
-			}
+				playAnimation(Losing, Idle);
 		  case ToLosing:
-			if (isAnimationFinished())
-			{
-			  playAnimation(Losing, Idle);
-			}
+			if (isAnimationFinished()) playAnimation(Losing, Idle);
 		  case ToWinning:
-			if (isAnimationFinished())
-			{
-			  playAnimation(Winning, Idle);
-			}
+			if (isAnimationFinished()) playAnimation(Winning, Idle);
 		  case FromLosing | FromWinning:
-			if (isAnimationFinished())
-			{
-			  playAnimation(Idle);
-			}
-		  case '':
-			playAnimation(Idle);
+			if (isAnimationFinished()) playAnimation(Idle);
 		  default:
 			playAnimation(Idle);
 		}

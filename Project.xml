@@ -16,7 +16,7 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<!-- ____________________________ Window Settings ___________________________ -->
 
 	<!--These window settings apply to all targets-->
-	<window width="1280" height="720" fps="" background="#000000" hardware="true" vsync="false" />
+	<window width="1280" height="720" fps="60" background="#000000" hardware="true" vsync="false" />
 
 	<!--HTML5-specific-->
 	<window if="html5" resizable="true" />
@@ -52,7 +52,7 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxelib name="haxeui-flixel" />
 	<haxelib name="polymod" />
 	<haxelib name="flxanimate" />
-	<haxelib name="hxCodec" if="desktop" unless="hl" />
+	<haxelib name="hxvlc" if="windows || linux || android" unless="32bits"/>
 	<haxelib name="discord_rpc" if="cpp" />
 	<haxelib name="hxcpp-debug-server" if="debug" />
 
@@ -78,6 +78,8 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
 
 	<!-- Always enable Null Object Reference check for crash dialog -->
+	<haxedef name="openfl-enable-handle-error" />
+
 	<haxedef name="hscriptPos" />
 	<haxedef name="safeMode"/>
 	<haxedef name="HXCPP_CHECK_POINTER" if="release" />
@@ -85,15 +87,27 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxedef name="HXCPP_STACK_TRACE" if="release"/>
 
 	<haxeflag name="-dce no" />
+	<define name="CUSTOM_CLASSES" />
 	<haxeflag name="--macro" value="macros.ScriptsMacro.addAdditionalClasses()" />
+	
 	<haxedef name="message.reporting" value="pretty" />
 
 	<section if="polymod">
+        <!-- Turns on additional debug logging. -->
 		<haxedef name="POLYMOD_DEBUG" value="true" if="debug" />
+		<!-- The file extension to use for script files. -->
+		<haxedef name="POLYMOD_SCRIPT_EXT" value=".hscript" />
+		<!-- Which asset library to use for scripts. -->
+		<haxedef name="POLYMOD_SCRIPT_LIBRARY" value="scripts" />
+		<!-- The base path from which scripts should be accessed. -->
 		<haxedef name="POLYMOD_ROOT_PATH" value="scripts/" />
+		<!-- Determines the subdirectory of the mod folder used for file appending. -->
 		<haxedef name="POLYMOD_APPEND_FOLDER" value="_append" />
+		<!-- Determines the subdirectory of the mod folder used for file merges. -->
 		<haxedef name="POLYMOD_MERGE_FOLDER" value="_merge" />
+		<!-- Determines the file in the mod folder used for metadata. -->
 		<haxedef name="POLYMOD_MOD_METADATA_FILE" value="_polymod_meta.json" />
+		<!-- Determines the file in the mod folder used for the icon. -->
 		<haxedef name="POLYMOD_MOD_ICON_FILE" value="_polymod_icon.png" />
 	</section>
 	<!-- _________________________________ Custom _______________________________ -->

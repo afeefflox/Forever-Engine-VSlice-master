@@ -172,7 +172,6 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
       if (isAnimated)
       {
         var texture:FlxAtlasFrames = Paths.getAtlas(dataProp.assetPath);
-        FlxAnimationUtil.addAtlasAnimations(propSprite, dataProp.animations);
         var assetList = [];
         for (anim in dataProp.animations)
         {
@@ -188,6 +187,7 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
           texture.addAtlas(subTexture);
         }
         propSprite.frames = texture;
+        FlxAnimationUtil.addAtlasAnimations(propSprite, dataProp.animations);
       }
       else if (isSolidColor)
       {
@@ -248,6 +248,10 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
       propSprite.scrollFactor.y = dataProp.scroll[1];
 
       propSprite.zIndex = dataProp.zIndex;
+
+      if (dataProp.startingAnimation != null)
+        propSprite.animation.play(dataProp.startingAnimation);
+
 
       if (Std.isOfType(propSprite, Bopper))
       {
@@ -428,6 +432,11 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
     return this.characters.get(id);
   }
 
+  public function existsCharacter(id:String):Bool
+  {
+    return this.characters.exists(id);
+  }
+
   /**
    * Retrieve the Boyfriend character.
    * @param pop If true, the character will be removed from the stage as well.
@@ -504,6 +513,11 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
   public function getNamedProp(name:String):StageProp
   {
     return this.namedProps.get(name);
+  }
+
+  public function existsNamedProp(name:String):Bool
+  {
+    return this.namedProps.exists(name);
   }
 
   /**

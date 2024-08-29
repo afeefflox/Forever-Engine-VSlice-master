@@ -119,12 +119,10 @@ class ModuleHandler
   {
     if (moduleCache != null)
     {
-      var event = new ScriptEvent(DESTROY, false);
-
       // Note: Ignore stopPropagation()
       for (key => value in moduleCache)
       {
-        ScriptEventDispatcher.callEvent(value, event);
+        ScriptEventDispatcher.callEvent(value, new ScriptEvent(DESTROY, false));
         moduleCache.remove(key);
       }
 

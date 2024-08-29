@@ -13,7 +13,6 @@ import flixel.tweens.misc.ColorTween;
 import flixel.util.FlxColor;
 import gameObjects.userInterface.HealthIcon;
 import lime.utils.Assets;
-import meta.MusicBeat.MusicBeatState;
 import meta.data.*;
 import meta.data.Song.SwagSong;
 import meta.data.dependency.Discord;
@@ -102,7 +101,18 @@ class FreeplayState extends MusicBeatState
 			{
 				if (!existingSongs.contains(songId.toLowerCase()))
 				{
-					addSong(CoolUtil.spaceToDash(songId), level.id, 'face', FlxColor.WHITE);
+					var icon:String = 'gf';
+					var castSong:SwagSong = null;
+					//idk :/
+					if (Paths.exists(Paths.charts(songId, 'hard'), TEXT))
+						castSong = Song.loadFromJson('hard', songId);
+					else if (Paths.exists(Paths.charts(songId, 'normal'), TEXT))
+						castSong = Song.loadFromJson('normal', songId);
+					else
+						castSong = Song.loadFromJson('easy', songId);
+
+					icon = (CharacterRegistry.fetchCharacterData(castSong.characters[1]) != null) ? CharacterRegistry.fetchCharacterData(castSong.characters[1]).healthIcon.id : 'bf';
+					addSong(CoolUtil.spaceToDash(songId), level.id, icon, FlxColor.WHITE);
 				}				
 			}
 		}
@@ -181,7 +191,7 @@ class FreeplayState extends MusicBeatState
 				coolDifficultyArray.push(i);
 
 		if (coolDifficultyArray.length > 0)
-		{ //*/
+		{
 			songs.push(new SongMetadata(songName, week, songCharacter, songColor));
 			existingDifficulties.push(coolDifficultyArray);
 		}
@@ -226,7 +236,7 @@ class FreeplayState extends MusicBeatState
 			PlayState.curDifficulty = existingDifficulties[curSelected][curDifficulty];
 
 			PlayState.storyWeek = songs[curSelected].week;
-			trace('CUR WEEK' + PlayState.storyWeek);
+			trace('CUR WEEK ' + PlayState.storyWeek);
 
 			if (FlxG.sound.music != null)
 				FlxG.sound.music.stop();
@@ -234,7 +244,6 @@ class FreeplayState extends MusicBeatState
 			#if target.threaded
 			threadActive = false;
 			#end
-
 			Main.switchState(new PlayState());
 		}
 
@@ -276,7 +285,7 @@ class FreeplayState extends MusicBeatState
 
 		intendedScore = Highscore.getScore(songs[curSelected].songName, existingDifficulties[curSelected][curDifficulty]);
 
-		diffText.text = '< ' + existingDifficulties[curSelected][curDifficulty] + ' >';
+		diffText.text = '< ' + existingDifficulties[curSelected][curDifficulty].toUpperCase() + ' >';
 		lastDifficulty = existingDifficulties[curSelected][curDifficulty];
 	}
 

@@ -20,7 +20,7 @@ class NoteCustom implements IRegistryEntry<NoteTypeData>
         if(_data != null)
         {
             note.texture = _data.texture;
-            note.mustPress = _data.mustPress;
+            note.lane = _data.mustPress ? 1 : 0;
             note.canBeHit = _data.canBeHit;
             note.tooLate = _data.tooLate;
             note.wasGoodHit = _data.wasGoodHit;

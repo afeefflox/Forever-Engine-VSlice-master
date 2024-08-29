@@ -13,7 +13,6 @@ import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import gameObjects.userInterface.menu.*;
 import gameObjects.userInterface.menu.story.*;
-import meta.MusicBeat.MusicBeatState;
 import meta.data.*;
 import meta.data.dependency.Discord;
 
@@ -360,9 +359,7 @@ class StoryMenuState extends MusicBeatState
 		PlayState.SONG = Song.loadFromJson(PlayState.curDifficulty, PlayState.storyPlaylist[0].toLowerCase());
 		PlayState.storyWeek = currentLevel.id;
 		PlayState.campaignScore = 0;
-		new FlxTimer().start(1, function(tmr:FlxTimer) {
-			Main.switchState(new PlayState());
-		});
+		Main.switchState(new PlayState());
 	}
 
 	function updateBackground(?previousLevelId:String = ''):Void

@@ -57,6 +57,8 @@ class Countdown
       }
 
       countdownStep = decrement(countdownStep);
+      @:privateAccess
+      PlayState.instance.dispatchEvent(new SongTimeScriptEvent(SONG_BEAT_HIT, tmr.elapsedLoops, 0));
 
       // onBeatHit events are now properly dispatched by the Conductor even at negative timestamps,
       // so calling this is no longer necessary.

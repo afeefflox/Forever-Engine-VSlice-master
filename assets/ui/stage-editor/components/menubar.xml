@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menubar id="menubar" width="100%" height="100%">
+  <style>
+    .menu {
+    // The width of the individual menu items
+    width: 120px;
+    }
+  </style>
+  <menu text="File">
+    <menu-item id="save" text="Save" shortcutText="Ctrl+Shift+S" />
+  </menu>
+  <menu text="Edit">
+    <menu-item id="menubarItemUndo" text="Undo" shortcutText="Ctrl+Z" />
+    <menu-item id="menubarItemRedo" text="Redo" shortcutText="Ctrl+Y" />
+    <menu-separator />
+    <menu-item id="menubarItemCut" text="Cut" shortcutText="Ctrl+X" />
+    <menu-item id="menubarItemCopy" text="Copy" shortcutText="Ctrl+C" />
+    <menu-item id="menubarItemPaste" text="Paste" shortcutText="Ctrl+V" />
+    <menu-item id="menubarItemDelete" text="Delete" shortcutText="Delete" />
+    <menu-separator />
+    <menu-item id="menubarItemSelectAll" text="Select All" shortcutText="Ctrl+A" />
+    <menu-item id="menubarItemSelectInverse" text="Select Inverse" shortcutText="Ctrl+I" />
+    <menu-item id="menubarItemSelectNone" text="Select None" shortcutText="Ctrl+D" />
+    <menu-item id="menubarItemSelectRegion" text="Select Region" shortcutText="Tab" disabled="true" />
+    <menu-item id="menubarItemSelectBeforeCursor" text="Select Before Cursor" shortcutText="Shift+Home" disabled="true" />
+    <menu-item id="menubarItemSelectAfterCursor" text="Select After Cursor" shortcutText="Shift+End" disabled="true" />
+  </menu>
+  <menu text="View">
+    <menu-checkbox id="menubarItemHUD" text="HUD" disabled="true" />
+    <menu text="Theme">
+      <menuoptionbox id="menuBarItemThemeLight" text="Light" group="menubarItemThemeGroup" selected="true" />
+      <menuoptionbox id="menuBarItemThemeDark" text="Dark" group="menubarItemThemeGroup" />
+    </menu>
+  </menu>
+  <spacer width="100%" />
+  <label text="PROTOTYPE Functionality is subject to change." verticalAlign="center" />
+</menubar>

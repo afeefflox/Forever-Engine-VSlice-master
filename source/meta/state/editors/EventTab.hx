@@ -51,6 +51,7 @@ class EventTab extends FlxSpriteGroup
         {
             case TInt | TFloat:
                 var stepper = new QuickStepper(X, Y, value);
+                ChartingState.instance.blockPressWhileTypingOnStepper.push(stepper);
                 stepper.callback = () -> updateFunc(ID, stepper.value);
                 getValuesArray.push(() -> return stepper.value);
                 addUI(stepper);
@@ -69,6 +70,7 @@ class EventTab extends FlxSpriteGroup
                     updateFunc(ID, item);
                 });
                 dropdown.selectedLabel = value[0];
+                ChartingState.instance.blockPressWhileScrolling.push(dropdown);
                 getValuesArray.push(() -> return dropdown.selectedLabel);
                 addUI(dropdown);
 
@@ -76,6 +78,7 @@ class EventTab extends FlxSpriteGroup
                 var value = Std.string(value);
                 // Not a list so we make a input text
                 var input = new FlxUIInputText(X, Y, 100, value, 8);
+                ChartingState.instance.blockPressWhileTypingOn.push(input);
                 input.callback = (var1, var2) -> updateFunc(ID, input.text);
                 getValuesArray.push(() -> return input.text);
                 addUI(input);

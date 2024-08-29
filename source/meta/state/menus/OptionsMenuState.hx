@@ -10,7 +10,6 @@ import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import gameObjects.userInterface.menu.Checkmark;
 import gameObjects.userInterface.menu.Selector;
-import meta.MusicBeat.MusicBeatState;
 import meta.data.dependency.Discord;
 import meta.data.dependency.FNFSprite;
 import meta.data.font.Alphabet;
@@ -306,7 +305,14 @@ class OptionsMenuState extends MusicBeatState
 			if (curCategory != 'main')
 				loadSubgroup('main');
 			else
-				openSubState(new StickerSubState(null, (sticker) -> isPlayState ? new PlayState(sticker) : new MainMenuState(sticker)));
+			{
+				if(isPlayState)
+					FlxG.switchState(new PlayState());
+				else
+					openSubState(new StickerSubState(null, (sticker) -> new MainMenuState(sticker)));
+
+			}
+				
 		}
 	}
 
@@ -536,7 +542,11 @@ class OptionsMenuState extends MusicBeatState
 			lockedMovement = true;
 			FlxFlicker.flicker(activeSubgroup.members[curSelection], 0.5, 0.06 * 2, true, false, function(flick:FlxFlicker)
 			{
-				openSubState(new StickerSubState(null, (sticker) -> isPlayState ? new PlayState(sticker) : new MainMenuState(sticker)));
+				if(isPlayState)
+					FlxG.switchState(new PlayState());
+				else
+					openSubState(new StickerSubState(null, (sticker) -> new MainMenuState(sticker)));
+				
 				lockedMovement = false;
 			});
 		}

@@ -34,8 +34,8 @@ class ChartLoader
 					var swagNote:Note = ForeverAssets.generateArrow(PlayState.assetModifier, daStrumTime, daNoteData);
 					swagNote.noteSpeed = songData.speed;
 					swagNote.sustainLength = songNotes[2];
-					swagNote.noteType = songNotes[3];
-					swagNote.mustPress = gottaHitNote;
+					swagNote.noteType = NoteTypeRegistry.instance.resolveType(songNotes[3]);
+					swagNote.lane = gottaHitNote ? 1 : 0;
 					swagNote.scrollFactor.set();
 					unspawnNotes.push(swagNote);
 	
@@ -49,7 +49,7 @@ class ChartLoader
 							daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, true, oldNote);
 						sustainNote.scrollFactor.set();
 						sustainNote.noteType = songNotes[3];
-						sustainNote.mustPress = gottaHitNote;
+						sustainNote.lane = gottaHitNote ? 1 : 0;
 						unspawnNotes.push(sustainNote);	
 					}
 				}

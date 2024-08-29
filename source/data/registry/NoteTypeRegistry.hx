@@ -93,4 +93,8 @@ class NoteTypeRegistry extends BaseRegistry<NoteCustom, NoteTypeData>
     {
       return NoteCustomScripted.listScriptClasses();
     }
+
+    public function resolveType(type:Dynamic):String {
+      return (type is String) ? type : (listEntryIds()[type] ?? "default");
+    }
 }

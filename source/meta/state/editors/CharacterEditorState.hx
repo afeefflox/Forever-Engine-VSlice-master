@@ -14,8 +14,6 @@ import flixel.util.FlxDestroyUtil;
 import openfl.net.FileReference;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
-import openfl.utils.Assets;
-import lime.system.Clipboard;
 
 import gameObjects.character.AnimateAtlasCharacter;
 
@@ -187,9 +185,10 @@ class CharacterEditorState extends MusicBeatState
 		add(UI_box);
 
 		addGhostUI();
+		addCharacterUI();
 		addSettingsUI();
 		addAnimationsUI();
-		addCharacterUI();
+		
 
 		UI_box.selected_tab_id = 'Settings';
 		UI_characterbox.selected_tab_id = 'Character';
@@ -290,8 +289,7 @@ class CharacterEditorState extends MusicBeatState
 		check_player.callback = function()
 		{
 			character._data.isPlayer = !character._data.isPlayer;
-			updateCharacterPositions();
-			updatePointerPos(false);
+			character.setFlipX(flipXCheckBox.checked);
 		};
 
 		var reloadCharacter:FlxButton = new FlxButton(140, 20, "Reload Char", function()
@@ -465,6 +463,30 @@ class CharacterEditorState extends MusicBeatState
 		reloadAnimList();
 		animationDropDown.selectedLabel = anims[0] != null ? anims[0].name : '';
 
+		var autoButton:FlxUIButton = new FlxUIButton(animationDropDown.x + 150, animationDropDown.y, 'Auto Anims', function () {
+			for (anim in character._data.animations)
+			{
+				if(character.animOffsets.exists(anim.name))
+				{
+					character.animation.remove(anim.name);
+					character.animOffsets.remove(anim.name);
+					character._data.animations.remove(anim);					
+				}
+			}
+
+			for (i in character.getAnimationPrefixes()) 
+			{
+				var addedAnim:AnimationData = newAnim(i, i);	
+				FlxAnimationUtil.addAtlasAnimation(character, addedAnim);
+				character._data.animations.push(addedAnim);
+				@:arrayAccess curAnim = Std.int(Math.max(0, character._data.animations.indexOf(addedAnim)));
+			}
+
+			reloadAnimList();
+			character.dance();
+		});
+		autoButton.visible = (!Std.isOfType(character, AnimateAtlasCharacter)); //cuz atlas mostly use indices I believe
+
 		tab_group.add(new FlxText(animationDropDown.x, animationDropDown.y - 18, 0, 'Animations:'));
 		tab_group.add(new FlxText(animationInputText.x, animationInputText.y - 18, 0, 'Animation name:'));
 		tab_group.add(new FlxText(animationFramerate.x, animationFramerate.y - 18, 0, 'Framerate:'));
@@ -477,6 +499,7 @@ class CharacterEditorState extends MusicBeatState
 		tab_group.add(animationFramerate);
 		tab_group.add(animationLoopCheckBox);
 		tab_group.add(addUpdateButton);
+		tab_group.add(autoButton);
 		tab_group.add(removeButton);
 		tab_group.add(animationDropDown);
 		UI_characterbox.addGroup(tab_group);
@@ -520,10 +543,9 @@ class CharacterEditorState extends MusicBeatState
 		blockPressWhileTypingOnStepper.push(scaleStepper);
 
 		flipXCheckBox = new FlxUICheckBox(scaleStepper.x + 80, scaleStepper.y, null, null, "Flip X", 50);
-		flipXCheckBox.checked = character.flipX;
 		flipXCheckBox.callback = function() {
-			character._data.flipX = !character._data.flipX;
-			character.flipX = character._data.flipX;
+			character._data.flipX = flipXCheckBox.checked;
+			character.setFlipX(flipXCheckBox.checked);
 		};
 
 		antialiasingCheckBox = new FlxUICheckBox(flipXCheckBox.x, flipXCheckBox.y + 40, null, null, "Antialiasing", 80);
@@ -903,7 +925,7 @@ class CharacterEditorState extends MusicBeatState
 		// OTHER CONTROLS
 		if(FlxG.keys.justPressed.F12)
 			silhouettes.visible = !silhouettes.visible;
-		if(FlxG.keys.justPressed.ESCAPE)
+		if (FlxG.keys.justPressed.ESCAPE || FlxG.keys.justPressed.ENTER)
 		{
 			FlxG.mouse.visible = false;
 			if(!_goToPlayState)
@@ -911,7 +933,7 @@ class CharacterEditorState extends MusicBeatState
 				FlxG.switchState(new meta.state.menus.MainMenuState());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
-			else FlxG.switchState(new PlayState());
+			else Main.switchState(new PlayState());
 			return;
 		}
 
@@ -1045,16 +1067,15 @@ class CharacterEditorState extends MusicBeatState
 		if(_file != null) return;
 
 		var charData:CharacterData = Reflect.copy(character._data);
+		var data:String = FunkyJson.stringify(charData, "\t");
 
-		var data:String = haxe.Json.stringify(charData, "\t");
-
-		if (data.length > 0)
+		if ((data != null) && (data.length > 0)) 
 		{
 			_file = new FileReference();
 			_file.addEventListener(#if desktop Event.SELECT #else Event.COMPLETE #end, onSaveComplete);
 			_file.addEventListener(Event.CANCEL, onSaveCancel);
 			_file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-			_file.save(data, '$_char.json');
+			_file.save(data.trim(), '$_char.json');
 		}
 	}
 }

@@ -50,7 +50,7 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 	private var timingsMap:Map<String, FlxText> = [];
 
 	var infoDisplay:String = CoolUtil.dashToSpace(PlayState.SONG.song);
-	var diffDisplay:String = CoolUtil.difficultyFromNumber(PlayState.storyDifficulty);
+	var diffDisplay:String = PlayState.curDifficulty.toUpperCase();
 	var engineDisplay:String = "FOREVER ENGINE v" + Main.gameVersion;
 
 	// eep
@@ -78,12 +78,12 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 		healthBar.createFilledBar(0xFFFF0000, 0xFF66FF33);
 		// healthBar
 		add(healthBar);
-
-		iconP1 = new HealthIcon(PlayState.SONG.characters[0], true);
+		
+		iconP1 = new HealthIcon(CharacterRegistry.fetchCharacterData(PlayState.SONG.characters[0]).healthIcon.id, true);
 		iconP1.y = healthBar.y - (iconP1.height * 0.5);
 		add(iconP1);
 
-		iconP2 = new HealthIcon(PlayState.SONG.characters[1], false);
+		iconP2 = new HealthIcon(CharacterRegistry.fetchCharacterData(PlayState.SONG.characters[1]).healthIcon.id, false);
 		iconP2.y = healthBar.y - (iconP2.height * 0.5);
 		add(iconP2);
 	}
@@ -161,8 +161,6 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 		healthBar.percent = (game.health * 50);
 
 		var iconLerp = 1 - Main.framerateAdjust(0.15);
-		// iconP1.setGraphicSize(Std.int(FlxMath.lerp(iconP1.initialWidth, iconP1.width, iconLerp)));
-		// iconP2.setGraphicSize(Std.int(FlxMath.lerp(iconP2.initialWidth, iconP2.width, iconLerp)));
 
 		// the new way of scaling the icons lmao
 		iconP1.scale.set(FlxMath.lerp(1, iconP1.scale.x, iconLerp), FlxMath.lerp(1, iconP1.scale.y, iconLerp));

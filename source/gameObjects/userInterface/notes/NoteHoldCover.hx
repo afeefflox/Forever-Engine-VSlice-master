@@ -2,42 +2,28 @@ package gameObjects.userInterface.notes;
 
 class NoteHoldCover extends FNFSprite
 {
-    public function new() 
+
+    public var strumTime:Float = 0;
+    public var id:Int = 0;
+    public function new(id:Int = 0) 
     {
         super();
-		visible = false;
-		
-        scrollFactor.set();
-    }
+        this.id = id;
+        ID = id;
 
-    var colArray:Array<String> = ['purple', 'blue', 'green', 'red'];
-    public function setupNoteHoldCover(x:Float, y:Float, direction:Int = 0, ?note:Note = null) 
-    {
-        setPosition(x - Note.swagWidth * 0.95, y - Note.swagWidth);
+        frames = Paths.getSparrowAtlas('noteskins/notes/default/base/holdCover');
+        animation.addByPrefix('start', 'holdCoverStart${UIStaticArrow.getColorFromNumber(id)}', 24, false);
+		animation.addByPrefix('loop', 'holdCover${UIStaticArrow.getColorFromNumber(id)}0', 24, true);
+        offset.set(106, 99);
 
-        frames = Paths.getSparrowAtlas(ForeverTools.returnSkinAsset('holdCover', 'base', 'default', 'noteskins/notes'));
-        for (i in 0...colArray.length)
-        {
-            animation.addByPrefix('start${colArray[i]}', 'holdCoverStart${colArray[i]}', 24, false);
-            animation.addByPrefix('hold${colArray[i]}', 'holdCover${colArray[i]}', 24, true);
-            animation.addByPrefix('end${colArray[i]}', 'holdCoverEnd${colArray[i]}', 24, false);
-        }
-        playAnim('start${UIStaticArrow.getColorFromNumber(direction)}', true);
-        animation.finishCallback = function(name:String)
-        {
+        animation.finishCallback = function(name:String) {
             if (name.startsWith('start'))
-                playAnim('hold${UIStaticArrow.getColorFromNumber(direction)}', true);
-            if (name.startsWith('end')) //kill it would be end of world lmao
-                if (visible) visible = false;
+                playAnim('loop');
         };
 
-        if(note != null && note.parentNote.childrenNotes.length <= 0)
-            playAnim('end${UIStaticArrow.getColorFromNumber(direction)}', true);
-
-        if (animation.getAnimationList().length < 3 * 4)
-            trace('WARNING: NoteHoldCover failed to initialize all animations.');
-
-        alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
+        scrollFactor.set();
+        visible = false;
+        alpha = (Init.trueSettings.get('Opaque Arrows')) ? 1 : 0.6;
     }
 
     override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)

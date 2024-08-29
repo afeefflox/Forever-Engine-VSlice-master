@@ -8,7 +8,6 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.input.keyboard.FlxKey;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import meta.MusicBeat.MusicBeatSubState;
 import meta.data.font.Alphabet;
 
 using StringTools;

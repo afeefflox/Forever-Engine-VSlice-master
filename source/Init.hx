@@ -46,6 +46,7 @@ class Init extends FlxState
 	public static var NOT_FORCED = 'not forced';
 
 	public static var gameSettings:Map<String, Dynamic> = [
+
 		'Downscroll' => [
 			false,
 			Checkmark,
@@ -179,6 +180,9 @@ class Init extends FlxState
 			"Simplifies the judgement animations, displaying only one judgement / rating sprite at a time.",
 			NOT_FORCED
 		],
+		'favorite Song' => [
+			[]
+		]
 	];
 
 	public static var trueSettings:Map<String, Dynamic> = [];
@@ -200,6 +204,9 @@ class Init extends FlxState
 		'VOLUME_MUTE' => [[FlxKey.ZERO, NONE], 12],
 		'VOLUME_DOWN' => [[FlxKey.NUMPADMINUS, MINUS], 13],
 		'VOLUME_UP' => [[FlxKey.NUMPADPLUS, PLUS], 14],
+		'FREEPLAY_LEFT' => [[Q, null], 15],
+		'FREEPLAY_RIGHT' => [[E, null], 16],
+		'FREEPLAY_FAVORITE' => [[F, null], 17]
 	];
 
 	override public function create():Void
@@ -312,6 +319,35 @@ class Init extends FlxState
 		FlxG.save.flush();
 
 		updateAll();
+	}
+
+	public static function isSongFavorited(id:String):Bool
+	{
+		if (Init.trueSettings.get("favorite Song")[0] == null)
+		{
+			Init.trueSettings.get("favorite Song")[0] = [];
+			saveSettings();
+		};
+
+		return Init.trueSettings.get("favorite Song")[0].contains(id);
+	}
+
+	public static function favoriteSong(id:String):Void
+	{
+		if (!isSongFavorited(id))
+		{
+			Init.trueSettings.get("favorite Song")[0].push(id);
+			saveSettings();
+		}
+	}
+
+	public static function unfavoriteSong(id:String):Void
+	{
+		if (isSongFavorited(id))
+		{
+			Init.trueSettings.get("favorite Song")[0].remove(id);
+			saveSettings();
+		}
 	}
 
 	public static function saveControls():Void

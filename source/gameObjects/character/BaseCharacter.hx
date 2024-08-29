@@ -196,6 +196,16 @@ class BaseCharacter extends Bopper
 			playAnim('$name-loop');
     }
 
+    public function getAnimationPrefixes():Array<String> {
+		var prefixes:Array<String> = [];
+		if (frames == null) return prefixes;
+		for (i in frames.frames) {
+			var anim = i.name.split('0')[0];
+			if (!prefixes.contains(anim)) prefixes.push(anim);
+		}
+		return prefixes;
+	}
+
     override function dance(force:Bool = false):Void
     {
         if (isDead) return;
@@ -223,8 +233,8 @@ class BaseCharacter extends Bopper
         var baseString = 'sing' + UIStaticArrow.getArrowFromNumber(event.note.noteData).toUpperCase() + event.note.animSuffix;
 
         //so uh it will be cause duo sing it 
-        if (event.note.mustPress && characterType == BF && !event.note.gfNote
-            || !event.note.mustPress && characterType == DAD && !event.note.gfNote 
+        if (event.note.lane == 1 && characterType == BF && !event.note.gfNote
+            || event.note.lane == 0 && characterType == DAD && !event.note.gfNote 
             || event.note.gfNote && characterType == GF) 
         {
             this.playAnim(baseString, true);
@@ -240,9 +250,9 @@ class BaseCharacter extends Bopper
 
         var baseString = 'sing' + UIStaticArrow.getArrowFromNumber(event.note.noteData).toUpperCase() + event.note.animSuffix + "miss";
 
-        if (event.note.mustPress && characterType == BF && !event.note.gfNote
-            || !event.note.mustPress && characterType == DAD && !event.note.gfNote 
-            || event.note.gfNote && characterType == GF)
+        if (event.note.lane == 1 && characterType == BF && !event.note.gfNote
+            || event.note.lane == 0 && characterType == DAD && !event.note.gfNote 
+            || event.note.gfNote && characterType == GF) 
             this.playAnim(baseString, true);
     }
 

@@ -23,23 +23,20 @@ typedef NoteSplashData = {
 class Note extends FNFSprite
 {
 	public var strumTime:Float = 0;
-
-	public var mustPress:Bool = false;
+	public var lane:Int = 0;
 	public var noteData:Int = 0;
-	public var noteType(default, set):String = null;
-
+	public var noteType(default, set):String = "default";
 	public var canBeHit:Bool = false;
 	public var tooLate:Bool = false;
 	public var wasGoodHit:Bool = false;
 	public var prevNote:Note;
+	public var cover:NoteHoldCover;
 
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
 
 	//Event
-	public var eventName:String;
-	public var eventVals:Array<String> = [];
-	public var eventLength:Int = 0;
+	public var eventData:Array<SwagEvent> = [];
 
 	// only useful for charting stuffs
 	public var chartSustain:FlxSprite = null;
@@ -148,7 +145,7 @@ class Note extends FNFSprite
 	{
 		super.update(elapsed);
 
-		if (mustPress)
+		if (lane == PlayState.playerLane)
 		{
 			if (strumTime > Conductor.songPosition - (Timings.msThreshold) && strumTime < Conductor.songPosition + (Timings.msThreshold))
 				canBeHit = true;
@@ -175,7 +172,8 @@ class Note extends FNFSprite
 		if(noteData > -1 && noteType != value) 
 		{
 			noteSplashData.texture = PlayState.SONG != null ? PlayState.SONG.splashSkin : 'noteSplashes';
-			if (NoteTypeRegistry.instance.hasEntry(value) && value != null && value.length > 1) NoteTypeRegistry.instance.fetchEntry(value).initFunction(this);
+			if (NoteTypeRegistry.instance.hasEntry(value) && value != null && value.length > 1)  
+				NoteTypeRegistry.instance.fetchEntry(value).initFunction(this);
 			noteType = value;
 		}
 		return value;

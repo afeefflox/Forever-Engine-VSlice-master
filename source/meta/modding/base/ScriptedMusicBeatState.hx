@@ -5,4 +5,4 @@ package meta.modding.base;
  * Create a scripted class that extends MusicBeatState to use this.
  */
 @:hscriptClass
-class ScriptedMusicBeatState extends meta.MusicBeat.MusicBeatState implements HScriptedClass {}
+class ScriptedMusicBeatState extends meta.state.MusicBeatState implements HScriptedClass {}

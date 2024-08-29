@@ -5,7 +5,6 @@ import flixel.FlxObject;
 import flixel.FlxSubState;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
-import meta.MusicBeat.MusicBeatSubState;
 import meta.data.Conductor.BPMChangeEvent;
 import meta.data.Conductor;
 import meta.state.*;
@@ -140,6 +139,7 @@ class GameOverSubState extends MusicBeatSubState
 			blueballed = false;
 			PlayState.instance.deathCounter = 0;
 			if (gameOverMusic != null) gameOverMusic.stop();
+
 			openSubState(new StickerSubState(null, (sticker) -> PlayState.isStoryMode ? new StoryMenuState(sticker) :  new FreeplayState(sticker)));
 		}
 
@@ -169,9 +169,18 @@ class GameOverSubState extends MusicBeatSubState
 
 			new FlxTimer().start(0.7, function(tmr:FlxTimer)
 			{
-				FlxG.camera.fade(FlxColor.BLACK, 1, false, function()
-				{
-					Main.switchState(new PlayState());
+				FlxG.camera.fade(FlxColor.BLACK, 2, false, function() {
+					FlxG.camera.fade(FlxColor.BLACK, 1, true, null, true);
+					PlayState.instance.needsReset = true;
+					if (!PlayState.instance.isMinimalMode || boyfriend != null)
+					{
+					  // Readd Boyfriend to the stage.
+					  boyfriend.isDead = false;
+					  remove(boyfriend);
+					  PlayState.instance.stage.addCharacter(boyfriend, BF);
+					}
+					resetCameraZoom();
+					close();
 				});
 			});
 		}
@@ -245,10 +254,7 @@ class GameOverSubState extends MusicBeatSubState
 	public static function playBlueBalledSFX():Void
 	{
 		blueballed = true;
-		if (Paths.exists(Paths.soundPaths('fnf_loss_sfx'), SOUND))
-			FlxG.sound.play(Paths.sound('fnf_loss_sfx' + blueBallSuffix));
-		else
-			FlxG.log.error('Missing blue ball sound effect: assets/sounds/fnf_loss_sfx' + blueBallSuffix);
+		FlxG.sound.play(Paths.sound('fnf_loss_sfx' + blueBallSuffix));
 	}
 
 	public override function destroy():Void
