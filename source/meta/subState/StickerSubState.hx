@@ -12,8 +12,6 @@ class StickerSubState extends MusicBeatSubState
     public function new(?oldStickers:Array<StickerSprite>, ?targetState:StickerSubState->FlxState):Void
     {
         super();
-
-        MusicBeatState.cache = false;
         this.targetState = (targetState == null) ? ((sticker) -> new MainMenuState()) : targetState;
 
         var assetsInList = openfl.utils.Assets.list();
@@ -167,7 +165,10 @@ class StickerSubState extends MusicBeatSubState
                         FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;                        
 
                         FlxG.switchState(() -> {
-                            return targetState(this);
+                          FunkinSprite.preparePurgeCache();
+                          FunkinSprite.purgeCache();
+            
+                          return targetState(this);
                         });
                     }
                 });
@@ -200,14 +201,14 @@ class StickerSubState extends MusicBeatSubState
     }
 }
 
-class StickerSprite extends FlxSprite
+class StickerSprite extends FunkinSprite
 {
     public var timing:Float = 0;
 
     public function new(x:Float, y:Float, stickerSet:String, stickerName:String):Void
     {
         super(x, y);
-        loadGraphic(Paths.image('transitionSwag/$stickerSet/$stickerName'));
+        loadImage('transitionSwag/' + stickerSet + '/' + stickerName);
         updateHitbox();
         scrollFactor.set();
     }

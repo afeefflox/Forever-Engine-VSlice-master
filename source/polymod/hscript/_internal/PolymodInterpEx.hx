@@ -23,6 +23,7 @@ class PolymodInterpEx extends Interp
 		_proxy = proxy;
 		variables.set("Math", Math);
 		variables.set("Std", Std);
+
 		this.targetCls = targetCls;
 	}
 

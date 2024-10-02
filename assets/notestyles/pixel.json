@@ -1,0 +1,109 @@
+{
+    "version": "1.1.0",
+    "name": "Pixel (Week 6 Note)",
+    "author": "Moawling",    
+    "fallback": "base",
+    "assets": {
+        "note": {
+            "assetPath": "noteskins/notes/pixel/arrows-pixels",
+            "scale": 1.0,
+            "isPixel": true,
+            "data": {
+                "left": { "prefix": "noteLeft" },
+                "down": { "prefix": "noteDown" },
+                "up": { "prefix": "noteUp" },
+                "right": { "prefix": "noteRight" }
+            }
+        },
+        "noteStrumline": {
+            "assetPath": "noteskins/notes/base/NOTE_assets",
+            "scale": 1.0,
+            "offsets": [28, 32],
+            "isPixel": true,
+            "data": {
+                "leftStatic": { "prefix": "staticLeft0" },
+                "leftPress": { "prefix": "pressedLeft0" },
+                "leftConfirm": { "prefix": "confirmLeft0" },
+                "leftConfirmHold": { "prefix": "confirmLeft0" },
+                "downStatic": { "prefix": "staticDown0" },
+                "downPress": { "prefix": "pressedDown0" },
+                "downConfirm": { "prefix": "confirmDown0" },
+                "downConfirmHold": { "prefix": "confirmDown0" },
+                "upStatic": { "prefix": "staticUp0" },
+                "upPress": { "prefix": "pressedUp0" },
+                "upConfirm": { "prefix": "confirmUp0" },
+                "upConfirmHold": { "prefix": "confirmUp0" },
+                "rightStatic": { "prefix": "staticRight0" },
+                "rightPress": { "prefix": "pressedRight0" },
+                "rightConfirm": { "prefix": "confirmRight0" },
+                "rightConfirmHold": { "prefix": "confirmRight0" }
+            }
+        },
+        "holdNote": {
+            "assetPath": "week6:weeb/pixelUI/arrowEndsNew",
+            "data": {},
+            "scale": 6.0,
+            "isPixel": true
+        },
+        "noteSplash": {
+            "assetPath": "",
+            "data": {
+              "enabled": false
+            }
+        },
+        "holdNoteCover": {
+            "assetPath": "",
+            "data": {
+              "enabled": false
+            }
+        },
+        "countdownThree": {
+            "data": {
+                "audioPath": "intro3-pixel"
+            },
+            "assetPath": null            
+        },
+        "countdownTwo": {
+            "data": {
+                "audioPath": "intro2-pixel"
+            },
+            "assetPath": "UI/pixel/ready",
+            "scale": 6.0,
+            "isPixel": true
+        },
+        "countdownOne": {
+            "data": {
+                "audioPath": "intro1-pixel"
+            },
+            "assetPath": "UI/pixel/set",
+            "scale": 6.0,
+            "isPixel": true
+        },
+        "countdownGo": {
+            "data": {
+                "audioPath": "introGo-pixel"
+            },
+            "assetPath": "UI/pixel/go",
+            "scale": 6.0,
+            "isPixel": true
+        },
+        "judgement": {
+            "data": {
+                "width": 72,
+                "height": 32
+            },
+            "assetPath": "UI/pixel/judgements",
+            "scale": 6.0,
+            "isPixel": true
+        },
+        "combo": {
+            "data": {
+                "width": 10,
+                "height": 12
+            },
+            "assetPath": "UI/pixel/combo",
+            "scale": 6.0,
+            "isPixel": true 
+        }
+    }
+}

@@ -27,15 +27,15 @@ class ForeverTools
 		//
 	}
 
-	public static function returnSkinAsset(asset:String, assetModifier:String = 'base', changeableSkin:String = 'default', baseLibrary:String,
+	public static function returnSkinAsset(asset:String, assetModifier:String = 'base', baseLibrary:String,
 			?defaultChangeableSkin:String = 'default', ?defaultBaseAsset:String = 'base'):String
 	{
-		var realAsset = '$baseLibrary/$changeableSkin/$assetModifier/$asset';
+		var realAsset = '$baseLibrary/$assetModifier/$asset';
 		if (!FileSystem.exists(Paths.getPath('images/' + realAsset + '.png', IMAGE)))
 		{
-			realAsset = '$baseLibrary/$defaultChangeableSkin/$assetModifier/$asset';
+			realAsset = '$baseLibrary/$assetModifier/$asset';
 			if (!FileSystem.exists(Paths.getPath('images/' + realAsset + '.png', IMAGE)))
-				realAsset = '$baseLibrary/$defaultChangeableSkin/$defaultBaseAsset/$asset';
+				realAsset = '$baseLibrary/$defaultBaseAsset/$asset';
 		}
 
 		return realAsset;

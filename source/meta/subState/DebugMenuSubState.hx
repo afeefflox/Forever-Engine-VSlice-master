@@ -7,8 +7,7 @@ class DebugMenuSubState extends MusicBeatSubState
 {
     var options:Array<String> = [
 		'Character Editor',
-		'Charting Editor',
-        'Note Splash Debug',
+		'Charting Editor'
 	];
 	private var grpTexts:FlxTypedGroup<Alphabet>;
     private var curSelected = 0;
@@ -65,8 +64,6 @@ class DebugMenuSubState extends MusicBeatSubState
 					FlxG.switchState(new CharacterEditorState());
 				case 'Charting Editor':
                     FlxG.switchState(new ChartingState());
-                case 'Note Splash Debug':
-                    FlxG.switchState(new NoteSplashDebugState());
 			}
             FlxG.sound.music.volume = 0;
         }

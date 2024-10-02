@@ -89,63 +89,7 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
     buildStage();
     this.refresh();
   }
-
-  public function resetStage():Void
-  {
-    // Reset positions of characters.
-    if (getBoyfriend() != null)
-    {
-      getBoyfriend().resetCharacter(true);
-      // Reapply the camera offsets.
-      var stageCharData:StageDataCharacter = _data.characters.bf;
-      var finalScale:Float = getBoyfriend().getBaseScale() * stageCharData.scale;
-      getBoyfriend().setScale(finalScale);
-      getBoyfriend().cameraFocusPoint.x += stageCharData.cameraOffsets[0];
-      getBoyfriend().cameraFocusPoint.y += stageCharData.cameraOffsets[1];
-    }
-    else
-    {
-      trace('STAGE RESET: No boyfriend found.');
-    }
-    if (getGirlfriend() != null)
-    {
-      getGirlfriend().resetCharacter(true);
-      // Reapply the camera offsets.
-      var stageCharData:StageDataCharacter = _data.characters.gf;
-      var finalScale:Float = getGirlfriend().getBaseScale() * stageCharData.scale;
-      getGirlfriend().setScale(finalScale);
-      getGirlfriend().cameraFocusPoint.x += stageCharData.cameraOffsets[0];
-      getGirlfriend().cameraFocusPoint.y += stageCharData.cameraOffsets[1];
-    }
-    if (getDad() != null)
-    {
-      getDad().resetCharacter(true);
-      // Reapply the camera offsets.
-      var stageCharData:StageDataCharacter = _data.characters.dad;
-      var finalScale:Float = getDad().getBaseScale() * stageCharData.scale;
-      getDad().setScale(finalScale);
-      getDad().cameraFocusPoint.x += stageCharData.cameraOffsets[0];
-      getDad().cameraFocusPoint.y += stageCharData.cameraOffsets[1];
-    }
-
-    // Reset positions of named props.
-    for (dataProp in _data.props)
-    {
-      // Fetch the prop.
-      var prop:StageProp = getNamedProp(dataProp.name);
-
-      if (prop != null)
-      {
-        // Reset the position.
-        prop.x = dataProp.position[0];
-        prop.y = dataProp.position[1];
-        prop.zIndex = dataProp.zIndex;
-      }
-    }
-
-    // We can assume unnamed props are not moving.
-  }
-
+  
   /**
    * The default stage construction routine. Called when the stage is going to be played in.
    * Instantiates each prop and adds it to the stage, while setting its parameters.
@@ -551,7 +495,7 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
     var result:Array<String> = [];
     for (dataProp in _data.props)
     {
-      result.push(Paths.imagePaths(dataProp.assetPath));
+      result.push(Paths.image(dataProp.assetPath));
     }
     return result;
   }
@@ -750,6 +694,7 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
 
   public function onNoteMiss(event:NoteScriptEvent) {}
 
+  public function onSongEvent(event:SongEventScriptEvent):Void {};
 
   public function onNoteGhostMiss(event:GhostMissNoteScriptEvent) {}
 

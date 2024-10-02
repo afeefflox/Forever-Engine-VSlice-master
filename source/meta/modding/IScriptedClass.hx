@@ -125,6 +125,11 @@ interface IPlayStateScriptedClass extends INoteScriptedClass
    */
   public function onNoteGhostMiss(event:GhostMissNoteScriptEvent):Void;
 
+    /**
+   * Called when the song reaches an event.
+   */
+   public function onSongEvent(event:SongEventScriptEvent):Void;
+
   /**
    * Called once every step of the song.
    */

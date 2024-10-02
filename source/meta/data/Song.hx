@@ -7,6 +7,46 @@ import sys.io.File;
 
 using StringTools;
 
+abstract NoteJson(Array<Dynamic>) from Array<Dynamic> to Array<Dynamic>
+{
+	public var time(get, set):Float;
+	inline function set_time(value):Float return this[0] = value;
+	inline function get_time():Float return this[0];
+
+	public var data(get, set):Int;
+	inline function set_data(value):Int return this[1] = value;
+	inline function get_data():Int return this[1];
+
+	public var length(get, set):Float;
+	inline function set_length(value):Float return this[2] = value;
+	inline function get_length():Float return this[2] ?? 0;
+
+	public var kind(get, set):String;
+	inline function set_kind(value):String return this[3] = value;
+	inline function get_kind():String return this[3];
+
+	public inline function push(value:Dynamic) this.push(value);
+	public inline function pop() return this.pop();
+	public inline function getDirection(strumlineSize:Int = 4):Int   return Std.int(this[1]) % strumlineSize;
+}
+
+abstract EventJson(Array<Dynamic>) from Array<Dynamic> to Array<Dynamic> {
+	public var time(get, set):Float;
+	inline function set_time(value):Float return this[0] = value;
+	inline function get_time():Float return this[0];
+
+	public var name(get, set):String;
+	inline function set_name(value):String return this[1] = value;
+	inline function get_name():String return this[1];
+
+	public var values(get, set):Array<Dynamic>;
+	inline function set_values(value):Array<Dynamic> return this[2] = value;
+	inline function get_values():Array<Dynamic> return this[2];
+
+	public inline function push(value:Dynamic) this.push(value);
+	public inline function pop() return this.pop();
+}
+
 typedef SwagSong =
 {
 	var song:String;
@@ -18,8 +58,6 @@ typedef SwagSong =
 	var characters:Array<String>;
 	var stage:String;
 	var assetModifier:String;
-	var arrowSkin:String;
-	var splashSkin:String;
 	var validScore:Bool;
 	var variation:String;
 }
@@ -33,8 +71,8 @@ typedef SongMeta = {
 
 typedef SwagSection =
 {
-	var ?sectionNotes:Array<Array<Dynamic>>;
-    var ?sectionEvents:Array<Array<Dynamic>>;
+	var ?sectionNotes:Array<NoteJson>;
+	var ?sectionEvents:Array<EventJson>;
 	var ?sectionBeats:Float;
 	var ?mustHitSection:Bool;
 	var ?bpm:Float;
@@ -68,8 +106,6 @@ class Song implements IPlayStateScriptedClass
 		characters: ["bf", "dad", "gf"],
 		stage: "stage",
 		assetModifier: "base",
-		arrowSkin: "",
-		splashSkin: "noteSplashes", //fuck you psych
 		validScore: true,
 		variation: ""
 	};
@@ -102,37 +138,10 @@ class Song implements IPlayStateScriptedClass
 	}
 
     public static function checkSong(?song:SwagSong, ?meta:SongMeta):SwagSong {
+		song = FunkinFormat.songCheck(song);
+
 		song = JsonUtil.checkJson(DEFAULT_SONG, song);
 
-        var specialFields:Array<Array<Dynamic>> = [
-			['characters', ['bf','dad','gf']]
-		];
-		
-		for (field in specialFields) {
-			if (!Reflect.hasField(song, field[0])) {
-				Reflect.setField(song, field[0], field[1]);
-			}
-		}
-
-		for (field in Reflect.fields(song)) {
-			switch (field) {
-				case 'gfVersion' | 'gf' | 'player3' | 'player2' | 'player1':
-					final playerIndex:Int = switch(field) {
-						case 'player1': 0;
-						case 'player2': 1;
-						default:		2;
-					}
-					final players:Array<String> = Reflect.field(song, 'characters');
-					players[playerIndex] = Reflect.field(song, field);
-					Reflect.setField(song, 'characters', players);
-					Reflect.deleteField(song, field);
-				case 'events':
-					final isFps = Reflect.hasField(Reflect.field(song, "events"), "events");
-					song = isFps ? convertFpsChart(song) : convertPsychChart(song);
-					Reflect.deleteField(song, field);
-			}
-		}
-		
 		if (song.notes.length <= 0) song.notes.push(DEFAULT_SECTION);
 		for (i in song.notes) {
 			i = checkSection(i);
@@ -168,10 +177,8 @@ class Song implements IPlayStateScriptedClass
 				section.sectionNotes.remove(n);
 			} else {
                 var STRUMS_LENGTH = 4 * 2;
-				if (n[1] > STRUMS_LENGTH - 1) { // Convert extra key charts to 4 key
-					if (n[3] == null) n.push("default-extra");
-					else if (n[3] == 0) n[3] = "default-extra";
-				}
+				if (n[3] == null) n.push("default");
+				else if (n[3] == 0) n[3] = "default";
 				n[1] %= STRUMS_LENGTH;
 			}
 		}
@@ -262,48 +269,6 @@ class Song implements IPlayStateScriptedClass
 		return swagShit;
 	}
 
-    public static function convertFpsChart(song:SwagSong) {
-		final fpsEvents:Array<Dynamic> = Reflect.field(Reflect.field(song, "events"), "events");
-		if (fpsEvents == null || fpsEvents.length <= 0) return song;
-
-		final events:Map<Int, Array<Array<Dynamic>>> = [];
-		for (e in fpsEvents) {
-			if (!events.exists(e[0])) events.set(e[0], []);
-			events.get(e[0]).push([e[1], e[3], []]);
-		}
-
-		for (i in events.keys()) {
-			checkAddSections(song, i);
-			song.notes[i] = checkSection(song.notes[i]);
-			for (e in events.get(i))
-				song.notes[i].sectionEvents.push(e);
-		}
-
-		return song;
-	}
-	
-	// Converts psych and forever engine events
-	public static function convertPsychChart(song:SwagSong):SwagSong {
-		final psychEvents:Array<Dynamic> = Reflect.field(song, 'events');
-		if (psychEvents == null || psychEvents.length <= 0) return song;
-
-		final events:Array<Array<Dynamic>> = [];
-		for (e in psychEvents) {
-			final eventTime = e[0];
-			final _events:Array<Array<Dynamic>> = e[1];
-			for (i in _events) events.push([eventTime, i[0], [i[1], i[2]]]);
-		}
-
-		for (i in events) {
-			final eventSec = getTimeSection(song, i[0]);
-			checkAddSections(song, eventSec);
-			song.notes[eventSec] = checkSection(song.notes[eventSec]);
-			song.notes[eventSec].sectionEvents.push(i);
-		}
-
-		return song;
-	}
-
 	public function toString():String
 	{
 		return 'Song($id)';
@@ -328,4 +293,5 @@ class Song implements IPlayStateScriptedClass
 	public function onCreate(event:ScriptEvent):Void {};
 	public function onDestroy(event:ScriptEvent):Void {};  
 	public function onUpdate(event:UpdateScriptEvent):Void {};
+	public function onSongEvent(event:SongEventScriptEvent):Void {};
 }

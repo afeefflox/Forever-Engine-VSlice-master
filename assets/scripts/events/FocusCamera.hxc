@@ -2,7 +2,7 @@ import meta.data.events.Events;
 import meta.state.PlayState;
 import Std;
 import flixel.tweens.FlxEase;
-
+import gameObjects.character.BaseCharacter;
 class FocusCamera extends Events
 {
     public function new()
@@ -28,39 +28,38 @@ class FocusCamera extends Events
     override function initFunction(params:Array<Dynamic>)
     {
         super.initFunction(params);
-        if(PlayState.isNull()) return;
+        if(PlayState.isNull() && PlayState.instance.cameraFollowPoint == null) return;
+
+        var values:Array<String> = params[0].split(',');
+        var posY:Null<Float> = Std.parseFloat(values[0]);
+		var posX:Null<Float> = Std.parseFloat(values[1]);
+		if(Math.isNaN(posY)) posY = 0;
+		if(Math.isNaN(posX)) posX = 0;
         
         PlayState.instance.disableCamera = true;
 
-        var values:Array<String> = params[0].split(',');
-
-        var posX:Float = 0;
-        var posY:Float = 0;
-        if(values[0] != "")
-            posX = Std.parseFloat(values[0]);
-        if(values[1] != "")
-            posY = Std.parseFloat(values[1]);
-
-        switch(params[1])
+        var char:BaseCharacter = null;
+        switch(params[1].toLowerCase()) 
         {
             default:
-                posX += PlayState.instance.stage.getBoyfriend().cameraFocusPoint.x;
-                posY += PlayState.instance.stage.getBoyfriend().cameraFocusPoint.y;
+                char = PlayState.instance.stage.getBoyfriend();
             case 'dad':
-                posX += PlayState.instance.stage.getDad().cameraFocusPoint.x;
-                posY += PlayState.instance.stage.getDad().cameraFocusPoint.y;
+                char = PlayState.instance.stage.getDad();
             case 'gf':
-                posX += PlayState.instance.stage.getGirlfriend().cameraFocusPoint.x;
-                posY += PlayState.instance.stage.getGirlfriend().cameraFocusPoint.y;
+                char = PlayState.instance.stage.getGirlfriend();
         }
 
-        switch (params[2])
+
+        if(char == null) return;
+
+        switch(params[2].toLowerCase()) 
         {
             case 'classic': //why it is illegal to call it?
                 PlayState.instance.resetCamera(false, true);
-                PlayState.instance.cameraFollowPoint.setPosition(posX + PlayState.instance.camDisplaceX, posY + PlayState.instance.camDisplaceY);
+                PlayState.instance.cameraFollowPoint.x = char.cameraFocusPoint.x + posX;
+                PlayState.instance.cameraFollowPoint.y = char.cameraFocusPoint.y + posY;
             case 'instant':
-                PlayState.instance.tweenCameraToPosition(posX + PlayState.instance.camDisplaceX, posY + PlayState.instance.camDisplaceY, 0);
+                PlayState.instance.tweenCameraToPosition(char.cameraFocusPoint.x + posX, char.cameraFocusPoint.y + posY, 0);
             default:
                 var durSeconds = Std.parseFloat(params[3]) / 1000;
                 var easeFunction:Null<Float->Float> = getFlxEaseByString(params[2]);
@@ -69,12 +68,11 @@ class FocusCamera extends Events
                   trace('Invalid ease function: $params');
                   return;
                 }
-                PlayState.instance.tweenCameraToPosition(posX + PlayState.instance.camDisplaceX, posY + PlayState.instance.camDisplaceY, durSeconds, easeFunction);
+                PlayState.instance.tweenCameraToPosition(char.cameraFocusPoint.x + posX, char.cameraFocusPoint.y + posY, durSeconds, easeFunction);
         }
     }
-
     //Stolen From Psych :/
-    function getFlxEaseByString(?ease:String = '') {
+    function getFlxEaseByString(?ease:String = ''):FlxEase {
 		switch(ease.toLowerCase()) {
 			case 'backin': return FlxEase.backIn;
 			case 'backinout': return FlxEase.backInOut;

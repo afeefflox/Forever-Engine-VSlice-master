@@ -104,27 +104,8 @@ class Init extends FlxState
 			'Whether to disable Anti-aliasing. Helps improve performance in FPS.',
 			NOT_FORCED
 		],
-		'No Camera Note Movement' => [
-			false,
-			Checkmark,
-			'When enabled, left and right notes no longer move the camera.',
-			NOT_FORCED
-		],
-		'Disable Note Splashes' => [
-			false,
-			Checkmark,
-			'Whether to disable note splashes in gameplay. Useful if you find them distracting.',
-			NOT_FORCED
-		],
 		// custom ones lol
 		'Offset' => [Checkmark, 3],
-		'Filter' => [
-			'none',
-			Selector,
-			'Choose a filter for colorblindness.',
-			NOT_FORCED,
-			['none', 'Deuteranopia', 'Protanopia', 'Tritanopia']
-		],
 		"Clip Style" => [
 			'stepmania',
 			Selector,
@@ -132,14 +113,6 @@ class Init extends FlxState
 			NOT_FORCED,
 			['StepMania', 'FNF']
 		],
-		"UI Skin" => [
-			'default',
-			Selector,
-			'Choose a UI Skin for judgements, combo, etc.',
-			NOT_FORCED,
-			''
-		],
-		"Note Skin" => ['default', Selector, 'Choose a note skin.', NOT_FORCED, ''],
 		"Framerate Cap" => [120, Selector, 'Define your maximum FPS.', NOT_FORCED, ['']],
 		"Opaque Arrows" => [
 			false,
@@ -236,7 +209,8 @@ class Init extends FlxState
 		var perfStart:Float = TimerUtil.start();
 		EventsHandler.loadModuleCache();
 		SongHandler.loadModuleCache();
-		NoteTypeRegistry.instance.loadEntries();
+		NoteStyleRegistry.instance.loadEntries();
+		NoteKindManager.loadScripts();
 		LevelRegistry.instance.loadEntries();
 		StageRegistry.instance.loadEntries();
 		CharacterRegistry.loadCharacterCache();
@@ -285,14 +259,6 @@ class Init extends FlxState
 			|| trueSettings.get("Stage Opacity") < 0
 			|| trueSettings.get("Stage Opacity") > 100)
 			trueSettings.set("Stage Opacity", 100);
-
-		// 'hardcoded' ui skins
-		gameSettings.get("UI Skin")[4] = CoolUtil.returnAssetsLibrary('UI');
-		if (!gameSettings.get("UI Skin")[4].contains(trueSettings.get("UI Skin")))
-			trueSettings.set("UI Skin", 'default');
-		gameSettings.get("Note Skin")[4] = CoolUtil.returnAssetsLibrary('noteskins/notes');
-		if (!gameSettings.get("Note Skin")[4].contains(trueSettings.get("Note Skin")))
-			trueSettings.set("Note Skin", 'default');
 
 		saveSettings();
 

@@ -89,8 +89,7 @@ class NoteScriptEvent extends ScriptEvent
    * The note associated with this event.
    * You cannot replace it, but you can edit it.
    */
-  public var note(default, null):Note;
-
+  public var note(default, null):NoteSprite;
   /**
    * The combo count as it is with this event.
    * Will be (combo) on miss events and (combo + 1) on hit events (the stored combo count won't update if the event is cancelled).
@@ -108,7 +107,7 @@ class NoteScriptEvent extends ScriptEvent
    */
   public var healthChange:Float;
 
-  public function new(type:ScriptEventType, note:Note, healthChange:Float, comboCount:Int = 0, cancelable:Bool = false):Void
+  public function new(type:ScriptEventType, note:NoteSprite, healthChange:Float, comboCount:Int = 0, cancelable:Bool = false):Void
   {
     super(type, cancelable);
     this.note = note;
@@ -120,6 +119,23 @@ class NoteScriptEvent extends ScriptEvent
   public override function toString():String
   {
     return 'NoteScriptEvent(type=' + type + ', cancelable=' + cancelable + ', note=' + note + ', comboCount=' + comboCount + ')';
+  }
+}
+
+class SongEventScriptEvent extends ScriptEvent
+{
+  public var name:String;
+  public var params:Array<Dynamic>;
+  public function new(name:String, params:Array<Dynamic>)
+  {
+    super(SONG_EVENT, true);
+    this.name = name;
+    this.params = params;
+  }
+
+  public override function toString():String
+  {
+    return 'SongEventScriptEvent(name=' + name + ' params=' + params  + ')';
   }
 }
 
@@ -150,7 +166,7 @@ class HitNoteScriptEvent extends NoteScriptEvent
    */
   public var doesNotesplash:Bool = false;
 
-  public function new(note:Note, healthChange:Float, score:Int, judgement:String, isComboBreak:Bool, comboCount:Int = 0, hitDiff:Float = 0,
+  public function new(note:NoteSprite, healthChange:Float, score:Int, judgement:String, isComboBreak:Bool, comboCount:Int = 0, hitDiff:Float = 0,
       doesNotesplash:Bool = false):Void
   {
     super(NOTE_HIT, note, healthChange, comboCount, true);
@@ -176,8 +192,7 @@ class GhostMissNoteScriptEvent extends ScriptEvent
   /**
    * The direction that was mistakenly pressed.
    */
-  public var dir(default, null):Int;
-
+   public var dir(default, null):Int;
   /**
    * Whether there was a note within judgement range when this ghost note was pressed.
    */

@@ -83,10 +83,10 @@ class FlxG
 	 */
 	public static var timeScale:Float = 1;
 
-	/**
+    /**
 	 * How fast or slow animations should pass in the game; default is `1.0`.
 	 * @since 5.5.0
-	*/
+	 */
 	public static var animationTimeScale:Float = 1.0;
 
 	/**
@@ -354,10 +354,10 @@ class FlxG
 		#if desktop
 		#if air
 		var window = flash.desktop.NativeApplication.nativeApplication.activeWindow;
-		window.width = width;
-		window.height = height;
+		window.width = Width;
+		window.height = Height;
 		#else
-		Lib.application.window.resize(width, height);
+		Lib.application.window.resize(Width, Height);
 		#end
 		#end
 	}
@@ -390,9 +390,9 @@ class FlxG
 	 * Request a reset of the current game state.
 	 * Calls `switchState()` with a new instance of the current `state`.
 	 */
-    public static inline function resetState():Void
+	public static inline function resetState():Void
 	{
-		switchState(state._constructor);
+		switchState(Type.createInstance(Type.getClass(state), []));
 	}
 
 	/**
@@ -706,7 +706,6 @@ class FlxG
 		autoPause = true;
 		fixedTimestep = true;
 		timeScale = 1.0;
-		animationTimeScale = 1.0;
 		elapsed = 0;
 		maxElapsed = 0.1;
 		worldBounds.set(-10, -10, width + 20, height + 20);

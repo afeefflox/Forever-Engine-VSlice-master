@@ -1,5 +1,6 @@
-#if !macro
+package;
 
+#if !macro
 //Modding
 import meta.modding.PolymodHandler;
 import meta.modding.events.ScriptEvent;
@@ -23,7 +24,12 @@ import meta.modding.IScriptedClass.IPlayStateScriptedClass;
 import gameObjects.userInterface.HealthIcon;
 import gameObjects.userInterface.ClassHUD;
 import gameObjects.userInterface.DialogueBox;
-import gameObjects.userInterface.notes.Note;
+import gameObjects.userInterface.notes.NoteSprite;
+import gameObjects.userInterface.notes.notestyle.NoteStyle;
+import gameObjects.userInterface.notes.notekind.NoteKindManager;
+import gameObjects.userInterface.notes.NoteDirection;
+import gameObjects.userInterface.notes.StrumlineNote;
+import gameObjects.userInterface.notes.SustainTrail;
 import gameObjects.userInterface.notes.NoteSplash;
 import gameObjects.userInterface.notes.Strumline;
 import gameObjects.userInterface.menu.Checkmark;
@@ -46,16 +52,16 @@ import data.AnimationData;
 import data.CharacterData;
 import data.LevelData;
 import data.StageData;
+import data.NoteStyleData;
 import data.registry.LevelRegistry;
 import data.registry.CharacterRegistry;
 import data.registry.StageRegistry;
-import data.registry.NoteTypeRegistry;
+import data.registry.NoteStyleRegistry;
 
 import meta.data.Song;
 import meta.data.Song.SwagSection;
 import meta.data.Conductor;
 import meta.data.Conductor;
-import meta.data.ChartLoader;
 import meta.data.Highscore;
 import meta.data.PlayerSettings;
 import meta.data.Timings;
@@ -67,20 +73,18 @@ import meta.data.dependency.FNFTransition;
 import meta.data.font.Alphabet;
 import meta.data.font.Dialogue;
 
-
+//Graphics
+import graphics.shaders.*;
+import graphics.*;
 //Util
 import meta.util.JsonUtil.FunkyJson;
 import meta.util.*;
 import meta.util.assets.*;
-import meta.shaders.*;
- 
 //State
 import meta.state.menus.*;
 import meta.state.*;
 import meta.subState.*;
 import meta.ui.*;
-
-
 //Haxeflixel shit
 import flixel.FlxG;
 import flixel.FlxBasic;
@@ -149,7 +153,6 @@ import haxe.ui.containers.ListView;
 import haxe.ui.core.Component;
 import haxe.ui.RuntimeComponentBuilder;
 import haxe.ui.events.UIEvent;
-
 
 //FlxAnimate
 import flxanimate.FlxAnimate;

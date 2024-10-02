@@ -3,7 +3,7 @@ package gameObjects.stage;
 import meta.modding.events.ScriptEvent;
 import meta.modding.IScriptedClass.IStateStageProp;
 
-class StageProp extends FlxSprite implements IStateStageProp
+class StageProp extends FunkinSprite implements IStateStageProp
 {
   /**
    * An internal name for this prop.

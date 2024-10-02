@@ -9,7 +9,6 @@ class MusicBeatState extends FlxUIState implements IEventHandler
 
 	public var curBeat:Int = 0;
 	public var curStep:Int = 0;
-	public static var cache:Bool = true;
 
 	function updateBar() curBar = Math.floor(curBeat * 0.25);
 	function updateBeat() curBeat = Math.floor(curStep * 0.25);
@@ -37,16 +36,6 @@ class MusicBeatState extends FlxUIState implements IEventHandler
 	// class create event
 	override function create()
 	{
-		// dump
-		if(cache)
-		{
-			Paths.clearStoredMemory();
-			if (!Std.isOfType(this, meta.state.PlayState) || !Std.isOfType(this, meta.state.editors.ChartingState))
-				Paths.clearUnusedMemory();
-		}
-			
-
-
 		// state stuffs
 		if (!FlxTransitionableState.skipNextTransOut)
 			openSubState(new FNFTransition(0.5, true));
@@ -84,6 +73,11 @@ class MusicBeatState extends FlxUIState implements IEventHandler
 	
 		// Create a new instance of the current state, so old data is cleared.
 		FlxG.resetState();
+	}
+
+	public function refresh()
+	{
+		sort(SortUtil.byZIndex, FlxSort.ASCENDING);
 	}
 
 	public function updateContents()

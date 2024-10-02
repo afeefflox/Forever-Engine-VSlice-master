@@ -1,6 +1,5 @@
 package meta.data;
 
-
 typedef BPMChangeEvent =
 {
 	var stepTime:Int;
@@ -11,17 +10,28 @@ typedef BPMChangeEvent =
 
 class Conductor
 {
+	public static var BEATS_PER_MEASURE:Int = 4;
+	public static var STEPS_PER_BEAT:Int = 4;
+	public static var STEPS_PER_MEASURE:Int = STEPS_PER_BEAT * BEATS_PER_MEASURE;
+	
 	public static var bpm(default, set):Float = 100;
-	public static var crochet:Float = ((60 / bpm) * 1000); // beats in milliseconds
-	public static var stepCrochet:Float = crochet / 4; // steps in milliseconds
 	public static var songPosition:Float = 0;
-	public static var offset:Float = 0;
 	public static var lastSongPos:Float = 0;
+	public static var offset:Float = 0;
+
+	public static var crochetMills:Float;
+	public static var stepCrochetMills:Float;
+	public static var sectionCrochetMills:Float;
+
+	public static var crochet:Float;
+	public static var stepCrochet:Float;
+	public static var sectionCrochet:Float;
+
 	//public static var safeFrames:Int = 10;
 	public static var safeZoneOffset:Float = 0; // is calculated in create(), is safeFrames in milliseconds
 
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
-	
+
 	public static function getCrotchetAtTime(time:Float){
 		var lastChange = getBPMFromSeconds(time);
 		return lastChange.stepCrochet*4;
@@ -38,26 +48,6 @@ class Conductor
 		{
 			if (time >= Conductor.bpmChangeMap[i].songTime)
 				lastChange = Conductor.bpmChangeMap[i];
-		}
-
-		return lastChange;
-	}
-
-	public static var dummyBPMChange:BPMChangeEvent;
-	public static function getLastBpmChange(?time:Float, ?autoBPM:Float):BPMChangeEvent
-	{
-		var lastChange:BPMChangeEvent = null;
-		time ??= songPosition;
-
-		for (i in 0...Conductor.bpmChangeMap.length)
-		{
-			if (time >= Conductor.bpmChangeMap[i].songTime)
-				lastChange = Conductor.bpmChangeMap[i];
-		}
-
-		if (lastChange == null) {
-			dummyBPMChange.bpm = autoBPM ?? bpm;
-			lastChange = dummyBPMChange;
 		}
 
 		return lastChange;
@@ -142,11 +132,15 @@ class Conductor
 		return (60/bpm)*1000;
 	}
 
-	public static function set_bpm(newBPM:Float):Float {
-		bpm = newBPM;
-		crochet = calculateCrochet(bpm);
-		stepCrochet = crochet / 4;
-
-		return bpm = newBPM;
+	public static function set_bpm(value:Float):Float {
+		if (bpm != value) {
+			crochetMills = 60 / value;
+			stepCrochetMills = crochetMills / STEPS_PER_BEAT;
+			sectionCrochetMills = crochetMills * BEATS_PER_MEASURE;
+			crochet = crochetMills * 1000;
+			stepCrochet = stepCrochetMills * 1000;
+			sectionCrochet = sectionCrochetMills * 1000;
+		}
+		return bpm = value;
 	}
 }

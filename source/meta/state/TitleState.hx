@@ -76,10 +76,8 @@ class TitleState extends MusicBeatState
 
 		persistentUpdate = true;
 
-		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		// bg.antialiasing = true;
-		// bg.setGraphicSize(Std.int(bg.width * 0.6));
-		// bg.updateHitbox();
+		var bg:FunkinSprite = new FunkinSprite().makeSolidColor(FlxG.width + 2, FlxG.height, FlxColor.BLACK);
+		bg.screenCenter();
 		add(bg);
 
 		logoBl = new FlxSprite(-150, -100);

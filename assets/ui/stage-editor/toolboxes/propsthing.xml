@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<collapsible-dialog id="toolboxProps" title="Props" width="320" style="minHeight:200">
+	<vbox width="100%">
+		<grid columns="2" width="100%">
+            <label text="Prop Name:" verticalAlign="center" horizontalAlign="right" />
+            <textfield id="inputPropName" value="Sprite" tooltip="Name Of Sprite for smth by Stage Data." />
+            
+            <label text="AssetPath:" verticalAlign="center" horizontalAlign="right" />
+            <textfield id="assetPathName" value="coolSwag" tooltip="Image destination path I think" />
+            
+            <button allowFocus="false" id="openAnimaiton" text="Animation"/>
+
+            <label text="Scroll (X / Y):" verticalAlign="center" horizontalAlign="right" />
+            <number-stepper id="scrollX" step="0.05" min="1" max="10" precision="1" horizontalAlign="right" 
+                tooltip="Adjust the scroll it depends on When Camera move" />
+            <number-stepper id="scrollY" step="0.05" min="1" max="10" precision="1" horizontalAlign="right" 
+                tooltip="Adjust the scroll it depends on When Camera move" />
+
+            <label text="Scale (X / Y):" verticalAlign="center" horizontalAlign="right" />
+            <number-stepper id="scaleX" step="0.05" min="1" max="10" precision="1" horizontalAlign="right" 
+                tooltip="Adjust the size Sprite" />
+            <number-stepper id="scaleY" step="0.05" min="1" max="10" precision="1" horizontalAlign="right" 
+                tooltip="Adjust the size Sprite" />
+
+            <label text="Opacity:" verticalAlign="center" horizontalAlign="right" />
+            <number-stepper id="alpha" step="0.1" min="1" max="1" precision="1" horizontalAlign="right" 
+                tooltip="Opacity the Sprite or Alpha" />
+
+            <label text="Z index:" verticalAlign="center" horizontalAlign="right" />
+            <number-stepper id="zindex" step="1" min="1" max="9000" precision="1" horizontalAlign="right" 
+                tooltip="Order Sprite it depends bigger number" />
+
+            <checkbox id="flipX" text="Flip X"/>
+            <checkbox id="flipY" text="Flip Y"/>
+            <checkbox id="visible" text="Visible"/>
+            <checkbox id="antialiasing" text="Antialiasing"/>
+
+            <label text="Dance Beat:" verticalAlign="center" horizontalAlign="right" />
+            <number-stepper id="danceEvery" step="1" min="1" max="2" precision="1" horizontalAlign="right" 
+                tooltip="Sprite for Boppers (when they on Beat)" />
+
+            <label text="Start Animation:" verticalAlign="center" horizontalAlign="right" />
+            <textfield id="startAnim" value="idle" tooltip="start it animation I guess" />
+		</grid>
+	</vbox>
+</collapsible-dialog>

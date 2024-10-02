@@ -41,14 +41,6 @@ class FreeplayState extends MusicBeatState
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
 
-	#if target.threaded
-	var songThread:Thread;
-	var threadActive:Bool = true;
-	var curSongPlaying:Int = -1;
-	var mutex:Mutex;
-	var songToPlay:Sound = null;
-	#end
-
 	private var grpSongs:FlxTypedGroup<Alphabet>;
 	private var curPlaying:Bool = false;
 
@@ -74,10 +66,6 @@ class FreeplayState extends MusicBeatState
 	override function create()
 	{
 		super.create();
-
-		#if target.threaded
-		mutex = new Mutex();
-		#end
 
 		/**
 			Wanna add songs? They're in the Main state now, you can just find the week array and add a song there to a specific week.
@@ -196,7 +184,7 @@ class FreeplayState extends MusicBeatState
 			existingDifficulties.push(coolDifficultyArray);
 		}
 	}
-
+	var loadedSong:String = "";
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -209,27 +197,16 @@ class FreeplayState extends MusicBeatState
 		if (Math.abs(lerpScore - intendedScore) <= 10)
 			lerpScore = intendedScore;
 
-		var upP = controls.UI_UP_P;
-		var downP = controls.UI_DOWN_P;
-		var accepted = controls.ACCEPT;
+		if (controls.UI_UP_P || controls.UI_DOWN_P)
+			changeSelection(controls.UI_UP_P ? -1 : 1);
 
-		if (upP)
-			changeSelection(-1);
-		else if (downP)
-			changeSelection(1);
-
-		if (controls.UI_LEFT_P)
-			changeDiff(-1);
-		if (controls.UI_RIGHT_P)
-			changeDiff(1);
+		if (controls.UI_LEFT_P || controls.UI_RIGHT_P)
+			changeDiff(controls.UI_LEFT_P ? -1 : 1);
 
 		if (controls.BACK)
-		{
-			threadActive = false;
 			Main.switchState(new MainMenuState());
-		}
 
-		if (accepted)
+		if (controls.ACCEPT)
 		{
 			PlayState.SONG = Song.loadFromJson(existingDifficulties[curSelected][curDifficulty], songs[curSelected].songName.toLowerCase());
 			PlayState.isStoryMode = false;
@@ -240,10 +217,6 @@ class FreeplayState extends MusicBeatState
 
 			if (FlxG.sound.music != null)
 				FlxG.sound.music.stop();
-
-			#if target.threaded
-			threadActive = false;
-			#end
 			Main.switchState(new PlayState());
 		}
 
@@ -253,20 +226,6 @@ class FreeplayState extends MusicBeatState
 		scoreBG.width = scoreText.width + 8;
 		scoreBG.x = FlxG.width - scoreBG.width;
 		diffText.x = scoreBG.x + (scoreBG.width * 0.5) - (diffText.width * 0.5);
-
-		#if target.threaded
-		mutex.acquire();
-		if (songToPlay != null)
-		{
-			FlxG.sound.playMusic(songToPlay);
-			if (FlxG.sound.music.fadeTween != null)
-				FlxG.sound.music.fadeTween.cancel();
-			FlxG.sound.music.volume = 0.0;
-			FlxG.sound.music.fadeIn(1.0, 0.0, 1.0);
-			songToPlay = null;
-		}
-		mutex.release();
-		#end
 	}
 
 	var lastDifficulty:String;
@@ -318,45 +277,16 @@ class FreeplayState extends MusicBeatState
 		}
 
 		changeDiff();
-		#if target.threaded
-		changeSongPlaying();
-		#end
-	}
-
-	function changeSongPlaying()
-	{
-		if (songThread == null)
+		if (songs[curSelected].songName != loadedSong)
 		{
-			songThread = Thread.create(function()
-			{
-				while (true)
-				{
-					if (!threadActive) return;
-
-					var index:Null<Int> = Thread.readMessage(false);
-					if (index != null)
-					{
-						if (index == curSelected && index != curSongPlaying)
-						{
-							var inst:Sound = Paths.inst(songs[curSelected].songName);
-
-							if (index == curSelected && threadActive)
-							{
-								mutex.acquire();
-								songToPlay = inst;
-								mutex.release();
-								curSongPlaying = curSelected;
-							}
-						}
-					}
-				}
-			});
+			FlxG.sound.playMusic(Paths.inst(songs[curSelected].songName));
+			if (FlxG.sound.music.fadeTween != null)
+				FlxG.sound.music.fadeTween.cancel();
+			FlxG.sound.music.volume = 0.0;
+			FlxG.sound.music.fadeIn(1.0, 0.0, 1.0);
+			loadedSong = songs[curSelected].songName;
 		}
-
-		songThread.sendMessage(curSelected);
 	}
-
-	var playingSongs:Array<FlxSound> = [];
 }
 
 class SongMetadata

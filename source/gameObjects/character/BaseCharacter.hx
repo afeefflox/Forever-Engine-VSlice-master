@@ -3,7 +3,7 @@ package gameObjects.character;
 import meta.modding.events.ScriptEvent;
 import data.CharacterData.CharacterRenderType;
 import gameObjects.stage.Bopper;
-
+import gameObjects.userInterface.notes.Strumline;
 class BaseCharacter extends Bopper
 {
     public var id(default, null):String;
@@ -112,6 +112,20 @@ class BaseCharacter extends Bopper
         }
     }
 
+    public static function setType(char:String):CharacterType 
+    {
+        switch(char.trim().toLowerCase())
+        {
+            case 'boyfriend'|'bf':
+                return CharacterType.BF;
+            case 'girlfriend'|'gf':
+                return CharacterType.GF;
+            case 'opponent'|'dad':
+                return CharacterType.DAD;
+        }
+        return CharacterType.OTHER;
+    }
+
     inline public function setFlipX(value:Bool):Void {
 		this.flippedOffsets = false;
 		if ((this.characterType == BF) != this._data.isPlayer)
@@ -168,30 +182,31 @@ class BaseCharacter extends Bopper
         this.cameraFocusPoint = new FlxPoint(charCenterX + _data.cameraOffsets[0], charCenterY + _data.cameraOffsets[1]);        
     }
 
+    var eventElapsed:Float = 0;
+    
     public override function onUpdate(event:UpdateScriptEvent):Void
     {
         super.onUpdate(event);
-
+        
         if (isDead) return;
 
-        if (justPressedNote() && this.characterType == BF)
-            holdTimer = 0;
+        eventElapsed = event.elapsed;
+
+        //No need to bf input shit cuz that will not to retrun idle if bf was oppoennt lol
 
         if (getCurrentAnimation().startsWith('sing'))
         {
             holdTimer += event.elapsed;
             var singTimeSec:Float = Conductor.stepCrochet * 0.0011 * 8;
             if (getCurrentAnimation().endsWith('miss')) singTimeSec *= 2; 
-            var shouldStopSinging:Bool = (this.characterType == BF) ? !isHoldingNote() : true;
-            if (holdTimer > singTimeSec && shouldStopSinging)
+            
+            if (holdTimer > singTimeSec)
             {
-                trace('holdTimer reached ${holdTimer}sec (> ${singTimeSec}), stopping sing animation');
                 holdTimer = 0;
                 dance(true);
             }
         }
-
-        var name:String = getCurrentAnimation();
+        
 		if(isAnimationFinished() && animOffsets.exists('$name-loop'))
 			playAnim('$name-loop');
     }
@@ -210,8 +225,6 @@ class BaseCharacter extends Bopper
     {
         if (isDead) return;
 
-        
-
         if (!force)
         {
           if (getCurrentAnimation().startsWith('sing')) return;
@@ -228,14 +241,15 @@ class BaseCharacter extends Bopper
     {
         super.onNoteHit(event);
 
-        if(event.note.noAnimation) return;
+        if (event.eventCanceled || event.note.noAnim) return;
+        
 
-        var baseString = 'sing' + UIStaticArrow.getArrowFromNumber(event.note.noteData).toUpperCase() + event.note.animSuffix;
+        var baseString = 'sing' + Strumline.getArrowFromNumber(event.note.data).toUpperCase() + event.note.suffix;
 
         //so uh it will be cause duo sing it 
-        if (event.note.lane == 1 && characterType == BF && !event.note.gfNote
-            || event.note.lane == 0 && characterType == DAD && !event.note.gfNote 
-            || event.note.gfNote && characterType == GF) 
+        if (event.note.lane == 0  && characterType == BF && !event.note.gf
+            || event.note.lane == 1 && characterType == DAD && !event.note.gf 
+            || event.note.gf && characterType == GF) 
         {
             this.playAnim(baseString, true);
             this.holdTimer = 0;
@@ -246,70 +260,36 @@ class BaseCharacter extends Bopper
     {
         super.onNoteMiss(event);
 
-        if(event.note.noMissAnimation) return;
+        if (event.eventCanceled || event.note.noAnim) return;
 
-        var baseString = 'sing' + UIStaticArrow.getArrowFromNumber(event.note.noteData).toUpperCase() + event.note.animSuffix + "miss";
+        var baseString = 'sing' + Strumline.getArrowFromNumber(event.note.data).toUpperCase() + event.note.suffix + "miss";
 
-        if (event.note.lane == 1 && characterType == BF && !event.note.gfNote
-            || event.note.lane == 0 && characterType == DAD && !event.note.gfNote 
-            || event.note.gfNote && characterType == GF) 
+        if (event.note.lane == 0  && characterType == BF && !event.note.gf
+            || event.note.lane == 1 && characterType == DAD && !event.note.gf 
+            || event.note.gf && characterType == GF) 
+        {
             this.playAnim(baseString, true);
+            this.holdTimer = 0;
+        }
     }
-
+    
     public override function onNoteGhostMiss(event:GhostMissNoteScriptEvent)
     {
         super.onNoteGhostMiss(event);
 
         if (event.eventCanceled || !event.playAnim) return;
-
-        var baseString = 'sing' + UIStaticArrow.getArrowFromNumber(event.dir).toUpperCase() + 'miss';
-
+        
+        var baseString = 'sing' + Strumline.getArrowFromNumber(event.dir).toUpperCase() + "miss";
 
         if (characterType == BF)
+        {
             this.playAnim(baseString, true);
+            this.holdTimer = 0;
+        }
     }
 
     public override function onDestroy(event:ScriptEvent):Void
         this.characterType = OTHER;
-
-
-    function justPressedNote(player:Int = 1):Bool
-    {
-        // Returns true if at least one of LEFT, DOWN, UP, or RIGHT is being held.
-        switch (player)
-        {
-            case 1:
-              return PlayerSettings.player1.controls.LEFT_P
-                || PlayerSettings.player1.controls.DOWN_P
-                || PlayerSettings.player1.controls.UP_P
-                || PlayerSettings.player1.controls.RIGHT_P;
-            case 2:
-              return PlayerSettings.player2.controls.LEFT_P
-                || PlayerSettings.player2.controls.DOWN_P
-                || PlayerSettings.player2.controls.UP_P
-                || PlayerSettings.player2.controls.RIGHT_P;
-        }
-        return false;
-    }
-      
-    function isHoldingNote(player:Int = 1):Bool
-    {
-        // Returns true if at least one of LEFT, DOWN, UP, or RIGHT is being held.
-        switch (player)
-        {
-            case 1:
-              return PlayerSettings.player1.controls.LEFT
-                || PlayerSettings.player1.controls.DOWN
-                || PlayerSettings.player1.controls.UP
-                || PlayerSettings.player1.controls.RIGHT;
-            case 2:
-              return PlayerSettings.player2.controls.LEFT
-                || PlayerSettings.player2.controls.DOWN
-                || PlayerSettings.player2.controls.UP
-                || PlayerSettings.player2.controls.RIGHT;
-        }
-        return false;
-    }    
 }
 
 enum CharacterType

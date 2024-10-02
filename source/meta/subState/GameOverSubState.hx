@@ -63,7 +63,7 @@ class GameOverSubState extends MusicBeatSubState
 		var playState = PlayState.instance;
 
 		// Add a black background to the screen.
-		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width * 2, FlxG.height * 2, FlxColor.BLACK);
+		var bg:FunkinSprite = new FunkinSprite().makeSolidColor(FlxG.width * 2, FlxG.height * 2, FlxColor.BLACK);
 		bg.alpha = transparent ? 0.25 : 1.0;
 		bg.scrollFactor.set();
 		bg.screenCenter();
@@ -198,11 +198,11 @@ class GameOverSubState extends MusicBeatSubState
 		var basePath:String = 'gameOver';
 		if (ending) basePath += 'End';
 	  
-		var musicPath:String = Paths.musicPaths(basePath + suffix);
+		var musicPath:String = Paths.music(basePath + suffix);
 		while (!Paths.exists(musicPath, SOUND) && suffix.length > 0)
 		{
 			suffix = suffix.split('-').slice(0, -1).join('-');
-			musicPath = Paths.musicPaths(basePath + suffix);
+			musicPath = Paths.music(basePath + suffix);
 		}
 		if (!Paths.exists(musicPath, SOUND)) return null;
 		trace('Resolved music path: ' + musicPath);

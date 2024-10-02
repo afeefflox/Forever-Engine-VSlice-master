@@ -238,7 +238,8 @@ class PolymodHandler
 
     // These MUST be imported at the top of the file and not referred to by fully qualified name,
     // to ensure build macros work properly.
-    NoteTypeRegistry.instance.loadEntries();
+    NoteStyleRegistry.instance.loadEntries();
+    NoteKindManager.loadScripts();
     SongHandler.loadModuleCache();
     LevelRegistry.instance.loadEntries();
     StageRegistry.instance.loadEntries();

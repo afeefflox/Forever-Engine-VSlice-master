@@ -18,8 +18,8 @@ enum CutsceneType
 class VideoCutscene
 {
     static var blackScreen:FlxSprite;
-    static var cutsceneType:CutsceneType;
-    static var vid:FlxVideoSprite;
+    public static var cutsceneType:CutsceneType;
+    public static var vid:FlxVideoSprite;
 
     public static final onVideoStarted:FlxSignal = new FlxSignal();
     public static final onVideoPaused:FlxSignal = new FlxSignal();

@@ -85,23 +85,18 @@ class OptionsMenuState extends MusicBeatState
 				[
 					['Judgements', null],
 					['', null],
-					["UI Skin", getFromOption],
 					['Fixed Judgements', getFromOption],
 					['Simply Judgements', getFromOption],
 					['Counter', getFromOption],
 					['', null],
 					['Notes', null],
 					['', null],
-					["Note Skin", getFromOption],
 					["Clip Style", getFromOption],
-					['No Camera Note Movement', getFromOption],
-					['Disable Note Splashes', getFromOption],
 					['Opaque Arrows', getFromOption],
 					['Opaque Holds', getFromOption],
 					['', null],
 					['Accessibility Settings', null],
 					['', null],
-					['Filter', getFromOption],
 					['Disable Antialiasing', getFromOption],
 					["Stage Opacity", getFromOption],
 					['Reduced Movements', getFromOption],
@@ -392,7 +387,7 @@ class OptionsMenuState extends MusicBeatState
 				{
 					case Init.SettingTypes.Checkmark:
 						// checkmark
-						var checkmark = ForeverAssets.generateCheckmark(10, letter.y, 'checkboxThingie', 'base', 'default', 'UI');
+						var checkmark = ForeverAssets.generateCheckmark(10, letter.y, 'checkboxThingie');
 						checkmark.playAnim(Std.string(Init.trueSettings.get(letter.text)) + ' finished');
 
 						extrasMap.set(letter, checkmark);

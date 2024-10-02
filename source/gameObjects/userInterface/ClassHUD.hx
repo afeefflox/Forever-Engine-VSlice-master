@@ -69,8 +69,7 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 		if (Init.trueSettings.get('Downscroll'))
 			barY = 64;
 
-		healthBarBG = new FlxSprite(0,
-			barY).loadGraphic(Paths.image(ForeverTools.returnSkinAsset('healthBar', PlayState.assetModifier, PlayState.changeableSkin, 'UI')));
+		healthBarBG = new FlxSprite(0, barY).loadGraphic(Paths.image('UI/base/healthBar'));
 		healthBarBG.screenCenter(X);
 		add(healthBarBG);
 
@@ -139,7 +138,7 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 		autoplayMark = new FlxText(-5, (Init.trueSettings.get('Downscroll') ? centerMark.y - 60 : centerMark.y + 60), FlxG.width - 800, '[AUTOPLAY]\n', 32);
 		autoplayMark.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
 		autoplayMark.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
-		autoplayMark.visible = game.plrStrums.autoplay;
+		autoplayMark.visible = game.plrStrums.botplay;
 		autoplayMark.screenCenter(X);
 		// repositioning for it to not be covered by the receptors
 		if (Init.trueSettings.get('Centered Notefield'))

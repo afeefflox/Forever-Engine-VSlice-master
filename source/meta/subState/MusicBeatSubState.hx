@@ -160,4 +160,9 @@ class MusicBeatSubState extends FlxSubState
 	
 		super.closeSubState();
 	}
+
+	public function refresh()
+	{
+		sort(SortUtil.byZIndex, FlxSort.ASCENDING);
+	}
 }

@@ -17,7 +17,6 @@ import openfl.events.IOErrorEvent;
 
 import gameObjects.character.AnimateAtlasCharacter;
 
-
 class CharacterEditorState extends MusicBeatState
 {
     var character:BaseCharacter;
@@ -476,7 +475,10 @@ class CharacterEditorState extends MusicBeatState
 
 			for (i in character.getAnimationPrefixes()) 
 			{
-				var addedAnim:AnimationData = newAnim(i, i);	
+				var prefix = i;
+				if((prefix.startsWith('sing') || prefix.startsWith('idle')) && (!prefix.endsWith('-alt') || !prefix.endsWith('miss'))) 
+					prefix += '0';
+				var addedAnim:AnimationData = newAnim(i, prefix);	
 				FlxAnimationUtil.addAtlasAnimation(character, addedAnim);
 				character._data.animations.push(addedAnim);
 				@:arrayAccess curAnim = Std.int(Math.max(0, character._data.animations.indexOf(addedAnim)));
@@ -998,11 +1000,11 @@ class CharacterEditorState extends MusicBeatState
 		character.y += character._data.offsets[1];
 	}
 
-	inline function newAnim(anim:String, name:String):AnimationData
+	inline function newAnim(anim:String, prefix:String):AnimationData
 	{
 		return {
 			name: anim,
-			prefix: name,
+			prefix: prefix,
 			assetPath: "",
 			offsets: [0, 0],
 			looped: false,

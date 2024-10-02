@@ -1,0 +1,105 @@
+{
+    "version": "1.1.0",
+    "name": "Funkin'",
+    "author": "PhantomArcade",    
+    "fallback": null,
+    "assets": {
+        "note": {
+            "assetPath": "noteskins/notes/base/NOTE_assets",
+            "scale": 1.0,
+            "data": {
+                "left": {"prefix":"purple"},
+                "down": {"prefix": "blue"},
+                "up": {"prefix": "green"},
+                "right": {"prefix": "red"}
+            }
+        },
+        "noteStrumline": {
+            "assetPath": "noteskins/notes/base/NOTE_assets",
+            "scale": 1.0,
+            "offsets": [26, -15],
+            "data": {
+                "leftStatic": { "prefix": "arrowLEFT" },
+                "leftPress": { "prefix": "left press" },
+                "leftConfirm": { "prefix": "left confirm" },
+                "leftConfirmHold": { "prefix": "left confirm" },
+                "downStatic": { "prefix": "arrowDOWN" },
+                "downPress": { "prefix": "down press" },
+                "downConfirm": { "prefix": "down confirm" },
+                "downConfirmHold": { "prefix": "down confirm" },
+                "upStatic": { "prefix": "arrowUP" },
+                "upPress": { "prefix": "up press" },
+                "upConfirm": { "prefix": "up confirm" },
+                "upConfirmHold": { "prefix": "up confirm" },
+                "rightStatic": { "prefix": "arrowRIGHT" },
+                "rightPress": { "prefix": "right press" },
+                "rightConfirm": { "prefix": "right confirm" },
+                "rightConfirmHold": { "prefix": "right confirm" }
+            }
+        },
+        "holdNote": {
+            "assetPath": "noteskins/notes/base/NOTE_assetsENDS",
+            "data": {}
+        },
+        "noteSplash": {
+            "assetPath": "",
+            "data": {
+              "enabled": true
+            }
+        },
+        "holdNoteCover": {
+            "assetPath": "",
+            "data": {
+              "enabled": true
+            }
+        },
+        "countdownThree": {
+            "data": {
+                "audioPath": "intro3-base"
+            },
+            "assetPath": null            
+        },
+        "countdownTwo": {
+            "data": {
+                "audioPath": "intro2-base"
+            },
+            "assetPath": "UI/base/ready",
+            "scale": 1.0,
+            "isPixel": false
+        },
+        "countdownOne": {
+            "data": {
+                "audioPath": "intro1-base"
+            },
+            "assetPath": "UI/base/set",
+            "scale": 1.0,
+            "isPixel": false
+        },
+        "countdownGo": {
+            "data": {
+                "audioPath": "introGo-base"
+            },
+            "assetPath": "UI/base/go",
+            "scale": 1.0,
+            "isPixel": false
+        },
+        "judgement": {
+            "data": {
+                "width": 500,
+                "height": 163
+            },
+            "assetPath": "UI/base/judgements",
+            "scale": 0.7,
+            "isPixel": false
+        },
+        "combo": {
+            "data": {
+                "width": 100,
+                "height": 140
+            },
+            "assetPath": "UI/base/combo",
+            "scale": 0.5,
+            "isPixel": false 
+        }
+    }
+}

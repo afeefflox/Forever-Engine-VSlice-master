@@ -11,7 +11,7 @@ import flixel.system.FlxAssets.FlxGraphicAsset;
 	Global FNF sprite utilities, all in one parent class!
 	You'll be able to easily edit functions and such that are used by sprites
 **/
-class FNFSprite extends FlxSprite
+class FNFSprite extends FunkinSprite
 {
 	public var animOffsets:Map<String, Array<Dynamic>>;
 

@@ -7,7 +7,7 @@ import sys.FileSystem;
 
 using StringTools;
 
-class HealthIcon extends FlxSprite
+class HealthIcon extends FunkinSprite
 {
 	// rewrite using da new icon system as ninjamuffin would say it
 	public var char(default, set):Null<String>;
@@ -52,7 +52,7 @@ class HealthIcon extends FlxSprite
 		}
 		else
 		{
-			var iconGraphic:FlxGraphic = Paths.image('icons/icon-$id');
+			var iconGraphic:FlxGraphic = FlxG.bitmap.add(Paths.image('icons/icon-$id'), false);
 			loadGraphic(iconGraphic, true, Std.int(iconGraphic.width * 0.5), iconGraphic.height);
 			loadAnimationOld();
 		}
@@ -67,7 +67,7 @@ class HealthIcon extends FlxSprite
 	{
 		if (charId == null)  return Constants.DEFAULT_HEALTH_ICON;
 
-		if (!Paths.exists(Paths.imagePaths('icons/icon-$charId')))
+		if (!Paths.exists(Paths.image('icons/icon-$charId')))
 		{
 			FlxG.log.warn('No icon for character: $charId : using face instead!');
 			return Constants.DEFAULT_HEALTH_ICON;
