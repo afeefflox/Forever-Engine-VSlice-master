@@ -16,6 +16,10 @@ class SustainTrail extends FlxSprite
     public var fullSustainLength:Float = 0;
     public var noteData:Null<NoteJson>;
     public var parentStrumline:Strumline;
+
+    public var data(get, never):Int;
+    function get_data():Int
+        return noteData.getDirection();
   
     public var cover:NoteHoldCover = null;
 
@@ -81,9 +85,10 @@ class SustainTrail extends FlxSprite
         // instead of scrollSpeed, PlayState.SONG.speed
     
         flipY = Init.trueSettings.get('Downscroll');
-    
-        alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
+        
         updateColorTransform();
+
+        alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
     
         updateClipping();        
     }

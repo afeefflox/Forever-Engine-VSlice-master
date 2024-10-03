@@ -175,11 +175,6 @@ class Song implements IPlayStateScriptedClass
 			if (n[1] < 0) {
 				section.sectionEvents.push([n[0], n[2], [n[3], n[4]]]);
 				section.sectionNotes.remove(n);
-			} else {
-                var STRUMS_LENGTH = 4 * 2;
-				if (n[3] == null) n.push("default");
-				else if (n[3] == 0) n[3] = "default";
-				n[1] %= STRUMS_LENGTH;
 			}
 		}
 		foundNotes.clear();

@@ -527,6 +527,17 @@ class Strumline extends FlxSpriteGroup
             noteSprite.setupNoteGraphic(noteKindStyle);
       
             noteSprite.direction = note.getDirection();
+            //Setup Notetype :/
+            switch(note.kind)
+            {
+                case 'default-gf':
+                    noteSprite.gf = true;
+                case 'default-noAnim':
+                    noteSprite.noAnim = true;
+                case 'default-alt':
+                    noteSprite.suffix = "-alt";
+            }
+
             noteSprite.noteData = note;
             noteSprite.lane = this.lane;
             noteSprite.x = this.x;
@@ -678,4 +689,6 @@ class Strumline extends FlxSpriteGroup
 
     public static function compareHoldNoteSprites(order:Int, a:SustainTrail, b:SustainTrail):Int
         return FlxSort.byValues(order, a?.strumTime, b?.strumTime);
+
+    
 }

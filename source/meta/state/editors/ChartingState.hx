@@ -44,10 +44,11 @@ class ChartingState extends MusicBeatState
 
 	public static var NOTE_KINDS:Map<String, String> = [
 		// Base
-		"default" => "Default",
+		"default-gf" => "Girlfriend Sing",
 		"default-alt" => "Alternate",
-		"default-gf" => "Girlfriend Sing"
+		"default" => "Default"
 	];
+	public var NOTE_DISPLAY:Array<String> = [];
 	public var blockPressWhileTypingOn:Array<FlxUIInputText> = [];
 	public var blockPressWhileTypingOnStepper:Array<FlxUINumericStepper> = [];
 	public var blockPressWhileScrolling:Array<FlxUIDropDownMenu> = [];
@@ -149,6 +150,10 @@ class ChartingState extends MusicBeatState
 			addSection();
 			PlayState.SONG = _song;
 		}
+
+		for(k=>e in NOTE_KINDS)
+			NOTE_DISPLAY.push(e);
+
         var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menus/base/menuDesat'));
 		bg.scrollFactor.set();
 		bg.color = 0xFF2C0781;
@@ -432,7 +437,8 @@ class ChartingState extends MusicBeatState
 		stepperSpeed.name = 'song_speed';
 		blockPressWhileTypingOnStepper.push(stepperSpeed);
 
-        var characters:Array<String> = CharacterRegistry.listCharacterIds();
+
+		var characters:Array<String> = CharacterRegistry.listCharacterIds();
         var player1DropDown = new FlxUIDropDownMenu(10, stepperSpeed.y + 45, FlxUIDropDownMenu.makeStrIdLabelArray(characters, true), function(character:String)
         {
             _song.characters[0] = characters[Std.parseInt(character)];
@@ -457,7 +463,7 @@ class ChartingState extends MusicBeatState
         player3DropDown.selectedLabel = _song.characters[2];
         blockPressWhileScrolling.push(player3DropDown);
 
-        var stages:Array<String> = StageRegistry.instance.listEntryIds();
+		var stages:Array<String> = StageRegistry.instance.listEntryIds();
         var stageDropDown = new FlxUIDropDownMenu(player1DropDown.x + 140, player1DropDown.y, FlxUIDropDownMenu.makeStrIdLabelArray(stages, true), function(character:String)
         {
             _song.stage = stages[Std.parseInt(character)];
@@ -465,10 +471,16 @@ class ChartingState extends MusicBeatState
         stageDropDown.selectedLabel = _song.stage;
         blockPressWhileScrolling.push(stageDropDown);
 
-        var assetModifier:Array<String> = NoteStyleRegistry.instance.listEntryIds();
+        var assetModifierIds:Array<String> = NoteStyleRegistry.instance.listEntryIds();
+		var assetModifier:Array<String> = [];
+		for (charIndex => charId in assetModifierIds)
+		{
+			var charData:NoteStyle = NoteStyleRegistry.instance.fetchEntry(charId);
+			assetModifier.push(charData.getName());
+		}
         var assetModifierDropDown = new FlxUIDropDownMenu(stageDropDown.x, player1DropDown.y + 40, FlxUIDropDownMenu.makeStrIdLabelArray(assetModifier, true), function(character:String)
         {
-            _song.assetModifier = assetModifier[Std.parseInt(character)];
+            _song.assetModifier = assetModifierIds[Std.parseInt(character)];
 			updateGrid();
         });
         assetModifierDropDown.selectedLabel = _song.assetModifier;
@@ -527,6 +539,7 @@ class ChartingState extends MusicBeatState
 		check_mustHitSection.checked = _song.notes[curSection].mustHitSection;
 
 		//Stolen From Maru :/
+		var funi:String;
 		var setTypesLeft:FlxUICheckBox = new FlxUICheckBox(check_mustHitSection.x + 120, check_mustHitSection.y, null, null, "Left Side");
 		var setTypesRight:FlxUICheckBox = new FlxUICheckBox(setTypesLeft.x + 100, setTypesLeft.y, null, null, "Right Side");
 		setTypesLeft.checked = setTypesRight.checked = true;
@@ -534,15 +547,22 @@ class ChartingState extends MusicBeatState
 			for (note in _song.notes[curSection].sectionNotes) 
 			{
 				var sideLength = 4 - 1;
+				var noteType:Array<String> = NOTE_KINDS.keys().array().copy();
 				if ((note[1] <= sideLength && setTypesLeft.checked) || (note[1] > sideLength && setTypesRight.checked)) 
 				{
-					note[3] = sectionNoteTypesDropDown.selectedLabel;
+					note[3] = noteType[Std.parseInt(funi)];
 				    updateGrid();
 				}
 			}
 		});
-		sectionNoteTypesDropDown = new FlxUIDropDownMenu(setSectionNoteTypes.x + 100, setSectionNoteTypes.y, FlxUIDropDownMenu.makeStrIdLabelArray(NOTE_KINDS.keys().array().copy(), true));
-		sectionNoteTypesDropDown.selectedLabel = 'default';
+
+		
+		
+		sectionNoteTypesDropDown = new FlxUIDropDownMenu(setSectionNoteTypes.x + 100, setSectionNoteTypes.y, FlxUIDropDownMenu.makeStrIdLabelArray(NOTE_DISPLAY, true), function(character:String)
+		{
+			funi = character;
+		});
+		sectionNoteTypesDropDown.selectedLabel = 'Default';
 		blockPressWhileScrolling.push(sectionNoteTypesDropDown);
 
 		stepperBeats = new FlxUINumericStepper(10, 100, 1, 4, 1, 7, 2);
@@ -753,7 +773,7 @@ class ChartingState extends MusicBeatState
 		tab_group_note.add(strumTimeInputText);
 		blockPressWhileTypingOn.push(strumTimeInputText);
 		var noteType:Array<String> = NOTE_KINDS.keys().array().copy();
-		noteTypeDropDown = new FlxUIDropDownMenu(10, 105, FlxUIDropDownMenu.makeStrIdLabelArray(noteType, true), function(character:String)
+		noteTypeDropDown = new FlxUIDropDownMenu(10, 105, FlxUIDropDownMenu.makeStrIdLabelArray(NOTE_DISPLAY, true), function(character:String)
 		{
 			currentType = noteType[Std.parseInt(character)];
 			if(curSelectedNote != null) {
@@ -761,7 +781,7 @@ class ChartingState extends MusicBeatState
 				updateGrid();
 			}
 		});
-		noteTypeDropDown.selectedLabel = 'default';
+		noteTypeDropDown.selectedLabel = 'Default';
 		blockPressWhileScrolling.push(noteTypeDropDown);
 
 		tab_group_note.add(new FlxText(10, 10, 0, 'Sustain length:'));
@@ -2154,14 +2174,14 @@ class ChartingState extends MusicBeatState
 		
 		var noteStyle:NoteStyle = NoteStyleRegistry.instance.fetchEntry(_song.assetModifier);
 		if (noteStyle == null) noteStyle = NoteStyleRegistry.instance.fetchDefault();
-
+		var notekind = resolveType(i[3]);
 		var note:NoteEditor = new NoteEditor(noteStyle);
-		var noteKindStyle:NoteStyle = NoteKindManager.getNoteStyle(i[3], noteStyle.id) ?? noteStyle;
+		var noteKindStyle:NoteStyle = NoteKindManager.getNoteStyle(notekind, noteStyle.id) ?? noteStyle;
 		note.setupNoteGraphic(noteKindStyle);
 		note.noteData = daNoteInfo % 4;
 		note.strumTime = daStrumTime;
 		note.sustainLength = daSus;
-		note.kind = i[3];
+		note.kind = notekind;
 		note.setGraphicSize(GRID_SIZE, GRID_SIZE);
 		note.updateHitbox();
 		note.x = Math.floor(daNoteInfo * GRID_SIZE) + GRID_SIZE;
