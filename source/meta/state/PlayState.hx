@@ -57,7 +57,6 @@ class PlayState extends MusicBeatState
 	public static var curDifficulty:String = 'normal';
 	public static var vocals:FlxSound;
 	public static var vocalsDad:FlxSound;
-	public var swagSong:Song;
 
 	public static var campaignScore:Int = 0;
 
@@ -86,7 +85,7 @@ class PlayState extends MusicBeatState
 	
 	public var eventList:Array<SwagEvent> = [];
 	private var ratingArray:Array<String> = [];
-	private var allSicks:Bool = true;
+	private var allSicks:Bool = false;
 
 	// if you ever wanna add more keys
 	public static var numberOfKeys:Int = 4;
@@ -622,7 +621,6 @@ class PlayState extends MusicBeatState
 			startingSong = true;
 
 			isPlayerDying = false;
-			allSicks = true;
 			songScore = 0;
 			combo = 0;
 			misses = 0;
@@ -677,12 +675,9 @@ class PlayState extends MusicBeatState
 			hudCameraZoomIntensity = (cameraBopIntensity - 1.0) * 2.0;
 			cameraZoomRate = Constants.DEFAULT_ZOOM_RATE;
 			health = Constants.HEALTH_STARTING;
-
-			ScriptEventDispatcher.callEvent(SongHandler.getSong(PlayState.SONG.song.toLowerCase()), new ScriptEvent(CREATE, false));
 			Countdown.performCountdown();
 			if(eventList.length > 1) 
 				eventList.sort(sortByShit);
-			needsReset = false;
 		}
 
 		if (Init.trueSettings.get('Controller Mode'))
@@ -867,6 +862,10 @@ class PlayState extends MusicBeatState
 
 	function onKeyPress(event:KeyboardEvent):Void
 	{
+		var keyEvent:KeyboardInputScriptEvent = new KeyboardInputScriptEvent(KEY_DOWN, event);
+		dispatchEvent(keyEvent);
+		if(keyEvent.eventCanceled) return;
+
 		var eventKey:FlxKey = event.keyCode;
 		var key:Int = getKeyFromEvent(eventKey);
 		if ((key >= 0)
@@ -876,41 +875,92 @@ class PlayState extends MusicBeatState
 		{
 			if (generatedMusic)
 			{
-				var notesInRange:Array<NoteSprite> = plrStrums.getNotesMayHit();
-				var holdNotesInRange:Array<SustainTrail> = plrStrums.getHoldNotesHitOrMissed();
-				var notesByDirection:Array<Array<NoteSprite>> = [[], [], [], []];
-				for (note in notesInRange)
-					notesByDirection[note.direction].push(note);
-
-				var notesInDirection:Array<NoteSprite> = notesByDirection[Strumline.DIRECTIONS[key]];
-
-				if (!plrStrums.mayGhostTap() && notesInDirection.length == 0)
-				{
-					missNoteCheck(key);
-					plrStrums.playPress(Strumline.DIRECTIONS[key]);
-				}
-				else if (notesInDirection.length == 0)
-				{
-					plrStrums.playPress(Strumline.DIRECTIONS[key]);
-				}
+				if(Init.trueSettings.get("Input System").toLowerCase() != 'v-slice')
+					foreverInput(key);
 				else
-				{
-					var targetNote:Null<NoteSprite> = notesInDirection.find((note) -> !note.lowPriority);
-					if (targetNote == null) targetNote = notesInDirection[0];
-					if (targetNote == null) return;
-
-					goodNoteHit(targetNote, plrStrums);
-
-					notesInDirection.remove(targetNote);
-
-					plrStrums.playConfirm(Strumline.DIRECTIONS[key]);
-				}
+					vSliceInput(key);
 			}
 		}
 	}
 
+	function vSliceInput(key:Int)
+	{
+		var notesInRange:Array<NoteSprite> = plrStrums.getNotesMayHit();
+		var notesByDirection:Array<Array<NoteSprite>> = [[], [], [], []];
+		for (note in notesInRange)
+			notesByDirection[note.direction].push(note);
+
+		var notesInDirection:Array<NoteSprite> = notesByDirection[Strumline.DIRECTIONS[key]];
+
+		if (!plrStrums.mayGhostTap() && notesInDirection.length == 0)
+		{
+			missNoteCheck(key);
+			plrStrums.playPress(Strumline.DIRECTIONS[key]);
+		}
+		else if (notesInDirection.length == 0)
+		{
+			plrStrums.playPress(Strumline.DIRECTIONS[key]);
+		}
+		else
+		{
+			var targetNote:Null<NoteSprite> = notesInDirection.find((note) -> !note.lowPriority);
+			if (targetNote == null) targetNote = notesInDirection[0];
+			if (targetNote == null) return;
+
+			goodNoteHit(targetNote, plrStrums);
+
+			notesInDirection.remove(targetNote);
+
+			plrStrums.playConfirm(Strumline.DIRECTIONS[key]);
+		}
+	}
+
+	function foreverInput(key:Int)
+	{
+		var possibleNoteList:Array<NoteSprite> = [];
+		var pressedNotes:Array<NoteSprite> = [];
+
+		plrStrums.notes.forEachAlive(function(note:NoteSprite) {
+			if (note.direction == Strumline.DIRECTIONS[key] && note.mayHit && !note.hasBeenHit)
+				possibleNoteList.push(note);
+		});
+		possibleNoteList.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+
+		if (possibleNoteList.length > 0)
+		{
+			var eligable = true;
+			var firstNote = true;
+
+			for (coolNote in possibleNoteList)
+			{
+				for (noteDouble in pressedNotes)
+				{
+					if (Math.abs(noteDouble.strumTime - coolNote.strumTime) < 10)
+						firstNote = false;
+					else
+						eligable = false;
+				}
+
+				if (eligable)
+				{
+					goodNoteHit(coolNote, plrStrums);
+					plrStrums.playConfirm(Strumline.DIRECTIONS[key]);
+					pressedNotes.push(coolNote);
+				}
+			}
+		}
+		else if (!Init.trueSettings.get('Ghost Tapping'))
+			missNoteCheck(key);
+
+		plrStrums.playPress(Strumline.DIRECTIONS[key]);
+	}
+
 	function onKeyRelease(event:KeyboardEvent):Void
 	{
+		var keyEvent:KeyboardInputScriptEvent = new KeyboardInputScriptEvent(KEY_UP, event);
+		dispatchEvent(keyEvent);
+		if(keyEvent.eventCanceled) return;
+
 		var eventKey:FlxKey = event.keyCode;
 		var key:Int = getKeyFromEvent(eventKey);
 
@@ -995,7 +1045,13 @@ class PlayState extends MusicBeatState
 			{
 				if (note.hasBeenHit) return;
 
-				goodNoteHit(note, cpuStrums, false);
+				var event:NoteScriptEvent = new HitNoteScriptEvent(note, 0.0, 0, 'perfect', false, 0);
+				dispatchEvent(event);
+				if (event.eventCanceled) return;
+
+				cpuStrums.hitNote(note);
+				cpuStrums.playNoteSplash(note.noteData.getDirection());
+				if (note.holdNoteSprite != null) cpuStrums.playNoteHoldCover(note.holdNoteSprite);
 			}
 			else if (Conductor.songPosition > hitWindowStart)
 			{
@@ -1053,8 +1109,39 @@ class PlayState extends MusicBeatState
 			else if (plrStrums.botplay && Conductor.songPosition > hitWindowCenter)
 			{
 			  if (note.hasBeenHit) return;
+
+			  var event:NoteScriptEvent = new HitNoteScriptEvent(note, 0.0, 0, 'perfect', false, 0);
+			  dispatchEvent(event);
+			  if (event.eventCanceled) return;
+
+			  
 	  
-			  goodNoteHit(note, plrStrums);
+			  plrStrums.hitNote(note);
+			  plrStrums.playNoteSplash(note.noteData.getDirection());
+			  if (note.holdNoteSprite != null) plrStrums.playNoteHoldCover(note.holdNoteSprite);
+			  
+			  var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
+			  var isLate: Bool = note.strumTime < Conductor.songPosition;
+		  
+			  // loop through all avaliable judgements
+			  var foundRating:String = 'miss';
+			  var lowestThreshold:Float = Math.POSITIVE_INFINITY;
+			  for (myRating in Timings.judgementsMap.keys())
+			  {
+				  var myThreshold:Float = Timings.judgementsMap.get(myRating)[1];
+				  if (noteDiff <= myThreshold && (myThreshold < lowestThreshold))
+				  {
+					  foundRating = myRating;
+					  lowestThreshold = myThreshold;
+				  }
+			  }
+
+			  if(!note.isHoldNote)
+				{
+					increaseCombo(foundRating, note.noteData.data);
+					popUpScore(foundRating, isLate);
+					healthCall(Timings.judgementsMap.get(foundRating)[3]);
+				}
 			}
 			else if (Conductor.songPosition > hitWindowStart)
 			{
@@ -1277,9 +1364,6 @@ class PlayState extends MusicBeatState
 	{
 		// set up the rating
 		var score:Int = 50;
-
-		if (allSicks) allSicks = false;
-
 		displayRating(baseRating, isLate);
 		Timings.updateAccuracy(Timings.judgementsMap.get(baseRating)[3]);
 		score = Std.int(Timings.judgementsMap.get(baseRating)[2]);

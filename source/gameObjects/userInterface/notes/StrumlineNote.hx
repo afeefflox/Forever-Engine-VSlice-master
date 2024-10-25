@@ -12,7 +12,7 @@ class StrumlineNote extends FunkinSprite
   
     static final CONFIRM_HOLD_TIME:Float = 0.1;
 
-    var setAlpha:Float = (Init.trueSettings.get('Opaque Arrows')) ? 1 : 0.8;
+    public static var setAlpha:Float = (Init.trueSettings.get('Opaque Arrows')) ? 1 : 0.8;
   
     function set_direction(value:NoteDirection):NoteDirection
     {

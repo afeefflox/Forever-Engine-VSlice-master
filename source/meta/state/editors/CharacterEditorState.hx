@@ -243,7 +243,7 @@ class CharacterEditorState extends MusicBeatState
 					spr.scale.set(character.scale.x, character.scale.y);
 					spr.updateHitbox();
 
-					spr.offset.set(character.offset.x, character.offset.y);
+					spr.offset.set(character.animationOffsets[0], character.animationOffsets[1]);
 					spr.visible = true;
 
 					var otherSpr:FlxSprite = (spr == animateGhost) ? ghost : animateGhost;
@@ -798,8 +798,8 @@ class CharacterEditorState extends MusicBeatState
 		var moveKeys = [FlxG.keys.pressed.LEFT, FlxG.keys.pressed.RIGHT, FlxG.keys.pressed.UP, FlxG.keys.pressed.DOWN];
 		if(moveKeysP.contains(true))
 		{
-			character.offset.x += ((moveKeysP[0] ? 1 : 0) - (moveKeysP[1] ? 1 : 0)) * shiftMultBig;
-			character.offset.y += ((moveKeysP[2] ? 1 : 0) - (moveKeysP[3] ? 1 : 0)) * shiftMultBig;
+			character.animationOffsets[0] += ((moveKeysP[0] ? 1 : 0) - (moveKeysP[1] ? 1 : 0)) * shiftMultBig;
+			character.animationOffsets[1] += ((moveKeysP[2] ? 1 : 0) - (moveKeysP[3] ? 1 : 0)) * shiftMultBig;
 			changedOffset = true;
 		}
 
@@ -811,8 +811,8 @@ class CharacterEditorState extends MusicBeatState
 				holdingArrowsElapsed += elapsed;
 				while(holdingArrowsElapsed > (1/60))
 				{
-					character.offset.x += ((moveKeys[0] ? 1 : 0) - (moveKeys[1] ? 1 : 0)) * shiftMultBig;
-					character.offset.y += ((moveKeys[2] ? 1 : 0) - (moveKeys[3] ? 1 : 0)) * shiftMultBig;
+					character.animationOffsets[0] += ((moveKeys[0] ? 1 : 0) - (moveKeys[1] ? 1 : 0)) * shiftMultBig;
+					character.animationOffsets[1] += ((moveKeys[2] ? 1 : 0) - (moveKeys[3] ? 1 : 0)) * shiftMultBig;
 					holdingArrowsElapsed -= (1/60);
 					changedOffset = true;
 				}
@@ -822,8 +822,8 @@ class CharacterEditorState extends MusicBeatState
 
 		if(FlxG.mouse.pressedRight && (FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0))
 		{
-			character.offset.x -= FlxG.mouse.deltaScreenX;
-			character.offset.y -= FlxG.mouse.deltaScreenY;
+			character.animationOffsets[0] -= FlxG.mouse.deltaScreenX;
+			character.animationOffsets[1] -= FlxG.mouse.deltaScreenY;
 			changedOffset = true;
 		}
 
@@ -831,27 +831,27 @@ class CharacterEditorState extends MusicBeatState
 		{
 			if(FlxG.keys.justPressed.C)
 			{
-				copiedOffset[0] = character.offset.x;
-				copiedOffset[1] = character.offset.y;
+				copiedOffset[0] = character.animationOffsets[0];
+				copiedOffset[1] = character.animationOffsets[1];
 				changedOffset = true;
 			}
 			else if(FlxG.keys.justPressed.V)
 			{
-				undoOffsets = [character.offset.x, character.offset.y];
-				character.offset.x = copiedOffset[0];
-				character.offset.y = copiedOffset[1];
+				undoOffsets = [character.animationOffsets[0], character.animationOffsets[1]];
+				character.animationOffsets[0] = copiedOffset[0];
+				character.animationOffsets[1] = copiedOffset[1];
 				changedOffset = true;
 			}
 			else if(FlxG.keys.justPressed.R)
 			{
-				undoOffsets = [character.offset.x, character.offset.y];
-				character.offset.set(0, 0);
+				undoOffsets = [character.animationOffsets[0], character.animationOffsets[1]];
+				character.animationOffsets = [0, 0];
 				changedOffset = true;
 			}
 			else if(FlxG.keys.justPressed.Z && undoOffsets != null)
 			{
-				character.offset.x = undoOffsets[0];
-				character.offset.y = undoOffsets[1];
+				character.animationOffsets[0] = undoOffsets[0];
+				character.animationOffsets[1] = undoOffsets[1];
 				changedOffset = true;
 			}
 		}
@@ -859,12 +859,12 @@ class CharacterEditorState extends MusicBeatState
 		var anim = anims[curAnim];
 		if(changedOffset && anim != null && anim.offsets != null)
 		{
-			anim.offsets[0] = Std.int(character.offset.x);
-			anim.offsets[1] = Std.int(character.offset.y);
+			anim.offsets[0] = Std.int(character.animationOffsets[0]);
+			anim.offsets[1] = Std.int(character.animationOffsets[1]);
 
 			var myText:FlxText = animsTxtGroup.members[curAnim];
 			myText.text = anim.name + ": " + anim.offsets;
-			character.setAnimationOffsets(anim.name, character.offset.x, character.offset.y);
+			character.setAnimationOffsets(anim.name, character.animationOffsets[0], character.animationOffsets[1]);
 		}
 
 		var txt = 'ERROR: No Animation Found';

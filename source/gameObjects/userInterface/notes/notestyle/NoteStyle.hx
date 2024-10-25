@@ -5,7 +5,6 @@ import data.registry.base.IRegistryEntry;
 import meta.util.assets.FlxAnimationUtil;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
-import gameObjects.userInterface.notes.EventSprite;
 import meta.state.editors.content.NoteEditor;
 
 using data.AnimationData.AnimationDataUtil;
@@ -35,27 +34,6 @@ class NoteStyle implements IRegistryEntry<NoteStyleData>
     public function getFallbackID():Null<String>
         return _data.fallback;
 
-    public function buildEventSprite(target:EventSprite):Void
-    {
-      var atlas:Null<FlxAtlasFrames> = buildNoteFrames(false);
-
-      if (atlas == null)
-      {
-        throw 'Could not load spritesheet for note style: $id';
-      }
-  
-      target.frames = atlas;
-      target.alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
-      target.antialiasing = !(_data.assets?.note?.isPixel ?? false);
-  
-      // Apply the animations.
-      buildNoteEventAnimations(target);
-  
-      // Set the scale.
-      target.setGraphicSize(Strumline.STRUMLINE_SIZE * getNoteScale());
-      target.updateHitbox();
-    }
-
     public function buildNoteEditorSprite(target:NoteEditor):Void
     {
       var atlas:Null<FlxAtlasFrames> = buildNoteFrames(false);
@@ -66,7 +44,6 @@ class NoteStyle implements IRegistryEntry<NoteStyleData>
       }
       
       target.frames = atlas;
-      target.alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
       target.antialiasing = !(_data.assets?.note?.isPixel ?? false);
       buildNoteAnimations(target);
     }
@@ -81,7 +58,6 @@ class NoteStyle implements IRegistryEntry<NoteStyleData>
         }
     
         target.frames = atlas;
-        target.alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
         target.antialiasing = !(_data.assets?.note?.isPixel ?? false);
     
         // Apply the animations.
@@ -156,19 +132,7 @@ class NoteStyle implements IRegistryEntry<NoteStyleData>
         var rightData:Null<AnimationData> = fetchNoteAnimationData(RIGHT);
         if (rightData != null) target.animation.addByPrefix('redScroll', rightData.prefix ?? '', rightData.frameRate ?? 24, rightData.looped ?? false);
     }
-
-    function buildNoteEventAnimations(target:EventSprite):Void
-      {
-          var leftData:Null<AnimationData> = fetchNoteAnimationData(LEFT);
-          if (leftData != null) target.animation.addByPrefix('purpleScroll', leftData.prefix ?? '', leftData.frameRate ?? 24, leftData.looped ?? false);
-          var downData:Null<AnimationData> = fetchNoteAnimationData(DOWN);
-          if (downData != null) target.animation.addByPrefix('blueScroll', downData.prefix ?? '', downData.frameRate ?? 24, downData.looped ?? false);
-          var upData:Null<AnimationData> = fetchNoteAnimationData(UP);
-          if (upData != null) target.animation.addByPrefix('greenScroll', upData.prefix ?? '', upData.frameRate ?? 24, upData.looped ?? false);
-          var rightData:Null<AnimationData> = fetchNoteAnimationData(RIGHT);
-          if (rightData != null) target.animation.addByPrefix('redScroll', rightData.prefix ?? '', rightData.frameRate ?? 24, rightData.looped ?? false);
-      }
-
+    
     public function isNoteAnimated():Bool
         return _data.assets?.note?.animated ?? false;
 

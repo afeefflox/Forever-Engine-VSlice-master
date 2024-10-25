@@ -557,7 +557,8 @@ class Strumline extends FlxSpriteGroup
         {
             var noteKindStyle:NoteStyle = NoteKindManager.getNoteStyle(note.kind, this.noteStyle.id) ?? this.noteStyle;
             holdNoteSprite.setupHoldNoteGraphic(noteKindStyle);
-      
+            holdNoteSprite.flipY = downscroll;
+            holdNoteSprite.alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
             holdNoteSprite.parentStrumline = this;
             holdNoteSprite.noteData = note;
             holdNoteSprite.strumTime = note.time;
@@ -567,8 +568,6 @@ class Strumline extends FlxSpriteGroup
             holdNoteSprite.missedNote = false;
             holdNoteSprite.hitNote = false;
             holdNoteSprite.visible = true;
-            holdNoteSprite.alpha = 1.0;
-      
             holdNoteSprite.x = this.x;
             holdNoteSprite.x += getXPos(DIRECTIONS[note.getDirection() % KEY_COUNT]);
             holdNoteSprite.x += STRUMLINE_SIZE / 2;
@@ -672,7 +671,7 @@ class Strumline extends FlxSpriteGroup
     {
         arrow.y -= 10;
         arrow.alpha = 0.0;
-        FlxTween.tween(arrow, {y: arrow.y + 10, alpha: 1}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * index)});
+        FlxTween.tween(arrow, {y: arrow.y + 10, alpha: StrumlineNote.setAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * index)});
     }
 
     public function fadeInArrows():Void

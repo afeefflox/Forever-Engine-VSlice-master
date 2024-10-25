@@ -52,6 +52,7 @@ class FreeplayState extends MusicBeatState
 
 	private var existingSongs:Array<String> = [];
 	private var existingDifficulties:Array<Array<String>> = [];
+	public static var hideBaseGame:Bool = false;
 	var stickerSubState:StickerSubState;
 
 	public function new(?stickers:StickerSubState)
@@ -79,12 +80,8 @@ class FreeplayState extends MusicBeatState
 		{
 			var level:Level = LevelRegistry.instance.fetchEntry(levelId);
 
-			if (level == null)
-			{
-			  trace('[WARN] Could not find level with id (${levelId})');
-			  continue;
-			}
-
+			if (level == null || hideBaseGame && (level.id == 'week1' || level.id == 'tutorial')) continue;
+			
 			for (songId in level.getSongs())
 			{
 				if (!existingSongs.contains(songId.toLowerCase()))

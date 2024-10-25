@@ -6,10 +6,12 @@ import flixel.input.keyboard.FlxKey;
 import meta.CoolUtil;
 import meta.Overlay;
 import meta.data.Highscore;
+#if discord_rpc
 import meta.data.dependency.Discord;
+#end
 import meta.state.*;
 import meta.state.charting.*;
-
+import openfl.Assets;
 using StringTools;
 
 /** 
@@ -113,6 +115,13 @@ class Init extends FlxState
 			NOT_FORCED,
 			['StepMania', 'FNF']
 		],
+		"Input System" => [
+			'forever',
+			Selector,
+			"Chooses a Input System that make you easy it; V-Slice: it won't allow to do anti mash; Forever: it pretty much normal Psych Input",
+			NOT_FORCED,
+			['V-slice', 'Forever']
+		],
 		"Framerate Cap" => [120, Selector, 'Define your maximum FPS.', NOT_FORCED, ['']],
 		"Opaque Arrows" => [
 			false,
@@ -187,11 +196,13 @@ class Init extends FlxState
 		FlxSprite.defaultAntialiasing = true;
 		FlxG.game.focusLostFramerate = 30;
 
+		#if discord_rpc
 		Discord.initializeRPC();
 
 		lime.app.Application.current.onExit.add(function(exitCode) {
 			Discord.shutdownRPC();
 		});
+		#end
 		
 
 		FlxG.save.bind('foreverengine-options');
@@ -218,6 +229,11 @@ class Init extends FlxState
 		ModuleHandler.buildModuleCallbacks();
 		ModuleHandler.loadModuleCache();
 		ModuleHandler.callOnCreate();
+
+		for (id in DataAssets.listDataFilesInPath('songs', '.ogg', SOUND)) //Percache Song (Inst and Voices)
+		{
+			FlxG.sound.cache(id);
+		}
 		trace('Parsing game data took: ${TimerUtil.ms(perfStart)}');
 
 

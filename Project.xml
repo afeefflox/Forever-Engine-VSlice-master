@@ -53,7 +53,6 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxelib name="polymod" />
 	<haxelib name="flxanimate" />
 	<haxelib name="hxvlc" if="windows || linux || android" unless="32bits"/>
-	<haxelib name="discord_rpc" if="cpp" />
 	<haxelib name="hxcpp-debug-server" if="debug" />
 
 	<haxelib name="json2object" /> <!-- JSON parsing -->

@@ -16,6 +16,9 @@ class SustainTrail extends FlxSprite
     public var fullSustainLength:Float = 0;
     public var noteData:Null<NoteJson>;
     public var parentStrumline:Strumline;
+    public var lane:Int = 0;
+    public var gf:Bool = false;
+    public var suffix:String = "";
 
     public var data(get, never):Int;
     function get_data():Int
@@ -29,8 +32,6 @@ class SustainTrail extends FlxSprite
     public var vertices:DrawData<Float> = new DrawData<Float>();
     public var indices:DrawData<Int> = new DrawData<Int>();
     public var uvtData:DrawData<Float> = new DrawData<Float>();
-
-    private var processedGraphic:FlxGraphic;
     private var zoom:Float = 1;
 
     public var endOffset:Float = 0.5; // 0.73 is roughly the bottom of the sprite in the normal graphic!
@@ -83,13 +84,7 @@ class SustainTrail extends FlxSprite
         graphicWidth = graphic.width / 8 * zoom; // amount of notes * 2
         graphicHeight = sustainHeight(sustainLength, parentStrumline?.scrollSpeed ?? 1.0);
         // instead of scrollSpeed, PlayState.SONG.speed
-    
-        flipY = Init.trueSettings.get('Downscroll');
-        
         updateColorTransform();
-
-        alpha = (Init.trueSettings.get('Opaque Holds')) ? 1 : 0.6;
-    
         updateClipping();        
     }
 
@@ -256,7 +251,7 @@ class SustainTrail extends FlxSprite
         // if (!isOnScreen(camera)) continue; // TODO: Update this code to make it work properly.
   
         getScreenPosition(_point, camera).subtractPoint(offset);
-        camera.drawTriangles(processedGraphic, vertices, indices, uvtData, null, _point, blend, true, antialiasing);
+        camera.drawTriangles(graphic, vertices, indices, uvtData, null, _point, blend, true, antialiasing, colorTransform, shader);
       }
   
       #if FLX_DEBUG
@@ -299,16 +294,7 @@ class SustainTrail extends FlxSprite
         vertices = null;
         indices = null;
         uvtData = null;
-        processedGraphic.destroy();
     
         super.destroy();
-      }
-    
-      override function updateColorTransform():Void
-      {
-        super.updateColorTransform();
-        if (processedGraphic != null) processedGraphic.destroy();
-        processedGraphic = FlxGraphic.fromGraphic(graphic, true);
-        processedGraphic.bitmap.colorTransform(processedGraphic.bitmap.rect, colorTransform);
       }
 }

@@ -42,7 +42,7 @@
         "holdNote": {
             "assetPath": "noteskins/notes/pixel/arrowEnds",
             "data": {},
-            "scale": 6.0,
+            "scale": 8.0,
             "isPixel": true
         },
         "noteSplash": {

@@ -33,6 +33,7 @@ import meta.state.editors.content.Prompt.ExitConfirmationPrompt;
 import meta.state.editors.content.Prompt;
 import meta.state.editors.content.EventTab;
 import meta.state.editors.content.NoteEditor;
+import meta.state.editors.content.SustainEditor;
 import haxe.Exception;
 import haxe.io.Bytes;
 @:access(flixel.sound.FlxSound._sound)
@@ -80,12 +81,12 @@ class ChartingState extends MusicBeatState
 
 	var dummyArrow:FlxSprite;
 	var fileDialog:FileDialogHandler = new FileDialogHandler();
-	var curRenderedSustains:FlxTypedGroup<FlxSprite>;
+	var curRenderedSustains:FlxTypedGroup<SustainEditor>;
 	var curRenderedEvents:FlxTypedSpriteGroup<NoteEditor>; //fixing offsets :/
 	var curRenderedNotes:FlxTypedGroup<NoteEditor>;
 	var curRenderedNoteType:FlxTypedGroup<FlxText>;
 
-	var nextRenderedSustains:FlxTypedGroup<FlxSprite>;
+	var nextRenderedSustains:FlxTypedGroup<SustainEditor>;
 	var nextRenderedNotes:FlxTypedGroup<NoteEditor>;
 	var nextRenderedEvents:FlxTypedSpriteGroup<NoteEditor>;
 
@@ -173,7 +174,7 @@ class ChartingState extends MusicBeatState
 		rightIcon.setGraphicSize(0, 65);
 		add(leftIcon);
 		add(rightIcon);
-		curRenderedSustains = nextRenderedSustains = new FlxTypedGroup<FlxSprite>();
+		curRenderedSustains = nextRenderedSustains = new FlxTypedGroup<SustainEditor>();
 		curRenderedNotes = nextRenderedNotes = new FlxTypedGroup<NoteEditor>();
 		curRenderedEvents = nextRenderedEvents = new FlxTypedSpriteGroup<NoteEditor>(Math.floor(-1 * GRID_SIZE) + GRID_SIZE, 0);
 		curRenderedNoteType = new FlxTypedGroup<FlxText>();
@@ -1626,6 +1627,10 @@ class ChartingState extends MusicBeatState
 				}
 			}
 		});
+		curRenderedSustains.forEachAlive(function(note:SustainEditor) {
+			note.alpha = 1;
+			if(note.strumTime <= Conductor.songPosition) note.alpha = 0.4;
+		});
         lastConductorPos = Conductor.songPosition;
     }
 
@@ -2212,13 +2217,16 @@ class ChartingState extends MusicBeatState
 		return retStr;
 	}
 
-	function setupSusNote(note:NoteEditor, beats:Float):FlxSprite {
+	function setupSusNote(note:NoteEditor, beats:Float):SustainEditor {
 		var height:Int = Math.floor(FlxMath.remapToRange(note.sustainLength, 0, Conductor.stepCrochet * 16, 0, GRID_SIZE * 16 * zoomList[curZoom]) + (GRID_SIZE * zoomList[curZoom]) - GRID_SIZE / 2);
 		var minHeight:Int = Std.int((GRID_SIZE * zoomList[curZoom] / 2) + GRID_SIZE / 2);
 		if(height < minHeight) height = minHeight;
 		if(height < 1) height = 1; //Prevents error of invalid height
 
-		var spr:FlxSprite = new FlxSprite(note.x + (GRID_SIZE * 0.5) - 4, note.y + GRID_SIZE / 2).makeGraphic(8, height);
+		var spr:SustainEditor = new SustainEditor(note.noteData, height * 2.2, note.noteStyle);
+		spr.strumTime = note.strumTime;
+		spr.x = note.x + 1;
+		spr.y = note.y + GRID_SIZE / 2;
 		return spr;
 	}
 	

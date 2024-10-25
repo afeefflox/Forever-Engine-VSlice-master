@@ -1,5 +1,5 @@
 package meta.util.assets;
-
+import openfl.utils.AssetType;
 class DataAssets
 {
   static function buildDataPath(path:String):String
@@ -7,9 +7,9 @@ class DataAssets
     return 'assets/${path}';
   }
 
-  public static function listDataFilesInPath(path:String, ?suffix:String = '.json'):Array<String>
+  public static function listDataFilesInPath(path:String, ?suffix:String = '.json', ?assetType:AssetType = TEXT):Array<String>
   {
-    var textAssets = openfl.utils.Assets.list(TEXT);
+    var textAssets = openfl.utils.Assets.list(assetType);
 
     var queryPath = buildDataPath(path);
 

@@ -1,84 +1,93 @@
 {
-    "animations": [
-        {
-            "name": "idle",
-            "prefix": "Dad idle dance",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": []
-        },
-        {
-            "name": "singUP",
-            "prefix": "Dad Sing Note UP",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": []
-        },
-        {
-            "name": "singDOWN",
-            "prefix": "Dad Sing Note DOWN",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": []
-        },
-        {
-            "name": "singLEFT",
-            "prefix": "Dad Sing Note LEFT",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": []
-        },
-        {
-            "name": "singRIGHT",
-            "prefix": "Dad Sing Note RIGHT",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": [] 
-        },
-        {
-            "name": "idle-loop",
-            "prefix": "Dad idle dance",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": [10, 11, 12, 12]
-        },
-        {
-            "name": "singUP-loop",
-            "prefix": "Dad Sing Note UP",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": [4,5,6,7]
-        },
-        {
-            "name": "singLEFT-loop",
-            "prefix": "Dad Sing Note LEFT",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": [4,5,6,7]
-        },
-        {
-            "name": "singRIGHT-loop",
-            "prefix": "Dad Sing Note RIGHT",
-            "offsets": [0, 0],
-            "looped": false,
-            "frameRate": 24,
-            "frameIndices": [4,5,6,7]
-        }
-    ],
-    "version": "1.0.0",
-    "name": "Daddy Dearest",
-    "renderType": "atlas",
-    "assetPath": "characters/DADDY_DEAREST",
-    "offsets": [0, 0],
-    "cameraOffsets": [0, 0],
-    "flipX": false,
-    "isPlayer": false
+	"version": "1.0.0",
+	"renderType": "atlas",
+	"offsets": [0,0],
+	"scale": 1,
+	"name": "Daddy Dearest",
+	"cameraOffsets": [0,0],
+	"flipX": false,
+	"isPlayer": false,
+	"antialiasing": true,
+	"assetPath": "characters/DADDY_DEAREST",
+	"healthIcon": {
+		"offsets": [0,0],
+		"id": "dad",
+		"flipX": false,
+		"antialiasing": true,
+		"scale": 1
+	},
+	"animations": [
+		{
+			"offsets": [0,0],
+			"frameRate": 24,
+			"frameIndices": [],
+			"prefix": "Dad idle dance",
+			"name": "idle",
+			"looped": false
+		},
+		{
+			"offsets": [-10,51],
+			"frameRate": 24,
+			"frameIndices": [],
+			"prefix": "Dad Sing Note UP",
+			"name": "singUP",
+			"looped": false
+		},
+		{
+			"offsets": [0,-31],
+			"frameRate": 24,
+			"frameIndices": [],
+			"prefix": "Dad Sing Note DOWN",
+			"name": "singDOWN",
+			"looped": false
+		},
+		{
+			"offsets": [-9,11],
+			"frameRate": 24,
+			"frameIndices": [],
+			"prefix": "Dad Sing Note LEFT",
+			"name": "singLEFT",
+			"looped": false
+		},
+		{
+			"offsets": [-3,26],
+			"frameRate": 24,
+			"frameIndices": [],
+			"prefix": "Dad Sing Note RIGHT",
+			"name": "singRIGHT",
+			"looped": false
+		},
+		{
+			"offsets": [0,0],
+			"frameRate": 24,
+			"frameIndices": [10,11,12,12],
+			"prefix": "Dad idle dance",
+			"name": "idle-loop",
+			"looped": true
+		},
+		{
+			"offsets": [-10,51],
+			"frameRate": 24,
+			"frameIndices": [4,5,6,7],
+			"prefix": "Dad Sing Note UP",
+			"name": "singUP-loop",
+			"looped": true
+		},
+		{
+			"offsets": [-9,11],
+			"frameRate": 24,
+			"frameIndices": [4,5,6,7],
+			"prefix": "Dad Sing Note LEFT",
+			"name": "singLEFT-loop",
+			"looped": true
+		},
+		{
+			"offsets": [-3,26],
+			"frameRate": 24,
+			"frameIndices": [4,5,6,7],
+			"prefix": "Dad Sing Note RIGHT",
+			"name": "singRIGHT-loop",
+			"looped": true
+		}
+	]
 }

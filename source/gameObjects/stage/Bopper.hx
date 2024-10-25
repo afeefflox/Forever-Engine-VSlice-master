@@ -35,6 +35,8 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
    * Offset the character's sprite by this much when playing each animation.
    */
   public var animOffsets:Map<String, Array<Float>> = new Map<String, Array<Float>>();
+  public var flipXOffsets:Bool = false;
+
 
   /**
    * Add a suffix to the `idle` animation (or `danceLeft` and `danceRight` animations)
@@ -47,7 +49,6 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
    * for characters/players, it should be false so it doesn't cut off their animations!!!!!
    */
   public var shouldBop:Bool = true;
-  public var flippedOffsets:Bool = false; 
 
   function set_idleSuffix(value:String):String
   {
@@ -66,14 +67,17 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
     if (globalOffsets == null) globalOffsets = [0, 0];
     if (globalOffsets == value) return value;
 
-    var xDiff = globalOffsets[0] - value[0];
-    var yDiff = globalOffsets[1] - value[1];
-
-    this.x += xDiff;
-    this.y += yDiff;
     return globalOffsets = value;
   }
+  @:allow(meta.state.editors.CharacterEditorState)
+  var animationOffsets(default, set):Array<Float> = [0, 0];
+  function set_animationOffsets(value:Array<Float>):Array<Float>
+  {
+    if (animationOffsets == null) animationOffsets = [0, 0];
+    if ((animationOffsets[0] == value[0]) && (animationOffsets[1] == value[1])) return value;
 
+    return animationOffsets = value;
+  }
 
   /**
    * Whether to play `danceRight` next iteration.
@@ -286,16 +290,20 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
     }, 1);
   }
 
+  override function getScreenPosition(?result:FlxPoint, ?camera:FlxCamera):FlxPoint
+  {
+    var output:FlxPoint = super.getScreenPosition(result, camera);
+
+    output.x -= (animationOffsets[0] - globalOffsets[0]) * this.scale.x;
+    if (flipXOffsets && flipX)
+      output.x += (animationOffsets[0] * 2 + (width - frameWidth)) * this.scale.x;
+    output.y -= (animationOffsets[1] - globalOffsets[1]) * this.scale.y;
+    return output;
+  }
+
   function applyAnimationOffsets(name:String):Void
   {
-    var offsets = animOffsets.get(name);
-    if (animOffsets.exists(name) && !(offsets[0] == 0 && offsets[1] == 0))
-    {
-      this.offset.set(offsets[0], offsets[1]);
-      if (flippedOffsets) this.offset.x = -this.offset.x;
-    }
-    else
-      this.offset.set(0, 0);
+    this.animationOffsets = animOffsets.get(name);
   }
 
   public function getCurrentAnimation():String

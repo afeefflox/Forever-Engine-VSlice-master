@@ -8,13 +8,13 @@ class NoteEditor extends FunkinSprite
     public var kind:String = "default";
     public var sustainLength:Float = 0;
     public var eventData:Array<SwagEvent> = [];
-
+    public var noteStyle:NoteStyle;
     var DIRECTION_COLORS:Array<String> = ['purple', 'blue', 'green', 'red'];
 
     public function new(noteStyle:NoteStyle)
     {
         super(0, -2000);
-
+        this.noteStyle = noteStyle;
         setupNoteGraphic(noteStyle);
     }
 

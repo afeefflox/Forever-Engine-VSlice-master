@@ -100,9 +100,7 @@ class BaseCharacter extends Bopper
 
     public function flipCharOffsets():Void 
     {
-        this.flippedOffsets = true;
-		this.cameraFocusPoint.x = -this.cameraFocusPoint.x;
-        this.scale.x = -this.scale.x;
+        this.flipXOffsets = true;
         switchAnim('danceLeft', 'danceRight');
         for (i in animOffsets.keys()) {
             if (i.startsWith("singRIGHT")) {
@@ -127,7 +125,7 @@ class BaseCharacter extends Bopper
     }
 
     inline public function setFlipX(value:Bool):Void {
-		this.flippedOffsets = false;
+		this.flipXOffsets = false;
 		if ((this.characterType == BF) != this._data.isPlayer)
 			flipCharOffsets();
 		this.flipX = value;
@@ -190,6 +188,10 @@ class BaseCharacter extends Bopper
         
         if (isDead) return;
 
+        if (justPressedNote() && this.characterType == BF) holdTimer = 0;
+
+
+
         eventElapsed = event.elapsed;
 
         //No need to bf input shit cuz that will not to retrun idle if bf was oppoennt lol
@@ -197,10 +199,11 @@ class BaseCharacter extends Bopper
         if (getCurrentAnimation().startsWith('sing'))
         {
             holdTimer += event.elapsed;
-            var singTimeSec:Float = Conductor.stepCrochet * 0.0011 * 8;
+            var singTimeSec:Float = 8 * (Conductor.stepCrochet / 1000);
             if (getCurrentAnimation().endsWith('miss')) singTimeSec *= 2; 
-            
-            if (holdTimer > singTimeSec)
+            var shouldStopSinging:Bool = (this.characterType == BF) ? !isHoldingNote() : true;
+
+            if (holdTimer > singTimeSec  && shouldStopSinging)
             {
                 holdTimer = 0;
                 dance(true);
@@ -242,15 +245,17 @@ class BaseCharacter extends Bopper
         super.onNoteHit(event);
 
         if (event.eventCanceled || event.note.noAnim) return;
-        
-
-        var baseString = 'sing' + Strumline.getArrowFromNumber(event.note.data).toUpperCase() + event.note.suffix;
-
+        sing(event.note);
+    }
+    
+    public function sing(note:NoteSprite, ?suffix:String = "")
+    {
         //so uh it will be cause duo sing it 
-        if (event.note.lane == 0  && characterType == BF && !event.note.gf
-            || event.note.lane == 1 && characterType == DAD && !event.note.gf 
-            || event.note.gf && characterType == GF) 
+        if (note.lane == 0  && characterType == BF && !note.gf
+            || note.lane == 1 && characterType == DAD && !note.gf 
+            || note.gf && characterType == GF) 
         {
+            var baseString = 'sing' + Strumline.getArrowFromNumber(note.data).toUpperCase() + note.suffix + suffix;
             this.playAnim(baseString, true);
             this.holdTimer = 0;
         }
@@ -262,15 +267,7 @@ class BaseCharacter extends Bopper
 
         if (event.eventCanceled || event.note.noAnim) return;
 
-        var baseString = 'sing' + Strumline.getArrowFromNumber(event.note.data).toUpperCase() + event.note.suffix + "miss";
-
-        if (event.note.lane == 0  && characterType == BF && !event.note.gf
-            || event.note.lane == 1 && characterType == DAD && !event.note.gf 
-            || event.note.gf && characterType == GF) 
-        {
-            this.playAnim(baseString, true);
-            this.holdTimer = 0;
-        }
+        sing(event.note, 'miss');
     }
     
     public override function onNoteGhostMiss(event:GhostMissNoteScriptEvent)
@@ -286,6 +283,22 @@ class BaseCharacter extends Bopper
             this.playAnim(baseString, true);
             this.holdTimer = 0;
         }
+    }
+
+    function justPressedNote(player:Int = 1):Bool
+    {
+        return PlayerSettings.player1.controls.LEFT_P
+        || PlayerSettings.player1.controls.DOWN_P
+        || PlayerSettings.player1.controls.UP_P
+        || PlayerSettings.player1.controls.RIGHT_P;
+    }
+
+    function isHoldingNote(player:Int = 1):Bool
+    {
+        return PlayerSettings.player1.controls.LEFT
+        || PlayerSettings.player1.controls.DOWN
+        || PlayerSettings.player1.controls.UP
+        || PlayerSettings.player1.controls.RIGHT;
     }
 
     public override function onDestroy(event:ScriptEvent):Void
