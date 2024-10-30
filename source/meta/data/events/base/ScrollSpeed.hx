@@ -1,89 +1,109 @@
 package meta.data.events.base;
 
-class ScrollSpeed extends Events
+class ScrollSpeedEvent extends SongEvent
 {
     public function new()
     {
-        super('Scroll Speed');
-        this.values = [
-           1,
-           4,
-           [
-            //entire FlxEase List
-            'instant',
-            'linear',
-            'sineIn',
-            'sineOut',
-            'sineInOut',
-            'quadIn',
-            'quadOut',
-            'quadInOut',
-            'cubeIn',
-            'cubeOut',
-            'cubeInOut',
-            'quartIn',
-            'quartOut',
-            'quartInOut',
-            'quintIn',
-            'quintOut',
-            'quintInOut',
-            'expoIn',
-            'expoOut',
-            'expoInOut',
-            'smoothStepIn',
-            'smoothStepOut',
-            'smoothStepInOut',
-            'elasticIn',
-            'elasticOut',
-            'elasticInOut',
-           ],
-           [ 
-            'boyfriend',
-            'dad',
-            'both'
-           ],
-           false
-        ];
+        super('ScrollSpeed');
     }
 
-    override function returnDescription():String
+    public override function handleEvent(data:SongEventData)
     {
-        return 'Speed CHART MODE \nValue 1: Scroll \nValue 2: Durations \nValue 3: Ease \nValue 4: Strumline Target \nValue 5: Absolute (Multiplicative Scroll enabled?)';
-    }
+        if (PlayState.instance == null) return;
 
-    override function initFunction(params:Array<Dynamic>)
-    {
-        super.initFunction(params);
+        var scroll:Float = data.getFloat('scroll') ?? 1;
+        var duration:Float = data.getFloat('duration') ?? 4.0;
+        var ease:String = data.getString('ease') ?? 'linear';
+        var strumline:Int = data.getInt('strumline') ?? 0;
+        var absolute:Bool = data.getBool('absolute') ?? false;
 
-        var strumlineNames:Array<String> = [];
-        var scroll:Float = Std.parseFloat(params[0]);
-        var absolute:Bool = params[4];
+        if (!absolute) scroll = scroll * (PlayState.instance?.currentChart?.scrollSpeed ?? 1.0);
 
-        if (!absolute)  scroll = scroll * (PlayState?.SONG?.speed ?? 1.0);
-
-        switch (params[3])
+        switch (ease)
         {
-            case 'both':
-                strumlineNames = ['plrStrums', 'cpuStrums'];
-            case 'boyfriend':
-                strumlineNames = ['plrStrums'];
-            case 'dad':
-                strumlineNames = ['cpuStrums'];
-        }
-
-        switch (params[2])
-        {
-            case 'instant':
-                PlayState.instance.tweenScrollSpeed(scroll, 0, null, strumlineNames);
+            case 'INSTANT':
+                PlayState.instance.tweenScrollSpeed(scroll, 0, null, strumline);
             default:
-                var durSeconds = Conductor.stepCrochet * params[1] / 1000;
-                var easeFunction:Null<Float->Float> = Reflect.field(FlxEase, params[2]);
+                var durSeconds = Conductor.instance.stepLengthMs * duration / 1000;
+                var easeFunction:Null<Float->Float> = Reflect.field(FlxEase, ease);
                 if (easeFunction == null)
                 {
-                  trace('Invalid ease function: ${params[2]}');
+                  trace('Invalid ease function: $ease');
                   return;
                 }
-                PlayState.instance.tweenScrollSpeed(scroll, durSeconds, easeFunction, strumlineNames);
+        
+                PlayState.instance.tweenScrollSpeed(scroll, durSeconds, easeFunction, strumline);
         }
+    }
+
+    public override function getTitle():String return 'Scroll Speed';
+
+    public override function getEventSchema():SongEventSchema
+    {
+        return new SongEventSchema([
+            {
+                name: 'scroll',
+                title: 'Target Value',
+                defaultValue: 1.0,
+                step: 0.1,
+                type: SongEventFieldType.FLOAT,
+                units: 'x'
+            },
+            {
+                name: 'duration',
+                title: 'Duration',
+                defaultValue: 4.0,
+                step: 0.5,
+                type: SongEventFieldType.FLOAT,
+                units: 'steps'
+            },
+            {
+                name: 'ease',
+                title: 'Easing Type',
+                defaultValue: 'linear',
+                type: SongEventFieldType.ENUM,
+                keys: [
+                  'Linear' => 'linear',
+                  'Instant (Ignores Duration)' => 'INSTANT',
+                  'Sine In' => 'sineIn',
+                  'Sine Out' => 'sineOut',
+                  'Sine In/Out' => 'sineInOut',
+                  'Quad In' => 'quadIn',
+                  'Quad Out' => 'quadOut',
+                  'Quad In/Out' => 'quadInOut',
+                  'Cube In' => 'cubeIn',
+                  'Cube Out' => 'cubeOut',
+                  'Cube In/Out' => 'cubeInOut',
+                  'Quart In' => 'quartIn',
+                  'Quart Out' => 'quartOut',
+                  'Quart In/Out' => 'quartInOut',
+                  'Quint In' => 'quintIn',
+                  'Quint Out' => 'quintOut',
+                  'Quint In/Out' => 'quintInOut',
+                  'Expo In' => 'expoIn',
+                  'Expo Out' => 'expoOut',
+                  'Expo In/Out' => 'expoInOut',
+                  'Smooth Step In' => 'smoothStepIn',
+                  'Smooth Step Out' => 'smoothStepOut',
+                  'Smooth Step In/Out' => 'smoothStepInOut',
+                  'Elastic In' => 'elasticIn',
+                  'Elastic Out' => 'elasticOut',
+                  'Elastic In/Out' => 'elasticInOut'
+                ]
+            },
+            {
+                name: 'strumline',
+                title: 'Target Strumline',
+                defaultValue: 0,
+                step: 1,
+                type: SongEventFieldType.INTEGER
+            },
+            {
+                name: 'absolute',
+                title: 'Absolute',
+                defaultValue: false,
+                type: SongEventFieldType.BOOL,
+            }
+        ]);
     }
 }

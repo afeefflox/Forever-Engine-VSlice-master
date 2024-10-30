@@ -124,18 +124,17 @@ class NoteScriptEvent extends ScriptEvent
 
 class SongEventScriptEvent extends ScriptEvent
 {
-  public var name:String;
-  public var params:Array<Dynamic>;
-  public function new(name:String, params:Array<Dynamic>)
+  public var eventData(default, null):SongEventData;
+  public function new(eventData:SongEventData)
   {
     super(SONG_EVENT, true);
-    this.name = name;
-    this.params = params;
+    this.eventData = eventData;
+
   }
 
   public override function toString():String
   {
-    return 'SongEventScriptEvent(name=' + name + ' params=' + params  + ')';
+    return 'SongEventScriptEvent(event=' + eventData + ')';
   }
 }
 

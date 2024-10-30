@@ -61,7 +61,7 @@ class NoteSprite extends FunkinSprite
     function get_data():Int
         return noteData.getDirection();
 
-    public var noteData:NoteJson;
+    public var noteData:SongNoteData;
 
     public var isHoldNote(get, never):Bool;
     function get_isHoldNote():Bool

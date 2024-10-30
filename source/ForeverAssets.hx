@@ -81,7 +81,7 @@ class ForeverAssets
 	public static function generateCheckmark(x:Float, y:Float, asset:String)
 	{
 		var newCheckmark:Checkmark = new Checkmark(x, y);
-		newCheckmark.frames = Paths.getSparrowAtlas('UI/base/$asset');
+		newCheckmark.frames = Paths.getSparrowAtlas('UI/base/checkboxThingie');
 		newCheckmark.antialiasing = true;
 
 		newCheckmark.animation.addByPrefix('false finished', 'uncheckFinished');

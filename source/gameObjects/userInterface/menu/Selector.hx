@@ -37,20 +37,11 @@ class Selector extends FlxTypedSpriteGroup<FlxSprite>
 		var shiftX = 48, shiftY = 35;
 		// generate multiple pieces
 
-		#if html5
-		// lol heres how we fuck with everyone
-		var lock = new FlxSprite(shiftX + ((word.length) * 50) + (shiftX * 0.25) + ((isNumber) ? 20 : 0), shiftY);
-		lock.frames = Paths.getSparrowAtlas('menus/base/storymenu/campaign_menu_UI_assets');
-		lock.animation.addByPrefix('lock', 'lock', 24, false);
-		lock.animation.play('lock');
-		add(lock);
-		#else
-		leftSelector = createSelector(shiftX, shiftY, word, 'left');
+        leftSelector = createSelector(shiftX, shiftY, word, 'left');
 		rightSelector = createSelector(shiftX + ((word.length) * 50) + (shiftX * 0.25) + ((isNumber) ? 20 : 0), shiftY, word, 'right');
 
 		add(leftSelector);
 		add(rightSelector);
-		#end
 
 		chosenOptionString = Std.string(Init.trueSettings.get(word));
 		//trace(isNumber);
@@ -63,10 +54,10 @@ class Selector extends FlxTypedSpriteGroup<FlxSprite>
 	public function createSelector(objectX:Float = 0, objectY:Float = 0, word:String, dir:String):FNFSprite
 	{
 		var returnSelector = new FNFSprite(objectX, objectY);
-		returnSelector.frames = Paths.getSparrowAtlas('menus/base/storymenu/campaign_menu_UI_assets');
+		returnSelector.frames = Paths.getSparrowAtlas('menus/base/storymenu/ui/arrows');
 
-		returnSelector.animation.addByPrefix('idle', 'arrow $dir', 24, false);
-		returnSelector.animation.addByPrefix('press', 'arrow push $dir', 24, false);
+		returnSelector.animation.addByPrefix('idle', '${dir}Idle', 24, false);
+		returnSelector.animation.addByPrefix('press', '${dir}Confirm', 24, false);
 		returnSelector.addOffset('press', 0, -10);
 		returnSelector.playAnim('idle');
 

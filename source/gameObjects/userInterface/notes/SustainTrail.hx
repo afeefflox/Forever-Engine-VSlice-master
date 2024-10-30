@@ -14,7 +14,7 @@ class SustainTrail extends FlxSprite
     public var noteDirection:NoteDirection = 0;
     public var sustainLength(default, set):Float = 0; // millis
     public var fullSustainLength:Float = 0;
-    public var noteData:Null<NoteJson>;
+    public var noteData:Null<SongNoteData>;
     public var parentStrumline:Strumline;
     public var lane:Int = 0;
     public var gf:Bool = false;
@@ -90,7 +90,8 @@ class SustainTrail extends FlxSprite
 
     function getBaseScrollSpeed()
     {
-        return (PlayState.SONG?.speed ?? 1.0);
+      return (PlayState.instance?.currentChart?.scrollSpeed ?? 1.0);
+
     }
 
     var previousScrollSpeed:Float = 1;

@@ -2,7 +2,6 @@ import meta.state.PlayState;
 import gameObjects.character.AtlasCharacter;
 import gameObjects.character.CharacterType;
 
-
 class Girlfriend extends AtlasCharacter
 {
     function new() {

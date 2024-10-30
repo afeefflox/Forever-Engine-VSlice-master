@@ -115,13 +115,13 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
 
       if (isAnimated)
       {
-        var texture:FlxAtlasFrames = Paths.getAtlas(dataProp.assetPath);
+        var texture:FlxAtlasFrames = Paths.getAtlas(_data.folder + dataProp.assetPath);
         var assetList = [];
         for (anim in dataProp.animations)
         {
-          if (anim.assetPath != null && !assetList.contains(anim.assetPath))
+          if (anim.assetPath != null && !assetList.contains(_data.folder + anim.assetPath))
           {
-            assetList.push(anim.assetPath);
+            assetList.push(_data.folder + anim.assetPath);
           }
         }
   
@@ -152,7 +152,7 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
       else
       {
         // Initalize static sprite.
-        propSprite.loadGraphic(Paths.image(dataProp.assetPath));
+        propSprite.loadGraphic(Paths.image(_data.folder + dataProp.assetPath));
 
         // Disables calls to update() for a performance boost.
         propSprite.active = false;
@@ -309,7 +309,8 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
         character.setFlipX(character._data.flipX);
         character.name = 'dad';
       default:
-        this.characters.set(id, character);
+        this.characters.set(character.id, character);
+        character.setFlipX(character._data.flipX);
     }
 
     // Reset the character before adding it to the stage.

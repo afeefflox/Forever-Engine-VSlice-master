@@ -3,19 +3,9 @@ package;
 /*
 	Aw hell yeah! something I can actually work on!
  */
-import flixel.FlxG;
-import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
-import lime.utils.Assets;
-import meta.CoolUtil;
-import openfl.display.BitmapData;
-import openfl.display3D.textures.Texture;
-import openfl.media.Sound;
-import openfl.system.System;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-import sys.FileSystem;
-import sys.io.File;
 
 class Paths
 {
@@ -24,18 +14,41 @@ class Paths
 	inline public static var SOUND_EXT = "ogg";
 
 	// level we're loading
-	public static var currentLevel(default, set):String;
-	static function set_currentLevel(value:String):String
-		return currentLevel = value.toLowerCase();
-
-	inline public static function getPath(file:String, type:AssetType, ?library:Null<String>)
+	static var currentLevel:Null<String> = null;
+	public static function setCurrentLevel(name:Null<String>):Void
 	{
-		if (library != null)
-			return getLibraryPath(file, library);
+		if (name == null)
+			currentLevel = null;
+		else
+			currentLevel = name.toLowerCase();
+	}
+
+	public static function stripLibrary(path:String):String
+	{
+		var parts:Array<String> = path.split(':');
+		if (parts.length < 2) return path;
+		return parts[1];	
+	}
+
+	public static function getLibrary(path:String):String
+	{
+		var parts:Array<String> = path.split(':');
+		if (parts.length < 2) return 'preload';
+		return parts[0];
+	}
+
+	public static function getPath(file:String, type:AssetType, ?library:Null<String>)
+	{
+		if (library != null) return getLibraryPath(file, library);
+
+		if (currentLevel != null)
+		{
+			var levelPath:String = getLibraryPathForce(file, currentLevel);
+			if (exists(levelPath, type)) return levelPath;
+		}
 
 		var levelPath = getLibraryPathForce(file, "shared");
-		if (exists(levelPath, type))
-			return levelPath;
+		if (exists(levelPath, type)) return levelPath;
 
 		return getPreloadPath(file);
 	}
@@ -88,6 +101,9 @@ class Paths
 	inline static public function json(key:String, ?library:String)
 		return getPath('$key.json', TEXT, library);
 
+	inline static public function ui(key:String, ?library:String)
+		return getPath('ui/$key.xml', TEXT, library);
+
 	inline static public function video(key:String, ?library:String)
 		return getPathAlt('videos/$key.${Constants.EXT_VIDEO}', library);
 
@@ -104,9 +120,6 @@ class Paths
 		return frag(key, library);
 	}
 
-	inline static public function charts(song:String, diffculty:String, ?library:String)
-		return getPath('songs/${song.toLowerCase()}/charts/${diffculty.toLowerCase()}.json', TEXT, library);
-
 	static public function sound(key:String, ?library:String)
 		return getPath('sounds/$key.${Constants.EXT_SOUND}', SOUND, library);
 
@@ -119,14 +132,13 @@ class Paths
 	inline static public function voices(song:String, ?suffix:String = "")
 	{
 		if (suffix == null) suffix = '';
-		return getPath('songs/${song.toLowerCase()}/audio/Voices$suffix.${Constants.EXT_SOUND}', SOUND);
+		return getPath('songs/${song.toLowerCase()}/Voices$suffix.${Constants.EXT_SOUND}', SOUND);
 	}
 
-	inline static public function inst(song:String, ?suffix:String = ""):Any
+	inline static public function inst(song:String, ?suffix:String = "")
 	{
 		if (suffix == null) suffix = '';
-
-		return getPath('songs/${song.toLowerCase()}/audio/Inst$suffix.${Constants.EXT_SOUND}', SOUND);
+		return getPath('songs/${song.toLowerCase()}/Inst$suffix.${Constants.EXT_SOUND}', SOUND);
 	}
 
 	inline static public function image(key:String, ?library:String)
@@ -169,4 +181,12 @@ class Paths
 	{
 		return (FlxAtlasFrames.fromAseprite(image(key, library), json('images/$key', library)));
 	}
+}
+
+enum abstract PathsFunction(String)
+{
+  var MUSIC;
+  var INST;
+  var VOICES;
+  var SOUND;
 }

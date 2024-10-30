@@ -202,6 +202,10 @@ class PolymodHandler
     Polymod.addImportAlias('flixel.math.FlxPoint', Type.resolveClass('flixel.math.FlxPoint_HSC'));
     Polymod.addImportAlias('flixel.util.FlxAxes', Type.resolveClass('flixel.util.FlxAxes_HSC'));
     Polymod.addImportAlias('flixel.util.FlxColor', Type.resolveClass('flixel.util.FlxColor_HSC'));
+    Polymod.addDefaultImport(Init);
+    Polymod.addDefaultImport(Paths);
+    Polymod.addDefaultImport(ForeverAssets);
+    Polymod.addDefaultImport(ForeverTools);
   }
 
   /**
@@ -238,13 +242,17 @@ class PolymodHandler
 
     // These MUST be imported at the top of the file and not referred to by fully qualified name,
     // to ensure build macros work properly.
-    NoteStyleRegistry.instance.loadEntries();
-    NoteKindManager.loadScripts();
-    SongHandler.loadModuleCache();
-    LevelRegistry.instance.loadEntries();
-    StageRegistry.instance.loadEntries();
-    EventsHandler.loadModuleCache();
-    CharacterRegistry.loadCharacterCache(); // TODO: Migrate characters to BaseRegistry.
-    ModuleHandler.loadModuleCache();
+
+		//BaseRegistry
+		SongRegistry.instance.loadEntries();
+		LevelRegistry.instance.loadEntries();
+		NoteStyleRegistry.instance.loadEntries();
+		PlayerRegistry.instance.loadEntries();
+		StageRegistry.instance.loadEntries();
+
+		//Non BaseRegistry
+		SongEventRegistry.loadEventCache();
+		NoteKindManager.loadScripts();
+		CharacterRegistry.loadCharacterCache();
   }
 }

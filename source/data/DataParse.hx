@@ -6,7 +6,7 @@ import hxjsonast.Json.JObjectField;
 import hxjsonast.Tools;
 import thx.semver.Version;
 import thx.semver.VersionRule;
-
+import data.importer.LeagcyData.LegacyNote;
 /**
  * `json2object` has an annotation `@:jcustomparse` which allows for mutation of parsed values.
  *
@@ -122,5 +122,22 @@ class DataParse
   static function jsonArrayToDynamicArray(jsons:Array<Json>):Array<Null<Dynamic>>
   {
     return [for (json in jsons) Tools.getValue(json)];
+  }
+
+  public static function legacyNote(json:Json, name:String):LegacyNote
+  {
+    switch (json.value)
+    {
+      case JArray(values):
+        var time:Null<Float> = values[0] == null ? null : Tools.getValue(values[0]);
+        var data:Null<Int> = values[1] == null ? null : Tools.getValue(values[1]);
+        var length:Null<Float> = values[2] == null ? null : Tools.getValue(values[2]);
+        var type:Null<String> = values[3] == null ? null : Tools.getValue(values[3]);
+
+        return new LegacyNote(time, data, length, type);
+      // return null;
+      default:
+        throw 'Expected property $name to be a note, but it was ${json.value}.';
+    }
   }
 }

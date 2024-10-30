@@ -12,7 +12,9 @@ class ScriptsMacro {
 	public static function addAdditionalClasses() {
 		for(inc in [
 			//BASE SOURCE CODE
-			"meta", 'data', 'gameObjects',
+			"meta", 'data', 'gameObjects', 'audio', 'graphics', 
+			//Funkin Vis
+			"funkin.vis",
 			//HAXEUI
 			"haxe.ui.backend.flixel.components", "haxe.ui.containers.dialogs", "haxe.ui.containers.menus", 
 			"haxe.ui.containers.properties", "haxe.ui.core", "haxe.ui.components", "haxe.ui.containers",

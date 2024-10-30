@@ -74,71 +74,13 @@ class CoolUtil
 	{
 		return [for (i in min...max) i];
 	}
-
-	public static function buildVoiceList(SONG:SwagSong, ?suffix:String = ""):Array<String>
-	{
-		var playerId:String = SONG.characters[0];
-		var voicePlayer:String = Paths.voices(SONG.song, '-$playerId$suffix');
-		while (voicePlayer != null && !Paths.exists(voicePlayer))
-		{
-		  // Remove the last suffix.
-		  // For example, bf-car becomes bf.
-		  playerId = playerId.split('-').slice(0, -1).join('-');
-		  // Try again.
-		  voicePlayer = playerId == '' ? null : Paths.voices(SONG.song, '-${playerId}$suffix');
-		}
-		if (voicePlayer == null)
-		{
-		  // Try again without $suffix.
-		  playerId = SONG.characters[0];
-		  voicePlayer = Paths.voices(SONG.song, '-${playerId}');
-		  while (voicePlayer != null && !Paths.exists(voicePlayer))
-		  {
-			// Remove the last suffix.
-			playerId = playerId.split('-').slice(0, -1).join('-');
-			// Try again.
-			voicePlayer = playerId == '' ? null : Paths.voices(SONG.song, '-${playerId}$suffix');
-		  }
-		}
 	
-		var opponentId:String = SONG.characters[1];
-		var voiceOpponent:String = Paths.voices(SONG.song, '-${opponentId}$suffix');
-		while (voiceOpponent != null && !Paths.exists(voiceOpponent))
-		{
-		  // Remove the last suffix.
-		  opponentId = opponentId.split('-').slice(0, -1).join('-');
-		  // Try again.
-		  voiceOpponent = opponentId == '' ? null : Paths.voices(SONG.song, '-${opponentId}$suffix');
-		}
-		if (voiceOpponent == null)
-		{
-		  // Try again without $suffix.
-		  opponentId = SONG.characters[1];
-		  voiceOpponent = Paths.voices(SONG.song, '-${opponentId}');
-		  while (voiceOpponent != null && !Paths.exists(voiceOpponent))
-		  {
-			// Remove the last suffix.
-			opponentId = opponentId.split('-').slice(0, -1).join('-');
-			// Try again.
-			voiceOpponent = opponentId == '' ? null : Paths.voices(SONG.song, '-${opponentId}$suffix');
-		  }
-		}
-	
-		var result:Array<String> = [];
-		if (voicePlayer != null) result.push(voicePlayer);
-		if (voiceOpponent != null) result.push(voiceOpponent);
-		if (voicePlayer == null && voiceOpponent == null)
-		{
-		  // Try to use `Voices.ogg` if no other voices are found.
-		  if(Paths.exists(Paths.voices(SONG.song, '-bf$suffix'))) result.push(Paths.voices(SONG.song, '-bf$suffix'));
-		  if(Paths.exists(Paths.voices(SONG.song, '-dad$suffix'))) result.push(Paths.voices(SONG.song, '-dad$suffix'));
-
-		  if(Paths.exists(Paths.voices(SONG.song, '-player$suffix'))) result.push(Paths.voices(SONG.song, '-player$suffix'));
-		  if(Paths.exists(Paths.voices(SONG.song, '-opponent$suffix'))) result.push(Paths.voices(SONG.song, '-opponent$suffix'));	
-		  if(Paths.exists(Paths.voices(SONG.song, '$suffix'))) result.push(Paths.voices(SONG.song, '$suffix'));		  	  
-
-		}
-		trace('result: $result');
-		return result;
+	@:access(flixel.util.FlxSave.validate)
+	inline public static function getSavePath():String {
+		final company:String = FlxG.stage.application.meta.get('company');
+		// #if (flixel < "5.0.0") return company; #else
+		return '${company}/${flixel.util.FlxSave.validate(FlxG.stage.application.meta.get('file'))}';
+		// #end
 	}
+
 }

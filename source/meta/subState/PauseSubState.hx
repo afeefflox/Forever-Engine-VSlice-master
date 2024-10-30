@@ -65,6 +65,7 @@ class PauseSubState extends MusicBeatSubState
 	var metadata:FlxTypedSpriteGroup<FlxText>;
 	var metadataPractice:FlxText;
 	var metadataDeaths:FlxText;
+	var metadataArtist:FlxText;
 	var menuEntryText:FlxTypedSpriteGroup<Alphabet>;
 	var pauseMusic:FlxSound;
 	var currentEntry:Int = 0;
@@ -78,16 +79,13 @@ class PauseSubState extends MusicBeatSubState
 	public override function create():Void
 	{
 		super.create();
-
+		
 		startPauseMusic();
-	
 		buildBackground();
-	
 		buildMetadata();
-	
 		regenerateMenu();
-	
 		transitionIn();
+		startCharterTimer();
 	}
 
 	public override function update(elapsed:Float):Void
@@ -99,6 +97,8 @@ class PauseSubState extends MusicBeatSubState
 	public override function destroy():Void
 	{
 		super.destroy();
+		charterFadeTween.cancel();
+		charterFadeTween = null;
 		pauseMusic.stop();
 	}
 
@@ -118,7 +118,7 @@ class PauseSubState extends MusicBeatSubState
 
 	function buildBackground():Void
 	{
-		background = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		background = new FunkinSprite().makeSolidColor(FlxG.width, FlxG.height, FlxColor.BLACK);
 		background.alpha = 0;
 		background.scrollFactor.set();
 		background.updateHitbox();
@@ -128,26 +128,32 @@ class PauseSubState extends MusicBeatSubState
 	function buildMetadata():Void
 	{
 		metadata = new FlxTypedSpriteGroup<FlxText>();
-		metadata.scrollFactor.set(0, 0);
+		metadata.scrollFactor.set();
 		add(metadata);
-	
+
 		var metadataSong:FlxText = new FlxText(20, 15, FlxG.width - 40, 'Song Name');
 		metadataSong.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
-		metadataSong.text = '${PlayState.SONG.song}';
-		metadataSong.scrollFactor.set(0, 0);
-		metadata.add(metadataSong);		
+		metadataSong.text = '${PlayState.instance.currentChart.songName}';
+		metadataSong.scrollFactor.set();
+		metadata.add(metadataSong);
 
-		var metadataDifficulty:FlxText = new FlxText(20, metadataSong.y + 32, FlxG.width - 40, 'Difficulty: ');
+		metadataArtist = new FlxText(20, metadataSong.y + 32, FlxG.width - 40, 'Artist: ${Constants.DEFAULT_ARTIST}');
+		metadataArtist.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
+		metadataArtist.text = 'Artist: ${PlayState.instance.currentChart.songArtist}';
+		metadataArtist.scrollFactor.set();
+		metadata.add(metadataArtist);
+
+		var metadataDifficulty:FlxText = new FlxText(20, metadataArtist.y + 32, FlxG.width - 40, 'Difficulty: ');
 		metadataDifficulty.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
-		metadataDifficulty.text += PlayState.curDifficulty.toUpperCase();
-		metadataDifficulty.scrollFactor.set(0, 0);
+		metadataDifficulty.text += PlayState.instance.currentDifficulty.replace('-', ' ').toTitleCase();
+		metadataDifficulty.scrollFactor.set();
 		metadata.add(metadataDifficulty);
-	
+
 		metadataDeaths = new FlxText(20, metadataDifficulty.y + 32, FlxG.width - 40, '${PlayState.instance?.deathCounter} Blue Balls');
 		metadataDeaths.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
 		metadataDeaths.scrollFactor.set(0, 0);
 		metadata.add(metadataDeaths);
-	
+
 		metadataPractice = new FlxText(20, metadataDeaths.y + 32, FlxG.width - 40, 'PRACTICE MODE');
 		metadataPractice.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
 		metadataPractice.visible = PlayState.instance?.isPracticeMode ?? false;
@@ -155,6 +161,31 @@ class PauseSubState extends MusicBeatSubState
 		metadata.add(metadataPractice);
 	
 		updateMetadataText();
+	}
+
+	var charterFadeTween:Null<FlxTween> = null;
+	function startCharterTimer():Void
+	{
+		charterFadeTween = FlxTween.tween(metadataArtist, {alpha: 0.0}, CHARTER_FADE_DURATION,{
+			startDelay: CHARTER_FADE_DELAY,
+			ease: FlxEase.quartOut,
+			onComplete: (_) -> {
+				metadataArtist.text = 'Charter: ${PlayState.instance.currentChart.charter ?? Constants.DEFAULT_CHARTER}';
+				FlxTween.tween(metadataArtist, {alpha: 1.0}, CHARTER_FADE_DURATION, {ease: FlxEase.quartOut,  onComplete: (_) -> {startArtistTimer();}});
+			}
+		});
+	}
+
+	function startArtistTimer():Void
+	{
+		charterFadeTween = FlxTween.tween(metadataArtist, {alpha: 0.0}, CHARTER_FADE_DURATION,{
+			startDelay: CHARTER_FADE_DELAY,
+			ease: FlxEase.quartOut,
+			onComplete: (_) -> {
+				metadataArtist.text = 'Artist: ${PlayState.instance.currentChart.songArtist ?? Constants.DEFAULT_ARTIST}';
+				FlxTween.tween(metadataArtist, {alpha: 1.0}, CHARTER_FADE_DURATION,{ease: FlxEase.quartOut, onComplete: (_) -> {startCharterTimer();}});
+			}
+		});
 	}
 
 
@@ -205,13 +236,7 @@ class PauseSubState extends MusicBeatSubState
 			bullShit++;
 
 			item.alpha = 0.6;
-			// item.setGraphicSize(Std.int(item.width * 0.8));
-
-			if (item.targetY == 0)
-			{
-				item.alpha = 1;
-				// item.setGraphicSize(Std.int(item.width));
-			}
+			if (item.targetY == 0) item.alpha = 1;
 		}
 	}
 
@@ -241,13 +266,9 @@ class PauseSubState extends MusicBeatSubState
 		  case PauseMode.Charting:
 			currentMenuEntries = PAUSE_MENU_ENTRIES_CHARTING.clone();
 		  case PauseMode.Difficulty:
-			// Prepend the difficulties.
 			var entries:Array<PauseMenuEntry> = [];
-			for (i in 0...Constants.DEFAULT_DIFFICULTY_LIST.length)
-			{
-				entries.push({text: CoolUtil.difficultyFromNumber(i), callback: (state) -> changeDifficulty(state, CoolUtil.difficultyFromNumber(i))});
-			}
-			// Add the back button.
+			var difficultiesInVariation = PlayState.instance.currentSong.listDifficulties(PlayState.instance.currentChart.variation, true);
+			for (difficulty in difficultiesInVariation) entries.push({text: difficulty.toTitleCase(), callback: (state) -> changeDifficulty(state, difficulty)});
 			currentMenuEntries = entries.concat(PAUSE_MENU_ENTRIES_DIFFICULTY.clone());
 		  case PauseMode.Cutscene:
 			currentMenuEntries = PAUSE_MENU_ENTRIES_VIDEO_CUTSCENE.clone();
@@ -324,11 +345,15 @@ class PauseSubState extends MusicBeatSubState
 		state.close();
 	}
 
-	static function changeDifficulty(state:PauseSubState, curSelected:String):Void
+	static function changeDifficulty(state:PauseSubState, difficulty:String):Void
 	{
-		PlayState.SONG = Song.loadFromJson(curSelected, PlayState.SONG.song);
-		PlayState.curDifficulty = curSelected;
+		PlayState.instance.currentSong = SongRegistry.instance.fetchEntry(PlayState.instance.currentSong.id.toLowerCase());
+		PlayStatePlaylist.campaignScore = 0;
+		PlayStatePlaylist.campaignDifficulty = difficulty;
+		PlayState.instance.currentDifficulty = PlayStatePlaylist.campaignDifficulty;
 		PlayState.instance.needsReset = true;
+		FreeplayState.rememberedDifficulty = difficulty;
+
 		state.close();
 	}
 
@@ -363,13 +388,13 @@ class PauseSubState extends MusicBeatSubState
 		PlayState.instance.deathCounter = 0;
 		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
 		PlayState.resetMusic();
-		state.openSubState(new StickerSubState(null, (sticker) -> PlayState.isStoryMode ? new StoryMenuState(sticker) :  new FreeplayState(sticker)));
+		state.openSubState(new StickerSubState(null, (sticker) -> PlayStatePlaylist.isStoryMode ? new StoryMenuState(sticker) :  new FreeplayState(sticker)));
 	}
 
 	static function quitToChartEditor(state:PauseSubState):Void
 	{
 		if (FlxG.sound.music != null) FlxG.sound.music.pause(); // Don't reset song position!
-		FlxG.switchState(new meta.state.editors.ChartingState());
+		FlxG.switchState(new meta.state.editors.charting.ChartEditorState());
 		state.close();
 	}
 }

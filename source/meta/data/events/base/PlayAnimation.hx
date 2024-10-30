@@ -1,44 +1,40 @@
 package meta.data.events.base;
 
-//now Move in Built in Game cuz I think it better
-class PlayAnimation extends Events
+class PlayAnimation extends SongEvent
 {
     public function new()
     {
-        super('Play Animation');
-        this.values = [
-            "bf",
-            "hey",
-            true
-        ];
+        super('PlayAnimation');
     }
 
-    override function returnDescription():String
+    public override function handleEvent(data:SongEventData)
     {
-        return 'Basically Play Animation during Mid Song \nValue 1: Character or Props \nValue 2: Animation Name \nValue 3: Force Animation';
-    }
+        if (PlayState.isNull()) return;
 
-    override function initFunction(params:Array<Dynamic>)
-    {
-        super.initFunction(params);
-        if(PlayState.isNull()) return;
-
+        var targetName = data.getString('target');
+        var anim = data.getString('anim');
+        var force = data.getBool('force');
+        if (force == null) force = false;
+    
         var target:FlxSprite = null;
 
-        var anim = params[1];
-        var force = params[2];
-        if (force == null) force = false;        
-
-        switch (params[0])
+        switch (targetName)
         {
-            case 'bf':
+            case 'boyfriend' | 'bf' | 'player':
+                trace('Playing animation $anim on boyfriend.');
                 target = PlayState.instance.boyfriend;
-            case 'dad':
+            case 'dad' | 'opponent':
+                trace('Playing animation $anim on dad.');
                 target = PlayState.instance.dad;
-            case 'gf':
+            case 'girlfriend' | 'gf':
+                trace('Playing animation $anim on girlfriend.');
                 target = PlayState.instance.gf;
             default:
-                target = PlayState.instance.stage.getNamedProp(params[0]);
+                target = PlayState.instance.stage.getNamedProp(targetName);
+                if (target == null) 
+                    trace('Unknown animation target: $targetName');
+                else
+                  trace('Fetched animation target $targetName from stage.');
         }
 
         if (target != null)
@@ -51,5 +47,31 @@ class PlayAnimation extends Events
             else
                 target.animation.play(anim, force);
         }
+    }
+
+    public override function getTitle():String return "Play Animation";
+
+    public override function getEventSchema():SongEventSchema
+    {
+        return new SongEventSchema([
+            {
+                name: 'target',
+                title: 'Target',
+                type: SongEventFieldType.STRING,
+                defaultValue: 'boyfriend',
+            },
+            {
+                name: 'anim',
+                title: 'Animation',
+                type: SongEventFieldType.STRING,
+                defaultValue: 'idle',
+            },
+            {
+                name: 'force',
+                title: 'Force',
+                type: SongEventFieldType.BOOL,
+                defaultValue: false
+            }
+        ]);
     }
 }

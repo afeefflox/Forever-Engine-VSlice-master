@@ -17,6 +17,14 @@ class StageData
   @:optional
   public var cameraZoom:Null<Float>;
 
+  @:default("")
+  @:optional
+  public var library:Null<String>;
+
+  @:default("")
+  @:optional
+  public var folder:Null<String>;
+
   public function new()
   {
     this.version = StageRegistry.STAGE_DATA_VERSION;

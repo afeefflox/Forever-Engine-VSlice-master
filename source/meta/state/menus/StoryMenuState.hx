@@ -158,6 +158,7 @@ class StoryMenuState extends MusicBeatState
 			openSubState(stickerSubState);
 			stickerSubState.degenStickers();
 		}
+		refresh();
 	}
 
 	function updateData():Void
@@ -297,6 +298,7 @@ class StoryMenuState extends MusicBeatState
 
 	function changeDifficulty(change:Int = 0):Void
 	{
+		
 		var currentIndex:Int = Constants.DEFAULT_DIFFICULTY_LIST.indexOf(currentDifficultyId);
 
 		currentIndex += change;
@@ -310,11 +312,7 @@ class StoryMenuState extends MusicBeatState
 			buildDifficultySprite();
 		} 
 
-		if (CoolUtil.difficultyLength <= 1)
-			leftDifficultyArrow.visible = rightDifficultyArrow.visible = false;
-		else
-		    leftDifficultyArrow.visible = rightDifficultyArrow.visible = true;
-
+		leftDifficultyArrow.visible = rightDifficultyArrow.visible = (CoolUtil.difficultyLength <= 1) ? false : true;
 		updateText();
 	}
 
@@ -325,10 +323,7 @@ class StoryMenuState extends MusicBeatState
 		if (levelProps?.members != null && levelProps.members.length > 0)
 		{
 		  // Dispatch event to props.
-		  for (prop in levelProps.members)
-		  {
-			ScriptEventDispatcher.callEvent(prop, event);
-		  }
+		  for (prop in levelProps.members) ScriptEventDispatcher.callEvent(prop, event);
 		}
 	}
 
@@ -348,18 +343,25 @@ class StoryMenuState extends MusicBeatState
 		
 		currentLevelTitle.isFlashing = true;
 		
-		for (prop in levelProps.members)
-		{
-			prop.playConfirm();
-		}	
+		for (prop in levelProps.members) prop.playConfirm();
+		
+		PlayStatePlaylist.playlistSongIds = currentLevel.getSongs();
+		PlayStatePlaylist.isStoryMode = true;
+		PlayStatePlaylist.campaignScore = 0;
+		var targetSongId:String = PlayStatePlaylist.playlistSongIds.shift();
+		var targetSong:Song = SongRegistry.instance.fetchEntry(targetSongId);
+		PlayStatePlaylist.campaignId = currentLevel.id;
+		PlayStatePlaylist.campaignTitle = currentLevel.getTitle();
+		PlayStatePlaylist.campaignDifficulty = currentDifficultyId;
+	
+		var targetVariation:String = targetSong.getFirstValidVariation(PlayStatePlaylist.campaignDifficulty);
 
-		PlayState.storyPlaylist = currentLevel.getSongs();
-		PlayState.isStoryMode = true;
-		PlayState.curDifficulty = currentDifficultyId;
-		PlayState.SONG = Song.loadFromJson(PlayState.curDifficulty, PlayState.storyPlaylist[0].toLowerCase());
-		PlayState.storyWeek = currentLevel.id;
-		PlayState.campaignScore = 0;
-		Main.switchState(new PlayState());
+		LoadingSubState.loadPlayState(
+		{
+			targetSong: targetSong,
+			targetDifficulty: PlayStatePlaylist.campaignDifficulty,
+			targetVariation: targetVariation
+		}, true);
 	}
 
 	function updateBackground(?previousLevelId:String = ''):Void

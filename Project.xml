@@ -35,13 +35,9 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 
 	<source path="source" />
 	<assets path="assets" />
-
 	<assets path="FE-CrashDialog.exe" type="template" if="windows release" />
 
 	<!-- _______________________________ Libraries ______________________________ -->
-
-	<haxedev set='webgl'/>
-
 	<haxelib name="lime" />
 	<haxelib name="openfl" />
 	<haxelib name="flixel" />
@@ -52,6 +48,9 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxelib name="haxeui-flixel" />
 	<haxelib name="polymod" />
 	<haxelib name="flxanimate" />
+	<haxelib name="FlxPartialSound" />
+	<haxelib name="funkin.vis" />
+	<haxelib name="grig.audio" />
 	<haxelib name="hxvlc" if="windows || linux || android" unless="32bits"/>
 	<haxelib name="hxcpp-debug-server" if="debug" />
 
@@ -78,6 +77,9 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 
 	<!-- Always enable Null Object Reference check for crash dialog -->
 	<haxedef name="openfl-enable-handle-error" />
+	<haxedef name="haxeui_no_mouse_reset" />
+	<haxedef name="haxeui_focus_out_on_click" />
+	<haxedef name="haxeui_dont_impose_base_class" />
 
 	<haxedef name="hscriptPos" />
 	<haxedef name="safeMode"/>

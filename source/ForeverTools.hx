@@ -22,7 +22,7 @@ class ForeverTools
 			if (resetVolume)
 				FlxG.sound.music.fadeIn(4, 0, 0.7);
 			// placeholder bpm
-			Conductor.bpm = 102;
+			Conductor.instance.forceBPM(102);
 		}
 		//
 	}

@@ -1,0 +1,51 @@
+import flixel.FlxG;
+import gameObjects.character.MultiAtlasCharacter;
+import gameObjects.character.CharacterType;
+import flxanimate.FlxAnimate;
+import meta.subState.GameOverSubState;
+import meta.state.PlayState;
+
+class Boyfriend extends MultiAtlasCharacter 
+{
+    function new() {
+        super('bf');
+    }
+
+    override function playAnim(name:String, restart:Bool, ignoreOther:Bool, reversed:Bool) 
+    {
+        if (name == "fakeoutDeath") 
+            doFakeoutDeath();
+        else
+            super.playAnim(name, restart, ignoreOther, reversed);
+    }
+
+    function doFakeoutDeath():Void 
+    {
+        var bfFakeout:FlxAnimate = new FlxAnimate(this.x - 440, this.y - 240, Paths.animateAtlas("characters/bfFakeOut"));
+        bfFakeout.anim.addBySymbol('fakeout', 'fake out death BF', 24, false);
+        bfFakeout.visible = true;
+        bfFakeout.zIndex = 1000;
+        bfFakeout.anim.play('fakeout', true);
+		this.visible = false;
+        FlxG.state.add(bfFakeout);
+        FlxG.state.refresh();
+
+        if(Std.isOfType(FlxG.state.subState, GameOverSubState))
+        {
+            FlxG.sound.play(Paths.sound("fakeout_death"), 1.0);
+            FlxG.state.subState.add(bfFakeout);
+            FlxG.state.subState.refresh();
+            FlxG.state.subState.mustNotExit = true;
+            bfFakeout.anim.onComplete(() -> {
+                FlxG.state.subState.mustNotExit = false;
+                GameOverSubState.playBlueBalledSFX();
+            });
+        }
+
+        bfFakeout.anim.onComplete(() -> {
+            bfFakeout.visible = false;
+            this.visible = true;
+            this.playAnim('firstDeath', true, true);
+        });
+    }
+}

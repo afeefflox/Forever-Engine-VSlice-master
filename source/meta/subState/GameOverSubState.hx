@@ -5,8 +5,6 @@ import flixel.FlxObject;
 import flixel.FlxSubState;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
-import meta.data.Conductor.BPMChangeEvent;
-import meta.data.Conductor;
 import meta.state.*;
 import meta.state.menus.*;
 
@@ -76,7 +74,7 @@ class GameOverSubState extends MusicBeatSubState
 			add(boyfriend);
 			boyfriend.resetCharacter();
 		}
-
+		Conductor.instance.update(0);
 		setCameraTarget();
 	}
 
@@ -140,11 +138,11 @@ class GameOverSubState extends MusicBeatSubState
 			PlayState.instance.deathCounter = 0;
 			if (gameOverMusic != null) gameOverMusic.stop();
 
-			openSubState(new StickerSubState(null, (sticker) -> PlayState.isStoryMode ? new StoryMenuState(sticker) :  new FreeplayState(sticker)));
+			openSubState(new StickerSubState(null, (sticker) -> PlayStatePlaylist.isStoryMode ? new StoryMenuState(sticker) :  new FreeplayState(sticker)));
 		}
 
 		if (gameOverMusic != null && gameOverMusic.playing)
-			Conductor.songPosition = gameOverMusic.time;
+			Conductor.instance.update(gameOverMusic.time);
 		else if (boyfriend != null)
 		{
 			if (boyfriend.getCurrentAnimation().startsWith('firstDeath') && boyfriend.isAnimationFinished())

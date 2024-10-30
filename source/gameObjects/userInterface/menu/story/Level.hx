@@ -83,9 +83,9 @@ class Level implements IRegistryEntry<LevelData>
 
   static function getSongDisplayName(songId:String, difficulty:String):String
   {
-    var song:Null<SwagSong> = Song.loadFromJson(difficulty, songId);
+    var song:Null<Song> = SongRegistry.instance.fetchEntry(songId);
     if (song == null) return 'Unknown';
-    return song.song;
+    return song.songName;
   }
 
   /**

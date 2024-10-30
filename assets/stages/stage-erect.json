@@ -1,0 +1,104 @@
+{
+    "props": [
+        {
+            "name":"backDark",
+            "assetPath": "backDark",
+            "position": [729, -170],
+            "scroll": [1, 1],
+            "zIndex": 0
+        },
+        {
+            "name":"brightLightSmall",
+            "assetPath": "brightLightSmall",
+            "position": [967, -103],
+            "scroll": [1.2, 1.2],
+            "zIndex": 10
+        },
+        {
+            "name":"crowd",
+            "assetPath": "crowd",
+            "position": [560, 290],
+            "scroll": [0.8, 0.8],
+            "zIndex": 5,
+            "animations": [
+                {
+                    "name": "idle",
+                    "prefix": "Symbol 2 instance 1",
+                    "frameRate": 12,
+                    "looped": true
+                }
+            ],
+            "startingAnimation": "idle"
+        },
+        {
+            "name":"bg",
+            "assetPath": "bg",
+            "position": [-603, -187],
+            "scroll": [1, 1],
+            "zIndex": 20
+        },
+        {
+            "name":"server",
+            "assetPath": "server",
+            "position": [-361, 205],
+            "scroll": [1, 1],
+            "zIndex": 30
+        },
+        {
+            "name":"lights",
+            "assetPath": "lights",
+            "position": [-601, -147],
+            "scroll": [1.2, 1.2],
+            "zIndex": 4000
+        },
+        {
+            "name":"orangeLight",
+            "assetPath": "orangeLight",
+            "position": [189, -195],
+            "scroll": [1, 1],
+            "zIndex": 80
+        },
+        {
+            "name":"lightgreen",
+            "assetPath": "lightgreen",
+            "position": [-171, 242],
+            "scroll": [1, 1],
+            "zIndex": 40
+        },
+        {
+            "name":"lightred",
+            "assetPath": "lightred",
+            "position": [-101, 560],
+            "scroll": [1, 1],
+            "zIndex": 40
+        },
+        {
+            "name":"lightAbove",
+            "assetPath": "lightAbove",
+            "position": [804, -117],
+            "scroll": [1, 1],
+            "zIndex": 4500
+        }
+    ],
+    "cameraZoom": 0.85,
+    "version": "1.0.0",
+    "folder": "stages/stage/erect/",
+    "characters": {
+        "bf": {
+            "zIndex": 300,
+            "position": [977.5, 865],
+            "cameraOffsets": [-170, -140]
+        },
+        "dad": {
+            "zIndex": 200,
+            "position": [40, 850],
+            "cameraOffsets": [270, -100]
+        },
+        "gf": {
+            "zIndex": 100,
+            "cameraOffsets": [0, 0], 
+            "position": [501.5, 825]
+        }
+    },
+    "name": "Main Stage [Erect]"
+}

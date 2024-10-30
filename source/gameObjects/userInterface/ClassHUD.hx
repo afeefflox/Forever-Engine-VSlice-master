@@ -20,7 +20,7 @@ import meta.CoolUtil;
 import meta.data.Conductor;
 import meta.data.Timings;
 import meta.state.PlayState;
-
+import flixel.util.FlxStringUtil;
 using StringTools;
 
 class ClassHUD extends FlxTypedGroup<FlxBasic>
@@ -49,8 +49,8 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 
 	private var timingsMap:Map<String, FlxText> = [];
 
-	var infoDisplay:String = CoolUtil.dashToSpace(PlayState.SONG.song);
-	var diffDisplay:String = PlayState.curDifficulty.toUpperCase();
+	var infoDisplay:String = PlayState.instance.currentSong.songName;
+	var diffDisplay:String = PlayState.instance.currentDifficulty.toUpperCase();
 	var engineDisplay:String = "FOREVER ENGINE v" + Main.gameVersion;
 
 	// eep
@@ -77,12 +77,14 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 		healthBar.createFilledBar(0xFFFF0000, 0xFF66FF33);
 		// healthBar
 		add(healthBar);
+
+		var currentCharacter:SongCharacterData = PlayState.instance.currentChart.characters;
 		
-		iconP1 = new HealthIcon(CharacterRegistry.fetchCharacterData(PlayState.SONG.characters[0]).healthIcon.id, true);
+		iconP1 = new HealthIcon(CharacterRegistry.fetchCharacterData(currentCharacter.player).healthIcon.id, true);
 		iconP1.y = healthBar.y - (iconP1.height * 0.5);
 		add(iconP1);
 
-		iconP2 = new HealthIcon(CharacterRegistry.fetchCharacterData(PlayState.SONG.characters[1]).healthIcon.id, false);
+		iconP2 = new HealthIcon(CharacterRegistry.fetchCharacterData(currentCharacter.opponent).healthIcon.id, false);
 		iconP2.y = healthBar.y - (iconP2.height * 0.5);
 		add(iconP2);
 	}
@@ -138,7 +140,7 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 		autoplayMark = new FlxText(-5, (Init.trueSettings.get('Downscroll') ? centerMark.y - 60 : centerMark.y + 60), FlxG.width - 800, '[AUTOPLAY]\n', 32);
 		autoplayMark.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
 		autoplayMark.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
-		autoplayMark.visible = game.plrStrums.botplay;
+		autoplayMark.visible = game.playerStrumline.botplay;
 		autoplayMark.screenCenter(X);
 		// repositioning for it to not be covered by the receptors
 		if (Init.trueSettings.get('Centered Notefield'))
@@ -187,7 +189,7 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 
 	public function updateScoreText()
 	{
-		scoreDisplay = 'Score: ${game.songScore}';
+		scoreDisplay = 'Score: ${FlxStringUtil.formatMoney(game.songScore, false, true)}';
 		if (Init.trueSettings.get('Display Accuracy'))
 		{
 			var comboDisplay:String = (Timings.comboDisplay != '' ? ' [${Timings.comboDisplay}] ' : '');

@@ -16,6 +16,7 @@ class BaseCharacter extends Bopper
 
     public var holdTimer:Float = 0;
     public var isDead:Bool = false;
+    public var debug:Bool = false;
     public var _data:CharacterData;
     public var characterOrigin(get, never):FlxPoint;
     function get_characterOrigin():FlxPoint
@@ -199,7 +200,7 @@ class BaseCharacter extends Bopper
         if (getCurrentAnimation().startsWith('sing'))
         {
             holdTimer += event.elapsed;
-            var singTimeSec:Float = 8 * (Conductor.stepCrochet / 1000);
+            var singTimeSec:Float = 8 * (Conductor.instance.stepLengthMs / Constants.MS_PER_SEC);
             if (getCurrentAnimation().endsWith('miss')) singTimeSec *= 2; 
             var shouldStopSinging:Bool = (this.characterType == BF) ? !isHoldingNote() : true;
 

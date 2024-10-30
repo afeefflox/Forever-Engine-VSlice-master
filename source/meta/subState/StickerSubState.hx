@@ -146,7 +146,7 @@ class StickerSubState extends MusicBeatSubState
 
                 sticker.visible = true;
                 var daSound:String = FlxG.random.getObject(sounds);
-                FlxG.sound.play(Paths.sound(daSound));
+                FunkinSound.playOnce(Paths.sound(daSound));
         
                 var frameTimer:Int = FlxG.random.int(0, 2);
         

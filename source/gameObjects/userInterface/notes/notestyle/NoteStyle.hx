@@ -5,7 +5,6 @@ import data.registry.base.IRegistryEntry;
 import meta.util.assets.FlxAnimationUtil;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
-import meta.state.editors.content.NoteEditor;
 
 using data.AnimationData.AnimationDataUtil;
 
@@ -33,20 +32,6 @@ class NoteStyle implements IRegistryEntry<NoteStyleData>
 
     public function getFallbackID():Null<String>
         return _data.fallback;
-
-    public function buildNoteEditorSprite(target:NoteEditor):Void
-    {
-      var atlas:Null<FlxAtlasFrames> = buildNoteFrames(false);
-
-      if (atlas == null)
-      {
-        throw 'Could not load spritesheet for note style: $id';
-      }
-      
-      target.frames = atlas;
-      target.antialiasing = !(_data.assets?.note?.isPixel ?? false);
-      buildNoteAnimations(target);
-    }
 
     public function buildNoteSprite(target:NoteSprite):Void
     {

@@ -63,7 +63,7 @@ class DebugMenuSubState extends MusicBeatSubState
 				case 'Character Editor':
 					FlxG.switchState(new CharacterEditorState());
 				case 'Charting Editor':
-                    FlxG.switchState(new ChartingState());
+                    FlxG.switchState(new meta.state.editors.charting.ChartEditorState());
 			}
             FlxG.sound.music.volume = 0;
         }

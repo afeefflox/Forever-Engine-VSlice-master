@@ -171,8 +171,7 @@ class CustomTitlescreen extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
-		if (FlxG.sound.music != null)
-			Conductor.songPosition = FlxG.sound.music.time;
+		Conductor.instance.update();
 		// FlxG.watch.addQuick('amp', FlxG.sound.music.amplitude);
 		logoBl.scale.x = FlxMath.lerp(newLogoScale, logoBl.scale.x, 0.95);
 		logoBl.scale.y = FlxMath.lerp(newLogoScale, logoBl.scale.y, 0.95);

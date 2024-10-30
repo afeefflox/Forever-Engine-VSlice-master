@@ -43,6 +43,7 @@ EUnterminatedComment;
 EInvalidPreprocessor(msg:String);
 EUnknownVariable(v:String);
 EInvalidIterator(v:String);
+EInvalidInStaticContext(v:String);
 EInvalidOp(op:String);
 EInvalidAccess(f:String);
 // Polymod-specific error types.

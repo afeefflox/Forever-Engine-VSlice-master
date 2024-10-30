@@ -303,7 +303,7 @@ class OptionsMenuState extends MusicBeatState
 			else
 			{
 				if(isPlayState)
-					FlxG.switchState(new PlayState());
+					LoadingSubState.loadPlayState({PlayState.lastParams;});
 				else
 					openSubState(new StickerSubState(null, (sticker) -> new MainMenuState(sticker)));
 
@@ -539,7 +539,7 @@ class OptionsMenuState extends MusicBeatState
 			FlxFlicker.flicker(activeSubgroup.members[curSelection], 0.5, 0.06 * 2, true, false, function(flick:FlxFlicker)
 			{
 				if(isPlayState)
-					FlxG.switchState(new PlayState());
+					LoadingSubState.loadPlayState({PlayState.lastParams;});
 				else
 					openSubState(new StickerSubState(null, (sticker) -> new MainMenuState(sticker)));
 				

@@ -1,5 +1,6 @@
 package gameObjects.userInterface.notes.notekind;
 import gameObjects.userInterface.notes.notekind.ScriptedNoteKind;
+import gameObjects.userInterface.notes.notekind.NoteKind;
 class NoteKindManager
 {
     static var noteKinds:Map<String, NoteKind> = [];
@@ -17,7 +18,7 @@ class NoteKindManager
                 var script:NoteKind = ScriptedNoteKind.init(scriptedClass, "unknown");
                 trace(' Initialized scripted note kind: ${script.noteKind}');
                 noteKinds.set(script.noteKind, script);
-                meta.state.editors.ChartingState.NOTE_KINDS.set(script.noteKind, script.description);
+                meta.state.editors.charting.util.ChartEditorDropdowns.NOTE_KINDS.set(script.noteKind, script.description);
               }
               catch (e)
               {
@@ -69,7 +70,9 @@ class NoteKindManager
         return noteStyleId;
     }
 
-    public static function getNotekinds(idk:String) {
-        return noteKinds.get(idk);
+    public static function getParams(noteKind:Null<String>):Array<NoteKindParam>
+    {
+        if (noteKind == null) return [];
+        return noteKinds.get(noteKind)?.params ?? [];
     }
 }

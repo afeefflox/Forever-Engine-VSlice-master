@@ -162,14 +162,13 @@ class Init extends FlxState
 			"Simplifies the judgement animations, displaying only one judgement / rating sprite at a time.",
 			NOT_FORCED
 		],
-		'favorite Song' => [
+		'Playable Character' => [
 			[]
 		]
 	];
 
 	public static var trueSettings:Map<String, Dynamic> = [];
 	public static var settingsDescriptions:Map<String, String> = [];
-
 	public static var gameControls:Map<String, Dynamic> = [
 		'UP' => [[FlxKey.UP, W], 2],
 		'DOWN' => [[FlxKey.DOWN, S], 1],
@@ -218,12 +217,17 @@ class Init extends FlxState
 		
 		trace('Parsing game data...');
 		var perfStart:Float = TimerUtil.start();
-		EventsHandler.loadModuleCache();
-		SongHandler.loadModuleCache();
-		NoteStyleRegistry.instance.loadEntries();
-		NoteKindManager.loadScripts();
+
+		//BaseRegistry
+		SongRegistry.instance.loadEntries();
 		LevelRegistry.instance.loadEntries();
+		NoteStyleRegistry.instance.loadEntries();
+		PlayerRegistry.instance.loadEntries();
 		StageRegistry.instance.loadEntries();
+
+		//Non BaseRegistry
+		SongEventRegistry.loadEventCache();
+		NoteKindManager.loadScripts();
 		CharacterRegistry.loadCharacterCache();
 
 		ModuleHandler.buildModuleCallbacks();

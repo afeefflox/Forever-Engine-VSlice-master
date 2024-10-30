@@ -106,6 +106,8 @@ package data;
     * @default false
     */
    var isPlayer:Null<Bool>;
+
+   var iconPixelChar:String;
  };
  
  /**

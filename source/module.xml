@@ -9,5 +9,6 @@
 		<class package="haxe.ui.containers.properties" loadAll="true" />
 		<class package="haxe.ui.containers" loadAll="true" />
 		<class package="haxe.ui.core" loadAll="true" />
+		<class package="meta.ui.components" loadAll="true" />
 	</components>
 </module>

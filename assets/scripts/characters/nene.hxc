@@ -1,0 +1,228 @@
+import meta.state.PlayState;
+import gameObjects.character.AtlasCharacter;
+import gameObjects.character.CharacterType;
+import graphics.FunkinSprite;
+import flxanimate.FlxAnimate;
+import flixel.math.FlxPoint;
+import flixel.FlxG;
+import meta.modding.base.ScriptedFlxSpriteGroup;
+import audio.visualize.ABotVis;
+
+class Nene extends AtlasCharacter 
+{
+    //DO NOT THINK NENE FROM HOLOLIVE
+    //DO NOT THINK NENE FROM HOLOLIVE
+    //DO NOT THINK NENE FROM HOLOLIVE
+    //DO NOT THINK NENE FROM HOLOLIVE
+    function new() {
+		super('nene');
+	}
+
+    var abot:FlxAnimate;
+    var pupil:FlxAnimate;
+    var abotViz:ABotVis;
+	var stereoBG:FunkinSprite;
+	var eyeWhites:FunkinSprite;
+
+    var folder:String = 'characters/abot/';
+    function onCreate(event:ScriptEvent) 
+    {
+        super.onCreate(event);
+
+        stereoBG = new FunkinSprite().loadImage(folder + 'stereoBG');
+        eyeWhites = new FunkinSprite().makeSolidColor(160, 60);
+
+        pupil = new FlxAnimate(this.x, this.y, Paths.animateAtlas(folder + "systemEyes"));
+        pupil.anim.addBySymbolIndices('lookleft', 'a bot eyes lookin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 24, false);
+		pupil.anim.addBySymbolIndices('lookright', 'a bot eyes lookin', [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 24, false);
+		pupil.anim.play('lookright', true);
+        pupil.anim.curFrame = pupil.anim.length - 1;
+		pupil.zIndex = this.zIndex - 5;
+
+        abot = new FlxAnimate(this.x, this.y, Paths.animateAtlas(folder + "abotSystem"));
+        abot.anim.addBySymbol('idle', 'Abot System', 24, false);
+		abot.anim.play('idle', true);
+		abot.anim.curFrame = abot.anim.length - 1;
+		abot.zIndex = this.zIndex - 1;
+
+		abotViz = new ABotVis(this.x, this.y);
+		abotViz.zIndex = abot.zIndex + 1;
+    }
+
+    var VULTURE_THRESHOLD = 0.25 * 2;
+    var STATE_DEFAULT = 0;
+    var STATE_PRE_RAISE = 1;
+    var STATE_RAISE = 2;
+    var STATE_READY = 3;
+    var STATE_LOWER = 4;
+    var currentState:Int = STATE_DEFAULT;
+    var MIN_BLINK_DELAY:Int = 3;
+	var MAX_BLINK_DELAY:Int = 7;
+	var blinkCountdown:Int = MIN_BLINK_DELAY;
+
+    function dance(force:Bool) 
+    {
+        if (abot != null)
+            abot.anim.play('idle', force);
+
+        switch(currentState) 
+        {
+            case STATE_DEFAULT:
+                playAnim(hasDanced ? 'danceRight' : 'danceLeft', force);
+				hasDanced = !hasDanced;
+            case STATE_PRE_RAISE:
+                playAnim('danceLeft', false);
+				hasDanced = false;
+            case STATE_READY:
+                if(blinkCountdown == 0)
+                {
+                    playAnim('idleKnife', false);
+					blinkCountdown = FlxG.random.int(MIN_BLINK_DELAY, MAX_BLINK_DELAY);
+                }
+                else
+                    blinkCountdown--;
+            default:
+        }
+    }
+
+    function onSongEvent(event:SongEventScriptEvent)
+    {
+        super.onSongEvent(event);
+
+        if (event.eventData.eventKind == "FocusCamera")
+        {
+            var char = Std.parseInt(event.eventData.value.char);
+            pupil.anim.play((char == 0) ? 'lookright' : 'lookleft', true);
+        }
+    }
+
+    function onSongStart(event:ScriptEvent)
+    {
+		abotViz.initAnalyzer(FlxG.sound.music);
+    }
+
+    override function set_alpha(val:Float):Float
+    {
+        super.set_alpha(val);
+        abotViz.visible = abot.visible = pupil.visible = eyeWhites.visible = stereoBG.visible = val;
+    }
+
+    override function set_visible(val:Bool):Bool
+    {
+        super.set_visible(val);
+        abotViz.visible = abot.visible = pupil.visible = eyeWhites.visible = stereoBG.visible = val;
+    }
+
+    var refershed:Bool = false;
+    function onUpdate(event:UpdateScriptEvent)
+    {
+        super.onUpdate(event);
+
+		if (!refershed)
+        {
+            abot.x = this.x - 100;
+			abot.y = this.y + 216; // 764 - 740
+			abot.zIndex = this.zIndex - 10;
+            PlayState.instance.stage.add(abot);
+
+			abotViz.x = abot.x + 200;
+			abotViz.y = abot.y + 84;
+			abotViz.zIndex = abot.zIndex - 1;
+			PlayState.instance.stage.add(abotViz);
+
+			eyeWhites.x = abot.x + 40;
+			eyeWhites.y = abot.y + 250;
+			eyeWhites.zIndex = abot.zIndex - 10;
+			PlayState.instance.stage.add(eyeWhites);
+
+			pupil.x = abot.x - 507;
+			pupil.y = abot.y - 492;
+			pupil.zIndex = eyeWhites.zIndex + 5;
+			PlayState.instance.stage.add(pupil);
+
+			stereoBG.x = abot.x + 150;
+			stereoBG.y = abot.y + 30;
+			stereoBG.zIndex = abot.zIndex - 8;
+			PlayState.instance.stage.add(stereoBG);
+
+			PlayState.instance.stage.refresh();
+			refershed = true;
+        }
+     
+        transitionState();
+    }
+
+    var animationFinished:Bool = false;
+
+	function onAnimationFinished(name:String) 
+    {
+        super.onAnimationFinished(name);
+
+		switch(currentState) 
+        {
+            case STATE_RAISE:
+				if (name == "raise") {
+					animationFinished = true;
+					transitionState();
+				}
+			case STATE_LOWER:
+				if (name == "lower") {
+					animationFinished = true;
+					transitionState();
+				}
+			default:
+        }
+    }
+
+    function onAnimationFrame(name:String, frameNumber:Int, frameIndex:Int) 
+    {
+        super.onAnimationFrame(name, frameNumber, frameIndex);
+
+		switch(currentState) {
+			case STATE_PRE_RAISE:
+				if (name == "danceLeft" && frameNumber == 13) {
+					animationFinished = true;
+					transitionState();
+				}
+			default:
+		}
+    }
+
+    function transitionState() 
+    {
+        switch (currentState) 
+        {
+			case STATE_DEFAULT:
+				if (PlayState.instance.health <= VULTURE_THRESHOLD) {
+					currentState = STATE_PRE_RAISE;
+				} else {
+					currentState = STATE_DEFAULT;
+				}
+			case STATE_PRE_RAISE:
+				if (PlayState.instance.health > VULTURE_THRESHOLD) {
+					currentState = STATE_DEFAULT;
+				} else if (animationFinished) {
+					currentState = STATE_RAISE;
+					playAnim('raise');
+					animationFinished = false;
+				}
+			case STATE_RAISE:
+				if (animationFinished) {
+					currentState = STATE_READY;
+					animationFinished = false;
+				}
+			case STATE_READY:
+				if (PlayState.instance.health > VULTURE_THRESHOLD) {
+					currentState = STATE_LOWER;
+					playAnim('lower');
+				}
+			case STATE_LOWER:
+				if (animationFinished) {
+					currentState = STATE_DEFAULT;
+					animationFinished = false;
+				}
+			default:
+				currentState = STATE_DEFAULT;
+		}
+    }
+}

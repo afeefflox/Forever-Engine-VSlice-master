@@ -935,7 +935,7 @@ class CharacterEditorState extends MusicBeatState
 				FlxG.switchState(new meta.state.menus.MainMenuState());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
-			else Main.switchState(new PlayState());
+			else Main.switchState(new PlayState(PlayState.lastParams));
 			return;
 		}
 

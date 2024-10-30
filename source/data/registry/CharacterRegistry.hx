@@ -5,7 +5,7 @@ import gameObjects.character.ScriptedCharacter.ScriptedAtlasCharacter;
 import gameObjects.character.ScriptedCharacter.ScriptedMultiAtlasCharacter;
 import gameObjects.character.ScriptedCharacter.ScriptedAnimateAtlasCharacter;
 import openfl.utils.Assets;
-
+import flixel.graphics.frames.FlxFrame;
 
 class CharacterRegistry {
     public static final CHARACTER_DATA_VERSION:String = '1.0.1';
@@ -32,6 +32,7 @@ class CharacterRegistry {
       version: CHARACTER_DATA_VERSION,
       name: "Placeholder Boyfriend",
       assetPath: "characters/BOYFRIEND",
+      iconPixelChar: "bf",
       renderType: CharacterRenderType.Atlas,
       offsets: [0, 0],
       cameraOffsets: [0, 0],
@@ -171,7 +172,7 @@ class CharacterRegistry {
         trace('  Successfully loaded ${Lambda.count(characterCache)} characters.');
     }
 
-    public static function fetchCharacter(charId:String):Null<BaseCharacter>
+    public static function fetchCharacter(charId:String, debug:Bool = false):Null<BaseCharacter>
     {
 
         if (charId == null || charId == '' || !characterCache.exists(charId))
@@ -225,7 +226,8 @@ class CharacterRegistry {
         }
         
         trace('Successfully instantiated character: ${charId}');
-
+        char.debug = debug;
+        
         ScriptEventDispatcher.callEvent(char, new ScriptEvent(CREATE));
 
         return char;
@@ -346,6 +348,9 @@ class CharacterRegistry {
         if (input.healthIcon.id == null)
             input.healthIcon.id = id;
 
+        if(input.iconPixelChar == null)
+          input.iconPixelChar = id;
+
         if (input.healthIcon.scale == null)
             input.healthIcon.scale = 1;
 
@@ -393,5 +398,46 @@ class CharacterRegistry {
         
         // All good!
         return input;
+    }
+
+    public static function getCharPixelIconAsset(char:String):FlxFrame
+    {
+      var charPath:String = 'icons/freeplay/${fetchCharacterData(char).iconPixelChar}pixel' ;
+      if (!Assets.exists(Paths.image(charPath)))
+      {
+        trace('[WARN] Character ${char} has no freeplay icon.');
+        return null;
+      }
+      var isAnimated = Assets.exists(Paths.file('images/$charPath.xml'));
+      var frame:FlxFrame = null;
+  
+      if (isAnimated)
+      {
+        var frames = Paths.getSparrowAtlas(charPath);
+  
+        var idleFrame:FlxFrame = frames.frames.find(function(frame:FlxFrame):Bool {
+          return frame.name.startsWith('idle');
+        });
+  
+        if (idleFrame == null)
+        {
+          trace('[WARN] Character ${char} has no idle in their freeplay icon.');
+          return null;
+        }
+  
+        // so, haxe.ui.backend.AssetsImpl uses the parent width and height, which makes the image go crazy when rendered
+        // so this is a work around so that it uses the actual width and height
+        var imageGraphic = flixel.graphics.FlxGraphic.fromFrame(idleFrame);
+  
+        var imageFrame = flixel.graphics.frames.FlxImageFrame.fromImage(imageGraphic);
+        frame = imageFrame.frame;
+      }
+      else
+      {
+        var imageFrame = flixel.graphics.frames.FlxImageFrame.fromImage(Paths.image(charPath));
+        frame = imageFrame.frame;
+      }
+  
+      return frame;
     }
 }
