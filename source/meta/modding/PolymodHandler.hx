@@ -43,32 +43,55 @@ class PolymodHandler
     // Create the mod root if it doesn't exist.
     createModRoot();
     trace('Initializing Polymod (using all mods)...');
-    loadModsById(getAllModIds());
+    loadModsById(getAllModIds(), 'mods');
+  }
+
+  public static function loadCurrentMods():Void
+  {
+    createModRoot();
+    trace('Initializing Polymod (using configured mods)...');
+    loadModsById([Init.trueSettings.get('Current Mod')], 'mods');
+  }
+
+  public static function loadNoMods():Void
+  {
+    createModRoot();
+    // We still need to configure the debug print calls etc.
+    trace('Initializing Polymod (using no mods)...');
+    loadModsById([], 'mods');
+  }
+
+  public static function loadAllonAddons():Void
+  {
+    FileUtil.createDirIfNotExists('addons');
+    loadModsById(getAllModIds('addons'), 'addons');
   }
   /**
    * Load all the mods with the given ids.
    * @param ids The ORDERED list of mod ids to load.
    */
-  public static function loadModsById(ids:Array<String>):Void
+  public static function loadModsById(ids:Array<String>, ?root:String = 'aaa'):Void
   {
     if (ids.length == 0)
     {
-      trace('You attempted to load zero mods.');
+      trace('You attempted to load zero ${root}.');
     }
     else
     {
-      trace('Attempting to load ${ids.length} mods...');
+      trace('Attempting to load ${ids.length} ${root}...');
     }
 
     buildImports();
 
+    if (modFileSystem == null) modFileSystem = buildFileSystem(root);
 
-    if (modFileSystem == null) modFileSystem = buildFileSystem();
+    var prefix:String = "";
+    if(root != 'mods') prefix = './';
 
     var loadedModList:Array<ModMetadata> = Polymod.init(
       {
         // Root directory for all mods.
-        modRoot: "mods",
+        modRoot: prefix + root,
         // The directories for one or more mods to load.
         dirs: ids,
         // Framework being used to load assets.
@@ -88,20 +111,21 @@ class PolymodHandler
         // Parse hxc files and register the scripted classes in them.
         useScriptedClasses: true
       });
+      
 
     if (loadedModList == null)
     {
-      trace('An error occurred! Failed when loading mods!');
+      trace('An error occurred! Failed when loading ${root}!');
     }
     else
     {
       if (loadedModList.length == 0)
       {
-        trace('Mod loading complete. We loaded no mods / ${ids.length} mods.');
+        trace('Mod loading complete. We loaded no ${root} / ${ids.length} ${root}.');
       }
       else
       {
-        trace('Mod loading complete. We loaded ${loadedModList.length} / ${ids.length} mods.');
+        trace('Mod loading complete. We loaded ${loadedModList.length} / ${ids.length} ${root}.');
       }
     }
 
@@ -111,53 +135,20 @@ class PolymodHandler
       trace('  * ${mod.title} v${mod.modVersion} [${mod.id}]');
       loadedModIds.push(mod.id);
     }
-
-    #if debug
-    var fileList:Array<String> = Polymod.listModFiles(PolymodAssetType.IMAGE);
-    trace('Installed mods have replaced ${fileList.length} images.');
-    for (item in fileList)
-    {
-      trace('  * $item');
-    }
-
-    fileList = Polymod.listModFiles(PolymodAssetType.TEXT);
-    trace('Installed mods have added/replaced ${fileList.length} text files.');
-    for (item in fileList)
-    {
-      trace('  * $item');
-    }
-
-    fileList = Polymod.listModFiles(PolymodAssetType.AUDIO_MUSIC);
-    trace('Installed mods have replaced ${fileList.length} music files.');
-    for (item in fileList)
-    {
-      trace('  * $item');
-    }
-
-    fileList = Polymod.listModFiles(PolymodAssetType.AUDIO_SOUND);
-    trace('Installed mods have replaced ${fileList.length} sound files.');
-    for (item in fileList)
-    {
-      trace('  * $item');
-    }
-
-    fileList = Polymod.listModFiles(PolymodAssetType.AUDIO_GENERIC);
-    trace('Installed mods have replaced ${fileList.length} generic audio files.');
-    for (item in fileList)
-    {
-      trace('  * $item');
-    }
-    #end
   }
 
-  static function buildFileSystem():polymod.fs.ZipFileSystem
+  public static function loadAddonsById(ids:Array<String>, ?root:String = 'aaa'):Void
   {
+
+  }
+
+  static function buildFileSystem(?root:String = "aaa"):polymod.fs.ZipFileSystem
+  {
+    var prefix:String = "";
+    if(root != 'mods') prefix = './';
+      
     polymod.Polymod.onError = PolymodErrorHandler.onPolymodError;
-    return new ZipFileSystem(
-      {
-        modRoot: "mods",
-        autoScan: true
-      });
+    return new ZipFileSystem({modRoot: prefix + root, autoScan: true});
   }
 
   static function buildParseRules():polymod.format.ParseRules
@@ -180,20 +171,23 @@ class PolymodHandler
    * Retrieve a list of metadata for ALL installed mods, including disabled mods.
    * @return An array of mod metadata
    */
-  public static function getAllMods():Array<ModMetadata>
+  public static function getAllMods(?root:String = 'aaa'):Array<ModMetadata>
   {
-    trace('Scanning the mods folder...');
+    trace('Scanning the ${root} folder...');
 
-    if (modFileSystem == null) modFileSystem = buildFileSystem();
+    if (modFileSystem == null) modFileSystem = buildFileSystem(root);
+
+    var prefix:String = "";
+    if(root != 'mods') prefix = './';
 
     var modMetadata:Array<ModMetadata> = Polymod.scan(
       {
-        modRoot: "mods",
+        modRoot: prefix + root,
         apiVersionRule: API_VERSION,
         fileSystem: modFileSystem,
         errorCallback: PolymodErrorHandler.onPolymodError
       });
-    trace('Found ${modMetadata.length} mods when scanning.');
+    trace('Found ${modMetadata.length} ${root} when scanning.');
     return modMetadata;
   }
 
@@ -212,11 +206,12 @@ class PolymodHandler
    * Retrieve a list of ALL mod IDs, including disabled mods.
    * @return An array of mod IDs
    */
-  public static function getAllModIds():Array<String>
+  public static function getAllModIds(?root:String = "aaa"):Array<String>
   {
-    var modIds:Array<String> = [for (i in getAllMods()) i.id];
+    var modIds:Array<String> = [for (i in getAllMods(root)) i.id];
     return modIds;
   }
+  
   
   /**
    * Clear and reload from disk all data assets.
@@ -228,9 +223,8 @@ class PolymodHandler
     ModuleHandler.clearModuleCache();
     Polymod.clearScripts();
 
-    // Forcibly reload Polymod so it finds any new files.
-    // TODO: Replace this with loadEnabledMods().
-    PolymodHandler.loadAllMods();
+    PolymodHandler.loadCurrentMods();
+		//PolymodHandler.loadAllonAddons();
 
     // Reload scripted classes so stages and modules will update.
     Polymod.registerAllScriptClasses();

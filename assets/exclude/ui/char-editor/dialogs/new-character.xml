@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dialog width="300" title="New Character">
+  <grid width="100%">
+    <section-header text="Character Image"/>
+    <box width="175" height="175" style="border:1px dashed $normal-border-color">
+      <scrollview width="100%" height="100%" styleName="no-padding">
+        <image id="charImagePreview" imageScale=".5"/>
+      </scrollview>
+    </box>
+    <textfield id="charId" text="bf" placeholder="Character ID just in case :/"/>
+
+     <button id="charLoadImageButton" text="Load Image"/>
+     <section-header text="Icon (in Game)"/>
+          <hbox width="100%">
+            <box width="150" height="150" style="border:1px dashed $normal-border-color">
+              <scrollview width="100%" height="100%" styleName="no-padding">
+                <image id="iconImagePreview"/>
+              </scrollview>
+            </box>
+      </hbox>
+      <textfield id="iconName" text="bf" placeholder="Icon Name"/>
+   </grid>
+</dialog>

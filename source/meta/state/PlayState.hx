@@ -1,11 +1,12 @@
 package meta.state;
 
+import meta.state.editors.charting.ChartEditorState;
 import flixel.addons.transition.FlxTransitionableState;
 #if desktop
 import meta.data.dependency.Discord;
 #end
 
-class PlayState extends MusicBeatState
+class PlayState extends MusicBeatSubState
 {
 	public static var instance:PlayState;
 
@@ -110,7 +111,10 @@ class PlayState extends MusicBeatState
 	public var isBotPlayMode:Bool = false;
 	public var isPlayerDying:Bool = false;
 	public var isMinimalMode:Bool = false;
-	public var isChartingMode:Bool = false;
+	public var isChartingMode(get, never):Bool;
+	public var isSubState(get, never):Bool;
+	function get_isSubState():Bool return this._parentState != null;
+	function get_isChartingMode():Bool return this._parentState != null && Std.isOfType(this._parentState, ChartEditorState);
 	public var canPause:Bool = true;
 	public var needsReset:Bool = false;
 	var previousFrameTime:Int = 0;
@@ -202,7 +206,11 @@ class PlayState extends MusicBeatState
 
 			lime.app.Application.current.window.alert(message, 'Error loading PlayState');
 
-			FlxG.switchState(() -> new MainMenuState());
+			if (isSubState)
+				this.close();
+			else
+				FlxG.switchState(() -> new MainMenuState());
+			
 			return false;
 		}
 		return true;
@@ -656,7 +664,7 @@ class PlayState extends MusicBeatState
 			{
 				if (FlxG.keys.justPressed.ENTER && canPause && VideoCutscene.cutsceneType != CutsceneType.MIDSONG)
 				{
-					paused = true;
+
 					VideoCutscene.pause();
 
 					var pauseSubState:FlxSubState = new PauseSubState({mode: Cutscene});
@@ -694,10 +702,17 @@ class PlayState extends MusicBeatState
 				// charting state (more on that later)
 				if ((FlxG.keys.justPressed.SEVEN) && (!startingSong) && !disableKeys)
 				{
-					resetMusic();
-					Main.switchState(new meta.state.editors.charting.ChartEditorState({
-						targetSongId: currentSong.id
-					}));
+					persistentUpdate = false;
+					if (isChartingMode)
+					{
+						FlxG.sound.music?.pause();
+						this.close();				
+					}
+					else
+					{
+						this.remove(stage);
+						FlxG.switchState(() -> new ChartEditorState({targetSongId: currentSong.id}));
+					}
 				}
 
 				if ((FlxG.keys.justPressed.EIGHT) && (!startingSong) && !disableKeys)
@@ -727,7 +742,6 @@ class PlayState extends MusicBeatState
 
 			if (health <= Constants.HEALTH_MIN && !isPracticeMode && !isPlayerDying)
 			{
-				paused = true;
 				persistentUpdate = persistentDraw = false;
 				isPlayerDying = true;
 
@@ -1057,8 +1071,6 @@ class PlayState extends MusicBeatState
 			  dispatchEvent(event);
 			  if (event.eventCanceled) return;
 
-			  
-	  
 			  playerStrumline.hitNote(note);
 			  playerStrumline.playNoteSplash(note.noteData.getDirection());
 			  if (note.holdNoteSprite != null) playerStrumline.playNoteHoldCover(note.holdNoteSprite);
@@ -1079,12 +1091,14 @@ class PlayState extends MusicBeatState
 				  }
 			  }
 
-			  if(!note.isHoldNote)
+			    if(!note.isHoldNote)
 				{
 					increaseCombo(foundRating, note.noteData.data);
 					popUpScore(foundRating, isLate);
 					healthCall(Timings.judgementsMap.get(foundRating)[3]);
 				}
+				else
+					Timings.notesHit++;
 			}
 			else if (Conductor.instance.songPosition > hitWindowStart)
 			{
@@ -1124,8 +1138,7 @@ class PlayState extends MusicBeatState
 			// While the hold note is being hit, and there is length on the hold note...
 			if (holdNote.hitNote && !holdNote.missedNote && holdNote.sustainLength > 0)
 			{
-				Timings.notesHit++;
-				Timings.updateAccuracy(100, true, Std.int(holdNote.sustainLength));
+				Timings.updateAccuracy(100, true, playerStrumline.holdNotes.length);
 				health += Constants.HEALTH_HOLD_BONUS_PER_SECOND * elapsed;
 				songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * elapsed);
 	  
@@ -1139,17 +1152,7 @@ class PlayState extends MusicBeatState
 
 	function handleSkippedNotes():Void
 	{
-		for(i in 0...strumlines.length)
-		{
-			for (note in strumlines.members[i].notes.members)
-			{
-				if (note == null || note.hasBeenHit) continue;
-				var hitWindowEnd = note.strumTime + Constants.HIT_WINDOW_MS;
-			  
-				if (Conductor.instance.songPosition > hitWindowEnd) note.handledMiss = true;
-			}
-			strumlines.members[i].handleSkippedNotes();  
-		}
+		for(i in 0...strumlines.length) strumlines.members[i].handleSkippedNotes();  
 	}
 
 	function goodNoteHit(note:NoteSprite, strumline:Strumline, ?canDisplayJudgement:Bool = true):Void
@@ -1197,6 +1200,8 @@ class PlayState extends MusicBeatState
 				popUpScore(foundRating, isLate);
 				healthCall(Timings.judgementsMap.get(foundRating)[3]);
 			}
+			else
+				Timings.notesHit++;
 		}
 	}
 
@@ -1250,7 +1255,7 @@ class PlayState extends MusicBeatState
 		updateRPC(true);
 
 		// pause game
-		paused = true;
+
 
 		// update drawing stuffs
 		persistentUpdate = false;
@@ -1544,6 +1549,8 @@ class PlayState extends MusicBeatState
 		}
 		add(vocals);
 
+		SongEventRegistry.precacheEvents(currentChart.events);
+		
 		regenNoteData();
 		ScriptEventDispatcher.callEvent(currentSong, new ScriptEvent(CREATE, false));
 		generatedMusic = true;
@@ -1651,7 +1658,7 @@ class PlayState extends MusicBeatState
 
 		if ((!Init.trueSettings.get('Reduced Movements'))  && FlxG.camera.zoom < (1.35 * FlxCamera.defaultZoom)
 			&& cameraZoomRate > 0
-			&& curBeat % cameraZoomRate == 0)
+			&& Conductor.instance.currentBeat % cameraZoomRate == 0)
 		{
 			cameraBopMultiplier = cameraBopIntensity;
 			camHUD.zoom += hudCameraZoomIntensity * defaultHUDCameraZoom;
@@ -1667,16 +1674,28 @@ class PlayState extends MusicBeatState
 		return false;
 	}
 
+	public static function pauseTweens(resume:Bool):Void 
+	{
+		FlxTween.globalManager.forEach(function(t) t.active = !resume);
+		FlxTimer.globalManager.forEach(function(t) t.active = !resume);
+	}
+
 	public override function openSubState(subState:FlxSubState):Void
 	{
 		var shouldPause = (Std.isOfType(subState, PauseSubState) || Std.isOfType(subState, GameOverSubState));
 
 		if (shouldPause)
 		{
-			// trace('null song');
-			if (FlxG.sound.music != null) FlxG.sound.music.pause();
-			if (vocals != null) vocals.pause();
+			paused = true;
+
+			if (FlxG.sound.music != null && FlxG.sound.music.playing) FlxG.sound.music.pause();
+			if (vocals != null && vocals != null) vocals.pause();
+
 			FlxG.camera.followLerp = 0;
+
+			pauseTweens(true);
+
+			updateRPC(true);
 		}
 		super.openSubState(subState);
 	}
@@ -1691,11 +1710,20 @@ class PlayState extends MusicBeatState
 	  
 			if (event.eventCanceled) return;
 
-			paused = false;
+			pauseTweens(false);
 
-			if (FlxG.sound.music != null && !startingSong) resyncVocals();
+			if (paused)
+			{
+				FlxG.sound.music.play();
+				paused = false;
+			}
+
+			if (FlxG.sound.music != null && !startingSong && !inCutscene) resyncVocals();
+
 			FlxG.camera.followLerp = Constants.DEFAULT_CAMERA_FOLLOW_RATE;
-			Countdown.resumeCountdown();
+
+			
+
 			updateRPC(false);
 		}
 
@@ -1714,14 +1742,7 @@ class PlayState extends MusicBeatState
 
 		deathCounter = 0;
 		
-		if (currentSong != null && currentSong.validScore) 
-		{
-			if(currentVariation != Constants.DEFAULT_VARIATION)
-				Highscore.saveSongScore(currentSong.id + '-' + currentVariation, currentDifficulty, songScore);
-			else
-				Highscore.saveSongScore(currentSong.id, currentDifficulty, songScore);
-		}
-			
+		if (currentSong != null && currentSong.validScore) Highscore.saveSongScore(currentSong.id, currentDifficulty, currentVariation, songScore);
 
 		if (PlayStatePlaylist.isStoryMode)
 		{
@@ -1748,12 +1769,12 @@ class PlayState extends MusicBeatState
 					targetVariation = targetSong.getFirstValidVariation(PlayStatePlaylist.campaignDifficulty) ?? Constants.DEFAULT_VARIATION;
 				}
 
-				FlxG.switchState(new PlayState({
+				LoadingSubState.loadPlayState({
 					targetSong: targetSong,
 					targetDifficulty: PlayStatePlaylist.campaignDifficulty,
 					targetVariation: targetVariation,
 					cameraFollowPoint: cameraFollowPoint.getPosition()
-				}));
+				});
 			}
 		}
 		else

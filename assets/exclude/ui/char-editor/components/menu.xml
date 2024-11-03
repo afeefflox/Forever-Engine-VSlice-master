@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menubar id="menubar" width="100%" height="35" paddingLeft="172">
+  <style>
+    .menu {
+    // The width of the individual menu items
+    width: 160px;
+    }
+  </style>
+
+  <menu text="File" id="menubarMenuFile">
+    <menu-item id="menubarItemNewChar" text="New Character"/>
+    <menu-separator />
+    <menu-item id="menubarItemOpenChar" text="Open Character..." shortcutText="Ctrl+O" />
+    <menu id="menubarItemOpenRecent" text="Open Recent" />
+    <menu-separator />
+    <menu-item id="menubarItemSaveChar" text="Save Character" shortcutText="Ctrl+S" />
+    <menu-item id="menubarItemSaveCharAs" text="Save Character As..." shortcutText="Ctrl+Shift+S" />
+    <menu-separator />
+    <menu-item id="menubarItemClearAnim" text="Clear Animations" style="color: indianred"/>
+    <menu-item id="menubarItemResetOffset" text="Reset Offsets" style="color: indianred"/>
+    <menu-separator />
+    <menu-item id="menubarItemExit" text="Exit" shortcutText="Esc" />
+  </menu>
+
+  <menu text="Edit" id="menubarMenuEdit">
+    <menu-item id="menubarItemUndo" text="Undo" shortcutText="Ctrl + Z"/>
+    <menu-item id="menubarItemRedo" text="Redo" shortcutText="Ctrl + Y"/>
+    <menu-separator />
+    <menu-item id="menubarItemCopy" text="Copy Offsets" shortcutText="Ctrl + C"/>
+    <menu-item id="menubarItemPaste" text="Paste Offsets" shortcutText="Ctrl + V"/>
+    <menu-item id="menubarItemDelete" text="Delete Animation" shortcutText="Ctrl + Del" style="color: indianred"/>
+    <menu-separator />
+    <menu-item id="menubarItemNewAnim" text="New Animation"/>
+  </menu>
+
+  <menu text="View" id="menubarMenuView">
+    <menu text="Theme">
+      <menu-option-box id="menubarItemThemeLight" text="Light" group="menubarItemThemeGroup" tooltip="Change the Background's Color Scheme to Light Mode."/>
+      <menu-option-box id="menubarItemThemeDark" text="Dark" group="menubarItemThemeGroup" tooltip="Change the Background's Color Scheme to Dark Mode." />
+    </menu>
+    <menu-separator />
+    <menu-checkbox id="menubarItemViewGhost" text="View Ghost" selected="true" tooltip="Show Ghost."/>
+  </menu>
+
+  <menu text="Windows" id="menubarMenuWindow">
+    <menu-checkbox id="menubarItemWindowAnim" text="Animation Properties"/>
+    <menu-checkbox id="menubarItemWindowCharacter" text="Character Properties"/>
+  </menu>
+
+  <menu text="Help" id="menubarMenuHelp">
+    <menu-item id="menubarItemUserGuide" text="User Guide" shortcutText="F1" />
+    <menu-item id="menubarItemGoToBackupsFolder" text="Go to Backups Folder" />
+    <menu-item id="menubarItemAbout" text="About..." />
+  </menu>
+  
+  <spacer width="100%" />
+  <label text="PROTOTYPE Functionality is subject to change." verticalAlign="center" />
+</menubar>

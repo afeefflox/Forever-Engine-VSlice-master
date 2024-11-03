@@ -164,6 +164,9 @@ class Init extends FlxState
 		],
 		'Playable Character' => [
 			[]
+		],
+		'Current Mod' => [
+			""
 		]
 	];
 
@@ -184,10 +187,7 @@ class Init extends FlxState
 		'UI_RIGHT' => [[FlxKey.RIGHT, D], 11],
 		'VOLUME_MUTE' => [[FlxKey.ZERO, NONE], 12],
 		'VOLUME_DOWN' => [[FlxKey.NUMPADMINUS, MINUS], 13],
-		'VOLUME_UP' => [[FlxKey.NUMPADPLUS, PLUS], 14],
-		'FREEPLAY_LEFT' => [[Q, null], 15],
-		'FREEPLAY_RIGHT' => [[E, null], 16],
-		'FREEPLAY_FAVORITE' => [[F, null], 17]
+		'VOLUME_UP' => [[FlxKey.NUMPADPLUS, PLUS], 14]
 	];
 
 	override public function create():Void
@@ -210,7 +210,7 @@ class Init extends FlxState
 
 		loadSettings();
 		loadControls();
-
+		
 		#if !html5
 		Main.updateFramerate(trueSettings.get("Framerate Cap"));
 		#end
@@ -306,36 +306,7 @@ class Init extends FlxState
 
 		updateAll();
 	}
-
-	public static function isSongFavorited(id:String):Bool
-	{
-		if (Init.trueSettings.get("favorite Song")[0] == null)
-		{
-			Init.trueSettings.get("favorite Song")[0] = [];
-			saveSettings();
-		};
-
-		return Init.trueSettings.get("favorite Song")[0].contains(id);
-	}
-
-	public static function favoriteSong(id:String):Void
-	{
-		if (!isSongFavorited(id))
-		{
-			Init.trueSettings.get("favorite Song")[0].push(id);
-			saveSettings();
-		}
-	}
-
-	public static function unfavoriteSong(id:String):Void
-	{
-		if (isSongFavorited(id))
-		{
-			Init.trueSettings.get("favorite Song")[0].remove(id);
-			saveSettings();
-		}
-	}
-
+	
 	public static function saveControls():Void
 	{
 		FlxG.save.data.gameControls = gameControls;

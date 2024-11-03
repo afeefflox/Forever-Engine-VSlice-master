@@ -6,7 +6,6 @@ import hscript.Interp;
 import hscript.Tools;
 import polymod.hscript._internal.PolymodExprEx;
 import polymod.hscript._internal.PolymodClassDeclEx.PolymodClassImport;
-import polymod.hscript._internal.PolymodClassDeclEx.PolymodStaticClassReference;
 
 /**
  * Based on code by Ian Harrigan
@@ -17,18 +16,6 @@ import polymod.hscript._internal.PolymodClassDeclEx.PolymodStaticClassReference;
 class PolymodInterpEx extends Interp
 {
 	var targetCls:Class<Dynamic>;
-
-	private var _proxy:PolymodAbstractScriptClass = null;
-
-	var _classDeclOverride:PolymodClassDeclEx = null;
-
-	function getClassDecl():PolymodClassDeclEx {
-		if (_classDeclOverride != null) {
-			return _classDeclOverride;
-		} else {
-			return _proxy._c;
-		}
-	}
 
 	public function new(targetCls:Class<Dynamic>, proxy:PolymodAbstractScriptClass)
 	{
@@ -51,24 +38,19 @@ class PolymodInterpEx extends Interp
 
 	override function cnew(cl:String, args:Array<Dynamic>):Dynamic
 	{
-		// Try to retrieve a scripted class with this name in the same package.
-		if (getClassDecl().pkg != null && getClassDecl().pkg.length > 0) {
-			var localClassId = getClassDecl().pkg.join('.') + "." + cl;
-			var clsRef = PolymodStaticClassReference.tryBuild(localClassId);
-			if (clsRef != null) return clsRef.instantiate(args);
+		if (_scriptClassDescriptors.exists(cl))
+		{
+			// OVERRIDE CHANGE: Create a PolymodScriptClass instead of a hscript.ScriptClass
+			var proxy:PolymodAbstractScriptClass = new PolymodScriptClass(_scriptClassDescriptors.get(cl), args);
+			return proxy;
 		}
-
-		// Try to retrieve a scripted class with this name in the base package.
-		var clsRef = PolymodStaticClassReference.tryBuild(cl);
-		if (clsRef != null) return clsRef.instantiate(args);
-
-		if (_proxy != null)
+		else if (_proxy != null)
 		{
 			@:privateAccess
-			if (getClassDecl().pkg != null)
+			if (_proxy._c.pkg != null)
 			{
 				@:privateAccess
-				var packagedClass = getClassDecl().pkg.join(".") + "." + cl;
+				var packagedClass = _proxy._c.pkg.join(".") + "." + cl;
 				if (_scriptClassDescriptors.exists(packagedClass))
 				{
 					// OVERRIDE CHANGE: Create a PolymodScriptClass instead of a hscript.ScriptClass
@@ -78,9 +60,9 @@ class PolymodInterpEx extends Interp
 			}
 
 			@:privateAccess
-			if (getClassDecl().imports != null && getClassDecl().imports.exists(cl))
+			if (_proxy._c.imports != null && _proxy._c.imports.exists(cl))
 			{
-				var importedClass:PolymodClassImport = getClassDecl().imports.get(cl);
+				var importedClass:PolymodClassImport = _proxy._c.imports.get(cl);
 				if (_scriptClassDescriptors.exists(importedClass.fullPath))
 				{
 					// OVERRIDE CHANGE: Create a PolymodScriptClass instead of a hscript.ScriptClass
@@ -120,11 +102,6 @@ class PolymodInterpEx extends Interp
 			// Force call super function.
 			return super.fcall(o, '__super_${f}', args);
 		}
-		else if (Std.isOfType(o, PolymodStaticClassReference)) {
-			var ref:PolymodStaticClassReference = cast(o, PolymodStaticClassReference);
-
-			return ref.callFunction(f, args);
-		}
 		else if (Std.isOfType(o, PolymodScriptClass))
 		{
 			_nextCallObject = null;
@@ -144,13 +121,9 @@ class PolymodInterpEx extends Interp
 		{
 			if (Std.isOfType(o, HScriptedClass))
 			{
-				// This is a scripted class!
-				// We should try to call the function on the scripted class.
-				// If it doesn't exist, `asc.callFunction()` will handle generating an error message.
-				if (o.scriptCall != null) {
-					return o.scriptCall(f, args);
-				}
-
+				// Could not call the function.
+				// It might be a custom function on the scripted class,
+				// in which case you need to use `scriptCall()` instead.
 				errorEx(EInvalidScriptedFnAccess(f));
 			}
 			else
@@ -162,6 +135,8 @@ class PolymodInterpEx extends Interp
 		return call(o, func, args);
 	}
 
+	private var _proxy:PolymodAbstractScriptClass = null;
+
 	private static var _scriptClassDescriptors:Map<String, PolymodClassDeclEx> = new Map<String, PolymodClassDeclEx>();
 
 	private static function registerScriptClass(c:PolymodClassDeclEx)
@@ -171,22 +146,7 @@ class PolymodInterpEx extends Interp
 		{
 			name = c.pkg.join(".") + "." + name;
 		}
-
-		if (_scriptClassDescriptors.exists(name)) {
-			Polymod.error(SCRIPT_CLASS_ALREADY_REGISTERED, 'A scripted class with the fully qualified name "$name" has already been defined. Please change the class name or the package name to ensure a unique name.');
-			return;
-		} else {
-			Polymod.debug('Registering scripted class $name');
-			_scriptClassDescriptors.set(name, c);
-		}
-	}
-
-	public function clearScriptClassDescriptors():Void {
-		// Clear the script class descriptors.
-		_scriptClassDescriptors.clear();
-
-		// Also destroy local variable scope.
-		this.resetVariables();
+		_scriptClassDescriptors.set(name, c);
 	}
 
 	public static function findScriptClassDescriptor(name:String)
@@ -266,70 +226,83 @@ class PolymodInterpEx extends Interp
 		#end
 			// These overrides are used to handle specific cases where problems occur.
 
-			case EVar(n, _, e, isPublic, isStatic):
-				// Fix to ensure local variables are committed properly.
+			case EVar(n, _, e): // Fix to ensure local variables are committed properly.
 				declared.push({n: n, old: locals.get(n), depth: depth});
-			    locals.set(n, {r: (e == null) ? null : expr(e), depth: depth});
-			    if (depth == 0) {
-					if(isStatic == true) {
-						if(!staticVariables.exists(n)) {
-							staticVariables.set(n, locals[n].r);
-						}
-						return null;
-					}
-					(isPublic ? publicVariables : variables).set(n, locals[n].r);
-				}
+				var result = (e == null) ? null : expr(e);
+				locals.set(n, {r: result, depth: depth});
 				return null;
-			case EFunction(params, fexpr, name, _, isPublic, isStatic, isOverride): // Fix to ensure callback functions catch thrown errors.
-				var __capturedLocals = duplicate(locals);
-				var capturedLocals:Map<String, {r:Dynamic, depth:Int}> = [];
-				for(k=>e in __capturedLocals)
-					if (e != null && e.depth > 0)
-						capturedLocals.set(k, e);
-
+			case EFunction(params, fexpr, name, _): // Fix to ensure callback functions catch thrown errors.
+				var capturedLocals = duplicate(locals);
 				var me = this;
 				var hasOpt = false, minParams = 0;
 				for (p in params)
+				{
 					if (p.opt)
+					{
 						hasOpt = true;
+					}
 					else
+					{
 						minParams++;
-				var f = function(args:Array<Dynamic>) {
-					if (me.locals == null || me.variables == null) return null;
+					}
+				}
 
-					if (((args == null) ? 0 : args.length) != params.length) {
-						if (args.length < minParams) {
+				// This CREATES a new function in memory, that we call later.
+				var newFun = function(args:Array<Dynamic>)
+				{
+					if (((args == null) ? 0 : args.length) != params.length)
+					{
+						if (args.length < minParams)
+						{
 							var str = "Invalid number of parameters. Got " + args.length + ", required " + minParams;
 							if (name != null)
 								str += " for function '" + name + "'";
-							error(ECustom(str));
+							errorEx(ECustom(str));
 						}
 						// make sure mandatory args are forced
 						var args2 = [];
 						var extraParams = args.length - minParams;
 						var pos = 0;
 						for (p in params)
-							if (p.opt) {
-								if (extraParams > 0) {
+						{
+							if (p.opt)
+							{
+								if (extraParams > 0)
+								{
 									args2.push(args[pos++]);
 									extraParams--;
-								} else
+								}
+								else
+								{
 									args2.push(null);
-							} else
+								}
+							}
+							else
+							{
 								args2.push(args[pos++]);
+							}
+						}
 						args = args2;
 					}
-					var old = me.locals, depth = me.depth;
+					var old = me.locals;
+					var depth = me.depth;
 					me.depth++;
 					me.locals = me.duplicate(capturedLocals);
 					for (i in 0...params.length)
+					{
 						me.locals.set(params[i].name, {r: args[i], depth: depth});
+					}
 					var r = null;
 					var oldDecl = declared.length;
 					if (inTry)
-						try {
+					{
+						// True if the SCRIPT wraps the function in a try/catch block.
+						try
+						{
 							r = me.exprReturn(fexpr);
-						} catch (e:Dynamic) {
+						}
+						catch (e:Dynamic)
+						{
 							me.locals = old;
 							me.depth = depth;
 							#if neko
@@ -338,6 +311,7 @@ class PolymodInterpEx extends Interp
 							throw e;
 							#end
 						}
+					}
 					else
 					{
 						// There is no try/catch block. We can add some custom error handling.
@@ -365,30 +339,25 @@ class PolymodInterpEx extends Interp
 					me.depth = depth;
 					return r;
 				};
-				var f = Reflect.makeVarArgs(f);
-				if (name != null) {
-					if (depth == 0) {
-						// global function
-						((isStatic && allowStaticVariables) ? staticVariables : ((isPublic && allowPublicVariables) ? publicVariables : variables)).set(name, f);
-					} else {
+
+				newFun = Reflect.makeVarArgs(newFun);
+				if (name != null)
+				{
+					if (depth == 0)
+					{
+						// Store the function as a global.
+						variables.set(name, newFun);
+					}
+					else
+					{
 						// function-in-function is a local function
 						declared.push({n: name, old: locals.get(name), depth: depth});
-						var ref = {r: f, depth: depth};
+						var ref = {r: newFun, depth: depth};
 						locals.set(name, ref);
 						capturedLocals.set(name, ref); // allow self-recursion
 					}
 				}
-				return f;
-			case EArrayDecl(arr):
-				// Initialize an array (or map) from a declaration.
-				var hasElements = arr.length > 0;
-				var hasMapElements = (hasElements && Tools.expr(arr[0]).match(EBinop("=>", _)));
-
-				if( hasMapElements ) {
-					return exprMap(arr);
-				} else {
-					return exprArray(arr);
-				}
+				return newFun;
 			case ETry(e,n,_,ecatch):
 				var old = declared.length;
 				var oldTry = inTry;
@@ -411,7 +380,7 @@ class PolymodInterpEx extends Interp
 							inTry = oldTry;
 							// declare 'v'
 							declared.push({n: n, old: locals.get(n), depth: depth});
-							locals.set(n,{ r : errValue, depth: depth});
+							locals.set(n,{ r : errValue, depth: depth });
 							var v : Dynamic = expr(ecatch);
 							restore(old);
 							return v;
@@ -429,8 +398,8 @@ class PolymodInterpEx extends Interp
 					restore(old);
 					inTry = oldTry;
 					// declare 'v'
-					declared.push({ n : n, old : locals.get(n), depth: depth});
-					locals.set(n,{ r : err, depth: depth });
+					declared.push({n: n, old: locals.get(n), depth: depth});
+					locals.set(n, {r: err, depth: depth});
 					var v : Dynamic = expr(ecatch);
 					restore(old);
 					return v;
@@ -448,148 +417,20 @@ class PolymodInterpEx extends Interp
 		return super.expr(e);
 	}
 
-	/**
-	 * Parse an expression, but optionally utilizing additional provided type information.
-	 * @param e The expression to parse.
-	 * @param t The explicit type of the expression, if provided.
-	 * @return The parsed expression.
-	 */
-	public function exprWithType(e:Expr, ?t:CType):Dynamic {
-		if (t == null) {
-			return this.expr(e);
-		}
-
-		#if hscriptPos
-		curExpr = e;
-		switch (e.e)
-		{
-		#else
-		switch (e)
-		{
-		#end
-			case EArrayDecl(arr):
-				// Initialize an array (or map) from a declaration.
-				var hasElements = arr.length > 0;
-				var hasMapElements = (hasElements && Tools.expr(arr[0]).match(EBinop("=>", _)));
-				var hasArrayElements = (hasElements && !hasMapElements);
-
-				switch (t) {
-					case CTPath(path, params):
-						if (path.length > 0) {
-							var last = path[path.length - 1];
-							if (last == "Map") {
-								if (!hasElements) {
-									// Properly handle maps with no keys.
-									return this.makeMapEmpty(params[0]);
-								}
-								else if (hasMapElements) {
-									// Properly handle maps with no keys.
-									return exprMap(arr);
-								} else {
-									#if hscriptPos
-									curExpr = e;
-									#end
-									var error = 'Invalid expression in map initialization (expected key=>value, got ${hscript.Printer.toString(e)})';
-									errorEx(ECustom(error));
-								}
-							} else if (last == "Array") {
-								if (!hasElements) {
-									// Create an empty Array<Dynamic>.
-									return exprArray([]);
-								}
-								if (hasArrayElements) {
-									// Create an array of elements.
-									return exprArray(arr);
-								} else {
-									#if hscriptPos
-									curExpr = e;
-									#end
-									var error = 'Invalid expression in array initialization (expected no key=>value pairs, got ${hscript.Printer.toString(e)})';
-									errorEx(ECustom(error));
-								}
-							} else {
-								// Whatever.
-							}
-						}
-					default:
-						// Whatever.
-				}
-
-			default:
-				// Whatever.
-			}
-
-			// Fallthrough.
-			return this.expr(e);
-		}
-
-	function exprMap(entries:Array<Expr>):Dynamic {
-		if (entries.length == 0) return super.makeMap([],[]);
-
-		var keys = [];
-		var values = [];
-		for( e in entries ) {
-			switch(Tools.expr(e)) {
-				case EBinop("=>", eKey, eValue):
-					// Look for map entries.
-					keys.push(expr(eKey));
-					values.push(expr(eValue));
-				default:
-					// Complain about anything else.
-					// This error message has been modified to provide more information.
-					#if hscriptPos
-					curExpr = e;
-					#end
-					var error = 'Invalid expression in map initialization (expected key=>value, got ${hscript.Printer.toString(e)})';
-					errorEx(ECustom(error));
-			}
-		}
-
-		return super.makeMap(keys, values);
-	}
-
-	function makeMapEmpty(keyType:CType):Dynamic {
-		switch (keyType) {
-			case CTPath(path, params):
-				if (path.length > 0) {
-					var last = path[path.length - 1];
-					switch (last) {
-						case "Int":
-							return new Map<Int, Dynamic>();
-						case "String":
-							return new Map<String, Dynamic>();
-						default:
-							// TODO: Properly handle distinguishing Enum maps from Object maps.
-							return new Map<{}, Dynamic>();
-					}
-				}
-			default:
-				// Whatever.
-				error(ECustom('Invalid key type for empty map initialization (${new hscript.Printer().typeToString(keyType)}).'));
-		}
-		return super.makeMap([], []);
-	}
-
-	function exprArray(entries:Array<Expr>):Dynamic {
-		// Create an Array<Dynamic>
-		var a = new Array();
-		for( e in entries )
-			a.push(expr(e));
-		return a;
-	}
-
-	override function makeIterator(v:Dynamic, ?allowKeyValue = false):Iterator<Dynamic>
+	
+	override function makeIterator(v:Dynamic, ?allowKeyValue = false):Iterator<Dynamic> 
 	{
+		if(allowKeyValue) {
+			try
+				v = v.keyValueIterator()
+			catch (e:Dynamic) {};
+		}
+		
 		if (v.iterator != null)
 		{
 			try
 			{
 				v = v.iterator();
-				if(allowKeyValue) {
-					try
-						v = v.keyValueIterator()
-					catch (e:Dynamic) {};
-				}
 			}
 			catch (e:Dynamic)
 			{
@@ -607,13 +448,13 @@ class PolymodInterpEx extends Interp
 	}
 
 	/**
- 	 * Call a given function on a given target with the given arguments.
- 	 * @param target The object to call the function on.
- 	 *   If null, defaults to `this`.
- 	 * @param fun The function to call.
- 	 * @param args The arguments to apply to that function.
- 	 * @return The result of the function call.
- 	 */
+ * Call a given function on a given target with the given arguments.
+ * @param target The object to call the function on.
+ *   If null, defaults to `this`.
+ * @param fun The function to call.
+ * @param args The arguments to apply to that function.
+ * @return The result of the function call.
+ */
 	override function call(target:Dynamic, fun:Dynamic, args:Array<Dynamic>):Dynamic
 	{
 		// Calling fn() in hscript won't resolve an object first. Thus, we need to change it to use this.fn() instead.
@@ -627,7 +468,7 @@ class PolymodInterpEx extends Interp
 			errorEx(EInvalidAccess(fun));
 		}
 
-		if (target != null && target == _proxy)
+		if (target == _proxy)
 		{
 			// If we are calling this.fn(), special handling is needed to prevent the local scope from being destroyed.
 			// By checking `target == _proxy`, we handle BOTH fn() and this.fn().
@@ -649,12 +490,12 @@ class PolymodInterpEx extends Interp
 	}
 
 	/**
-	 * Call a given function on the current proxy with the given arguments.
-	 * Ensures that the local scope is not destroyed.
-	 * @param fun The function to call.
-	 * @param args The arguments to apply to that function.
-	 * @return The result of the function call.
-	 */
+   * Call a given function on the current proxy with the given arguments.
+   * Ensures that the local scope is not destroyed.
+   * @param fun The function to call.
+   * @param args The arguments to apply to that function.
+   * @return The result of the function call.
+   */
 	function callThis(fun:Dynamic, args:Array<Dynamic>):Dynamic
 	{
 		// If we are calling this.fn(), special handling is needed to prevent the local scope from being destroyed.
@@ -723,12 +564,9 @@ class PolymodInterpEx extends Interp
 
 	override function get(o:Dynamic, f:String):Dynamic
 	{
-		if (o == null) errorEx(EInvalidAccess(f));
-		if (Std.isOfType(o, PolymodStaticClassReference)) {
-			var ref:PolymodStaticClassReference = cast(o, PolymodStaticClassReference);
-
-			return ref.getField(f);
-		} else if (Std.isOfType(o, PolymodScriptClass))
+		if (o == null)
+			errorEx(EInvalidAccess(f));
+		if (Std.isOfType(o, PolymodScriptClass))
 		{
 			var proxy:PolymodAbstractScriptClass = cast(o, PolymodScriptClass);
 			if (proxy._interp.variables.exists(f))
@@ -753,51 +591,43 @@ class PolymodInterpEx extends Interp
 		}
 		else if (Std.isOfType(o, HScriptedClass))
 		{
-			if (o.scriptGet != null) {
-				return o.scriptGet(f);
+			try
+			{
+				var result = Reflect.getProperty(o, f);
+				// I guess there's no way to distinguish between properties that don't exist,
+				// and properties that are equal to null?
+				if (result == null)
+				{
+					// To save a bit of performance, we only query for the existence of the property
+					// if the value is reported as null, AND only in debug builds.
+
+					#if debug
+					if (!Reflect.hasField(o, f))
+					{
+						var propertyList = Type.getInstanceFields(Type.getClass(o));
+						if (propertyList.indexOf(f) == -1)
+						{
+							errorEx(EInvalidScriptedVarGet(f));
+						}
+					}
+					#end
+					return result;
+				}
+				return result;
 			}
-
-			errorEx(EInvalidScriptedVarGet(f));
-
-			// var result = Reflect.getProperty(o, f);
-			// To save a bit of performance, we only query for the existence of the property
-			// if the value is reported as null, AND only in debug builds.
-
-			// #if debug
-			// if (!Reflect.hasField(o, f))
-			// {
-			// 	  var propertyList = Type.getInstanceFields(Type.getClass(o));
-			// 	  if (propertyList.indexOf(f) == -1)
-			// 	  {
-			// 	  	errorEx(EInvalidScriptedVarGet(f));
-			// 	  }
-			// }
-			// #end
-			// return result;
-		}
-
-		// Default behavior
-		if (Reflect.hasField(o, f)) {
-			return Reflect.field(o, f);
-		} else {
-			try {
-				return Reflect.getProperty(o, f);
-			} catch (e:Dynamic) {
-				return Reflect.field(o, f);
+			catch (e:Dynamic)
+			{
+				errorEx(EInvalidScriptedVarGet(f));
 			}
 		}
-		// return super.get(o, f);
+		return super.get(o, f);
 	}
 
 	override function set(o:Dynamic, f:String, v:Dynamic):Dynamic
 	{
 		if (o == null)
 			errorEx(EInvalidAccess(f));
-		if (Std.isOfType(o, PolymodStaticClassReference)) {
-			var ref:PolymodStaticClassReference = cast(o, PolymodStaticClassReference);
-
-			return ref.setField(f, v);
-		} else if (Std.isOfType(o, PolymodScriptClass))
+		if (Std.isOfType(o, PolymodScriptClass))
 		{
 			var proxy:PolymodScriptClass = cast(o, PolymodScriptClass);
 			if (proxy._interp.variables.exists(f))
@@ -820,14 +650,15 @@ class PolymodInterpEx extends Interp
 		}
 		else if (Std.isOfType(o, HScriptedClass))
 		{
-			if (o.scriptSet != null) {
-				return o.scriptSet(f, v);
+			try
+			{
+				Reflect.setProperty(o, f, v);
 			}
-
-			errorEx(EInvalidScriptedVarSet(f));
-
-			// Reflect.setProperty(o, f, v);
-			// return v;
+			catch (e)
+			{
+				errorEx(EInvalidScriptedVarSet(f));
+			}
+			return v;
 		}
 
 		try
@@ -856,15 +687,12 @@ class PolymodInterpEx extends Interp
 		// }
 	}
 
-	override function resolve(id:String, doException:Bool = true):Dynamic
+	override public function resolve(id:String, doException:Bool = true):Dynamic 
 	{
 		_nextCallObject = null;
-		if (id == "super")
+		if (id == "super" && _proxy != null)
 		{
-			if (_proxy == null) {
-				errorEx(EInvalidInStaticContext("super"));
-			}
-			else if (_proxy.superClass == null)
+			if (_proxy.superClass == null)
 			{
 				return _proxy.superConstructor;
 			}
@@ -873,13 +701,9 @@ class PolymodInterpEx extends Interp
 				return _proxy.superClass;
 			}
 		}
-		else if (id == "this")
+		else if (id == "this" && _proxy != null)
 		{
-			if (_proxy != null) {
-				return _proxy;
-			} else {
-				errorEx(EInvalidInStaticContext("this"));
-			}
+			return _proxy;
 		}
 		else if (id == "null")
 		{
@@ -896,35 +720,14 @@ class PolymodInterpEx extends Interp
 			// NOTE: id may exist but be null
 			return variables.get(id);
 		}
-
 		// OVERRIDE CHANGE: Allow access to modules for calling static functions.
-
-		// Attempt to access an import.
-		if (_proxy != null)
+		var importedClass:PolymodClassImport = _proxy._c.imports.get(id);
+		if (_proxy != null && importedClass != null)
 		{
-			var importedClass:PolymodClassImport = getClassDecl().imports.get(id);
-			if (importedClass != null) {
-				if (importedClass.cls != null) return importedClass.cls;
-				if (importedClass.enm != null) return importedClass.enm;
-			}
-		}
+			// TODO: Somehow allow accessing static fields of a ScriptClass without instantiating it.
 
-		// Allow access to scripted classes for calling static functions.
-
-		if (getClassDecl().name == id) {
-			// Self-referencing
-			return new PolymodStaticClassReference(getClassDecl());
-		} else {
-			// Try to retrieve a scripted class with this name in the same package.
-			if (getClassDecl().pkg != null && getClassDecl().pkg.length > 0){
-				var localClassId = getClassDecl().pkg.join('.') + "." + id;
-				var result = PolymodStaticClassReference.tryBuild(localClassId);
-				if (result != null) return result;
-			}
-
-			// Try to retrieve a scripted class with this name in the base package.
-			var result = PolymodStaticClassReference.tryBuild(id);
-			if (result != null) return result;
+			if (importedClass.cls != null) return importedClass.cls;
+			if (importedClass.enm != null) return importedClass.enm;
 		}
 
 		var prop:Dynamic;
@@ -949,21 +752,15 @@ class PolymodInterpEx extends Interp
 			}
 			catch (e:Dynamic)
 			{
-				// Skip and fall through to the next case.
 			}
+			errorEx(EUnknownVariable(id));
 		}
-		if (getClassDecl() != null) {
-			// We are retrieving an adjacent field from a static context.
-			var cls = getClassDecl();
-			var name = cls.name;
-			if (cls.pkg != null && cls.pkg.length > 0) {
-				name = cls.pkg.join('.') + "." + name;
-			}
-			return PolymodScriptClass.getScriptClassStaticField(name, id);
+		else
+		{
+			errorEx(EUnknownVariable(id));
 		}
-
-		errorEx(EUnknownVariable(id));
-
+		if (doException)
+			error(EUnknownVariable(id));
 		return null;
 	}
 
@@ -971,269 +768,29 @@ class PolymodInterpEx extends Interp
 	{
 		var parser = new PolymodParserEx();
 		var decls = parser.parseModule(moduleContents, origin);
-		registerModules(decls, origin);
+		registerModule(decls, origin);
 	}
 
-	/**
-	 * Call a static function of a scripted class.
-	 * @param clsName The full classpath of the scripted class.
-	 * @param fnName The name of the function to call.
-	 * @param args The arguments to pass to the function.
-	 * @return The return value of the function.
-	 */
-	public function callScriptClassStaticFunction(clsName:String, fnName:String, args:Array<Dynamic> = null):Dynamic {
-		var fn:Null<FunctionDecl> = null;
-		var imports:Map<String, PolymodClassImport> = [];
-
-		var cls:Null<PolymodClassDeclEx> = _scriptClassDescriptors.get(clsName);
-		if (cls != null) {
-			imports = cls.imports;
-
-			// TODO: Optimize with a cache?
-			for (f in cls.staticFields)
-			{
-				if (f.name == fnName)
-				{
-					switch (f.kind)
-					{
-						case KFunction(func):
-							fn = func;
-						case _:
-					}
-				}
-			}
-		} else {
-			Polymod.error(SCRIPT_CLASS_NOT_REGISTERED, 'Scripted class $clsName has not been defined.');
-			return null;
+	public function createScriptClassInstance(className:String, args:Array<Dynamic> = null):PolymodAbstractScriptClass
+	{
+		if (args == null)
+		{
+			args = [];
 		}
-
-		if (fn != null) {
-			// Populate function arguments.
-
-			// previousValues is used to restore variables after they are shadowed in the local scope.
-			var previousClassDecl = _classDeclOverride;
-			var previousValues:Map<String, Dynamic> = [];
-			var i = 0;
-			for (a in fn.args)
-			{
-				var value:Dynamic = null;
-
-				if (args != null && i < args.length)
-				{
-					value = args[i];
-				}
-				else if (a.value != null)
-				{
-					value = this.expr(a.value);
-				}
-
-				// NOTE: We assign these as variables rather than locals because those get wiped when we enter the function.
-				if (this.variables.exists(a.name))
-				{
-					previousValues.set(a.name, this.variables.get(a.name));
-				}
-				this.variables.set(a.name, value);
-				i++;
-			}
-
-			this._classDeclOverride = cls;
-
-			var result:Dynamic = null;
-			try
-			{
-				result = this.executeEx(fn.expr);
-			}
-			catch (err:PolymodExprEx.ErrorEx)
-			{
-				PolymodScriptClass.reportErrorEx(err, clsName, fnName);
-				// A script error occurred while executing the script function.
-				// Purge the function from the cache so it is not called again.
-				// purgeFunction(fnName);
-				return null;
-			}
-			catch (err:hscript.Expr.Error)
-			{
-				PolymodScriptClass.reportError(err, clsName, fnName);
-				// A script error occurred while executing the script function.
-				// Purge the function from the cache so it is not called again.
-				// purgeFunction(fnName);
-				return null;
-			}
-
-			// Restore previous values.
-			for (a in fn.args)
-			{
-				if (previousValues.exists(a.name))
-				{
-					this.variables.set(a.name, previousValues.get(a.name));
-				}
-				else
-				{
-					this.variables.remove(a.name);
-				}
-			}
-			this._classDeclOverride = previousClassDecl;
-
-			return result;
-		} else {
-			Polymod.error(SCRIPT_RUNTIME_EXCEPTION,
-				'Error while calling static function ${fnName}(): EInvalidAccess' + '\n' +
-				'InvalidAccess error: Static function "${fnName}" does not exist! Define it or call the correct function.');
-			return null;
+		if (_scriptClassDescriptors.exists(className))
+		{
+			// OVERRIDE CHANGE: Create a PolymodScriptClass instead of a hscript.ScriptClass
+			var proxy:PolymodAbstractScriptClass = new PolymodScriptClass(_scriptClassDescriptors.get(className), args);
+			return proxy;
 		}
-	}
-
-	public function hasScriptClassStaticFunction(clsName:String, fnName:String, args:Array<Dynamic> = null):Bool {
-		var imports:Map<String, PolymodClassImport> = [];
-
-		var cls:Null<PolymodClassDeclEx> = _scriptClassDescriptors.get(clsName);
-		if (cls != null) {
-			imports = cls.imports;
-
-			// TODO: Optimize with a cache?
-			for (f in cls.staticFields)
-			{
-				if (f.name == fnName)
-				{
-					switch (f.kind)
-					{
-						case KFunction(func):
-							return true;
-						case _:
-					}
-				}
-			}
-		} else {
-			Polymod.error(SCRIPT_CLASS_NOT_REGISTERED, 'Scripted class $clsName has not been defined.');
-			return false;
+		else
+		{
+			Polymod.error(SCRIPT_CLASS_NOT_REGISTERED, 'Scripted class $className has not been defined.');
 		}
-
-		return false;
-	}
-
-	public function getScriptClassStaticField(clsName:String, fieldName:String):Dynamic {
-		var prefixedName = clsName + '#' + fieldName;
-		var fieldDecl = getScriptClassStaticFieldDecl(clsName, fieldName);
-
-		if (fieldDecl != null) {
-			if (!this.variables.exists(prefixedName)) {
-				switch (fieldDecl.kind) {
-					case KFunction(fn):
-						var result = buildScriptClassStaticFunction(clsName, fieldName, fn);
-						this.variables.set(prefixedName, result);
-						return result;
-					case KVar(v):
-						var result = this.expr(v.expr);
-						this.variables.set(prefixedName, result);
-						return result;
-					default:
-						throw 'Wuh?';
-				}
-
-			} else {
-				return this.variables.get(prefixedName);
-			}
-		} else {
-			Polymod.error(SCRIPT_RUNTIME_EXCEPTION,
-				'Error while retrieving static field ${fieldName}(): EInvalidAccess' + '\n' +
-				'InvalidAccess error: Static field "${fieldName}" does not exist! Define it or access the correct variable.');
-			return null;
-		}
-	}
-
-	private function buildScriptClassStaticFunction(clsName:String, fieldName:String, fn:FunctionDecl):Dynamic {
-		var argCount = fn.args.length;
-		switch(argCount) {
-			case 0: return function():Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, []);
-			};
-
-			case 1: return function(a:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a]);
-			};
-
-			case 2: return function(a:Dynamic, b:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a, b]);
-			};
-
-			case 3: return function(a:Dynamic, b:Dynamic, c:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a, b, c]);
-			}
-
-			case 4: return function(a:Dynamic, b:Dynamic, c:Dynamic, d:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a, b, c, d]);
-			}
-
-			#if neko
-			case _: @:privateAccess error(ECustom("only 4 params allowed in script class functions (.bind limitation)"));
-			#else
-			case 5: return function(a:Dynamic, b:Dynamic, c:Dynamic, d:Dynamic, e:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a, b, c, d, e]);
-			}
-
-			case 6: return function(a:Dynamic, b:Dynamic, c:Dynamic, d:Dynamic, e:Dynamic, f:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a, b, c, d, e, f]);
-			}
-
-			case 7: return function(a:Dynamic, b:Dynamic, c:Dynamic, d:Dynamic, e:Dynamic, f:Dynamic, g:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a, b, c, d, e, f, g]);
-			}
-
-			case 8: return function(a:Dynamic, b:Dynamic, c:Dynamic, d:Dynamic, e:Dynamic, f:Dynamic, g:Dynamic, h:Dynamic):Dynamic {
-				return callScriptClassStaticFunction(clsName, fieldName, [a, b, c, d, e, f, g, h]);
-			}
-
-			case _: @:privateAccess error(ECustom("only 8 params allowed in script class functions (.bind limitation)"));
-			#end
-		}
-
-		// Fallthrough
 		return null;
 	}
 
-	public function setScriptClassStaticField(clsName:String, fieldName:String, value:Dynamic):Dynamic {
-		var v = getScriptClassStaticFieldDecl(clsName, fieldName);
-		if (v != null) {
-			var prefixedName = clsName + '#' + fieldName;
-			this.variables.set(prefixedName, value);
-			return value;
-		} else {
-			Polymod.error(SCRIPT_RUNTIME_EXCEPTION,
-				'Error while modifying static field ${fieldName}(): EInvalidAccess' + '\n' +
-				'InvalidAccess error: Static field "${fieldName}" does not exist! Define it or access the correct variable.');
-			return null;
-		}
-	}
-
-	/**
-	 * Retrieve a static field declaration of a scripted class.
-	 * @param clsName The full classpath of the scripted class.
-	 * @param fieldName The name of the field to retrieve.
-	 * @return The value of the field.
-	 */
-	 public function getScriptClassStaticFieldDecl(clsName:String, fieldName:String):Null<FieldDecl> {
-		if (_scriptClassDescriptors.exists(clsName)) {
-			var cls = _scriptClassDescriptors.get(clsName);
-			var staticFields = cls.staticFields;
-
-			// TODO: Optimize with a cache?
-			for (f in staticFields)
-			{
-				if (f.name == fieldName)
-				{
-					return f;
-				}
-			}
-
-			// Fallthrough.
-			return null;
-		} else {
-			Polymod.error(SCRIPT_CLASS_NOT_REGISTERED, 'Scripted class $clsName has not been defined.');
-			return null;
-		}
-	}
-
-	public function registerModules(module:Array<ModuleDecl>, ?origin:String = "hscript")
+	public function registerModule(module:Array<ModuleDecl>, ?origin:String = "hscript")
 	{
 		var pkg:Array<String> = null;
 		var imports:Map<String, PolymodClassImport> = [];
@@ -1283,19 +840,12 @@ class PolymodInterpEx extends Interp
 						// If so, that means the class is blacklisted.
 
 						importedClass.cls = PolymodScriptClass.importOverrides.get(importedClass.fullPath);
-					} else if (PolymodScriptClass.abstractClassImpls.exists(importedClass.fullPath)) {
-						// We used a macro to map each abstract to its implementation.
-						importedClass.cls = PolymodScriptClass.abstractClassImpls.get(importedClass.fullPath);
-						trace('RESOLVED ABSTRACT CLASS ${importedClass.fullPath} -> ${Type.getClassName(importedClass.cls)}');
-						trace(Type.getClassFields(importedClass.cls));
 					} else {
 						var resultCls:Class<Dynamic> = Type.resolveClass(importedClass.fullPath);
-
-						// If the class is not found, try to find it as an enum.
-						var resultEnm:Enum<Dynamic> = null;
 						if (resultCls == null)
-							resultEnm = Type.resolveEnum(importedClass.fullPath);
-
+							resultCls = Type.resolveClass('${importedClass.fullPath}_HSC');
+						// If the class is not found, try to find it as an enum.
+						var resultEnm:Enum<Dynamic> = Type.resolveEnum(importedClass.fullPath);
 						// If the class is still not found, skip this import entirely.
 						if (resultCls == null && resultEnm == null) {
 							Polymod.error(SCRIPT_CLASS_MODULE_NOT_FOUND, 'Could not import class ${importedClass.fullPath}', origin);
@@ -1340,18 +890,6 @@ class PolymodInterpEx extends Interp
 							}
 						}
 					}
-
-					var instanceFields = [];
-					var staticFields = [];
-					for (f in c.fields)
-					{
-						if (f.access.contains(AStatic)) {
-							staticFields.push(f);
-						} else {
-							instanceFields.push(f);
-						}
-					}
-
 					var classDecl:PolymodClassDeclEx = {
 						imports: imports,
 						pkg: pkg,
@@ -1361,9 +899,8 @@ class PolymodInterpEx extends Interp
 						isPrivate: c.isPrivate,
 						extend: extend,
 						implement: c.implement,
-						fields: instanceFields,
-						isExtern: c.isExtern,
-						staticFields: staticFields,
+						fields: c.fields,
+						isExtern: c.isExtern
 					};
 					registerScriptClass(classDecl);
 				case DTypedef(_):

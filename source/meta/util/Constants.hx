@@ -450,6 +450,8 @@ class Constants
    */
   public static final EXT_CHART = "fnfc";
 
+  public static final EXT_CHARACTER = "fnfchar";
+
   /**
    * The file extension used when loading audio files.
    */

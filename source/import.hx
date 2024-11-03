@@ -29,6 +29,7 @@ import gameObjects.userInterface.notes.SustainTrail;
 import gameObjects.userInterface.notes.NoteSplash;
 import gameObjects.userInterface.notes.Strumline;
 import gameObjects.userInterface.menu.Checkmark;
+import gameObjects.userInterface.menu.AttachedSprite;
 import gameObjects.userInterface.Countdown;
 //gameObjects
 import gameObjects.character.BaseCharacter;

@@ -28,7 +28,7 @@ class SongEventSchema {
     
         switch (field.type)
         {
-            case SongEventFieldType.STRING:
+            case SongEventFieldType.STRING, SongEventFieldType.BOOL, SongEventFieldType.CHARACTER:
                 return Std.string(value);
             case SongEventFieldType.INTEGER:
                 var returnValue:String = Std.string(value);
@@ -38,8 +38,6 @@ class SongEventSchema {
                 var returnValue:String = Std.string(value);
                 if (addUnits) return addUnitsToString(returnValue, field);
                 return returnValue;
-            case SongEventFieldType.BOOL:
-                return Std.string(value);
             case SongEventFieldType.ENUM:
                 var valueString:String = Std.string(value);
                 for (key in field.keys.keys())
@@ -82,4 +80,5 @@ enum abstract SongEventFieldType(String) from String to String
     var FLOAT = "float";
     var BOOL = "bool";
     var ENUM = "enum";
+    var CHARACTER = "character";
 }

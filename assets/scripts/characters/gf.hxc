@@ -1,19 +1,73 @@
 import meta.state.PlayState;
 import gameObjects.character.AtlasCharacter;
 import gameObjects.character.CharacterType;
-
+import graphics.FunkinSprite;
 class Girlfriend extends AtlasCharacter
 {
     function new() {
 		super('gf');
 	}
 
+	var speakers:FunkinSprite;
+	function onCreate(event:ScriptEvent) 
+	{
+		super.onCreate(event);
+
+		speakers = new FunkinSprite().loadFrame('characters/speakers');
+		speakers.animation.addByPrefix('idle', 'speakers', 24, false);
+	}
+
+	//use draw as order is cool lol 
+	public override function draw()
+	{
+		speakers.draw();
+		speakers.x = this.x - 190;
+		speakers.y = this.y + 220; // 764 - 740
+		copyAtlasValues();
+		super.draw();
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+		speakers.update(elapsed);
+	}
+
+	function copyAtlasValues()
+	{
+		speakers.cameras = cameras;
+		speakers.scrollFactor = scrollFactor;
+		speakers.scale = scale;
+		speakers.offset = offset;
+		speakers.origin = origin;
+		speakers.angle = angle;
+		speakers.alpha = alpha;
+		speakers.visible = visible;
+		speakers.flipX = flipX;
+		speakers.flipY = flipY;
+		speakers.shader = shader;
+		speakers.antialiasing = antialiasing;
+		speakers.colorTransform = colorTransform;
+		speakers.color = color;
+		speakers.width = width;
+		speakers.height = height;		
+	}
+
     override function onAdd() {
 		if (this.characterType == CharacterType.DAD && PlayState.instance != null) {
-			var pos:FlxPoint = PlayState.instance.stage.getGirlfriendPosition();
+			resetCharacter(true);
+			var stageDataGF = PlayState.instance.stage._data.characters.gf;
 
-			this.x = pos.x - this.characterOrigin.x;
-			this.y = pos.y - this.characterOrigin.y;
+			this.x = stageDataGF.position[0] - this.characterOrigin.x + this.globalOffsets[0];
+			this.y = stageDataGF.position[1] - this.characterOrigin.y + this.globalOffsets[1];
+
+			this.scrollFactor.x = stageDataGF.scroll[0];
+			this.scrollFactor.y = stageDataGF.scroll[1];
+	  
+			var finalScale = this.getBaseScale() * stageDataGF.scale;
+			this.setScale(finalScale); // Don't use scale.set for characters!
+			this.cameraFocusPoint.x += stageDataGF.cameraOffsets[0];
+			this.cameraFocusPoint.y += stageDataGF.cameraOffsets[1];
 		}
 	}
 
@@ -23,6 +77,9 @@ class Girlfriend extends AtlasCharacter
 		if (!force && ['hairBlow'].contains(getCurrentAnimation())) return;
 		// Wait for 'hairFall' to finish, preventing dancing from interrupting it.
 		if (!force && ['hairFall'].contains(getCurrentAnimation()) && !isAnimationFinished()) return;
+
+		if (speakers != null) speakers.animation.play('idle', force);
+            
 
 		super.dance(force);
 	}

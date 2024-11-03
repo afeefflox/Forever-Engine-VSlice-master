@@ -33,7 +33,6 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 	private var scoreBG:FlxSprite;
 
-	public static var hideBaseGame:Bool = false;
 	var stickerSubState:StickerSubState;
 
 	public function new(?stickers:StickerSubState)
@@ -68,12 +67,16 @@ class FreeplayState extends MusicBeatState
 		instance = this;
 
 		rememberSelection();
+
+		//**Use Week list instead listSortedLevelIds cuz they it won't rid other week :(**/
+		var weekList:Array<String> = CoolUtil.coolTextFile(Paths.txt('levels/weeklist'));
+		weekList.sort(SortUtil.defaultsThenAlphabetically.bind(LevelRegistry.instance.listBaseGameLevelIds()));
 		
-		for (levelId in LevelRegistry.instance.listSortedLevelIds())
+		for (levelId in weekList)
 		{
 			var level:Level = LevelRegistry.instance.fetchEntry(levelId);
 
-			if (level == null || hideBaseGame && (level.id == 'week1' || level.id == 'tutorial')) continue;
+			if (level == null) continue;
 			
 			for (songId in level.getSongs())
 			{
@@ -243,7 +246,7 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		intendedScore = Highscore.getScore(songs[curSelected].data.id, currentDifficulty);
+		intendedScore = Highscore.getScore(songs[curSelected].data.id, currentDifficulty, currentVariation);
 
 		diffText.text = '< ' + currentDifficulty.toUpperCase() + ' >';
 		vartionsText.text = '< ' + currentVariation.toUpperCase() + ' >';
@@ -260,7 +263,7 @@ class FreeplayState extends MusicBeatState
 		if (curSelected < 0) curSelected = songs.length - 1;
 		if (curSelected >= songs.length) curSelected = 0;
 
-		intendedScore = Highscore.getScore(songs[curSelected].data.id, currentDifficulty);
+		intendedScore = Highscore.getScore(songs[curSelected].data.id, currentDifficulty, currentVariation);
 		rememberedSongId = songs[curSelected].data.id;
 
 		var bullShit:Int = 0;

@@ -78,9 +78,26 @@ class SongEventRegistry
         data.activated = true;
     }
 
+    public static function precacheEvent(data:SongEventData):Void
+    {
+        var eventKind:String = data.eventKind;
+        var eventHandler:SongEvent = eventCache.get(eventKind);
+    
+        if (eventHandler != null) 
+            eventHandler.precacheEvent(data);
+        else
+            trace('WARNING: No event handler for event with kind: ${eventKind}');
+        data.activated = true;
+    }
+
     public static inline function handleEvents(events:Array<SongEventData>):Void
     {
         for (event in events) handleEvent(event);
+    }
+
+    public static inline function precacheEvents(events:Array<SongEventData>):Void
+    {
+        for (event in events) precacheEvent(event);
     }
 
     public static function queryEvents(events:Array<SongEventData>, currentTime:Float):Array<SongEventData>

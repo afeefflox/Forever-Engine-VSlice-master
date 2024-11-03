@@ -238,15 +238,15 @@ class ChartEditorWelcomeDialog extends ChartEditorBaseDialog
     this.hideDialog(DialogButton.CANCEL);
 
     // Open the "Import Chart" dialog
-    chartEditorState.openImportChartWizard('legacy', false);
+    chartEditorState.openImportLeagcyChartDialog(false);
   }
 
   public function onClickLinkImportChartMaru():Void
   {
     // Hide the welcome dialog
     this.hideDialog(DialogButton.CANCEL);
-
+    
     // Open the "Import Chart" dialog
-    chartEditorState.openImportChartWizard('maru', false);
+    chartEditorState.openImportMaruChartDialog(false);
   }
 }

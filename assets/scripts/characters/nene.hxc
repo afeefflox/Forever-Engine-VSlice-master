@@ -1,12 +1,9 @@
 import meta.state.PlayState;
 import gameObjects.character.AtlasCharacter;
-import gameObjects.character.CharacterType;
 import graphics.FunkinSprite;
 import flxanimate.FlxAnimate;
-import flixel.math.FlxPoint;
 import flixel.FlxG;
 import meta.modding.base.ScriptedFlxSpriteGroup;
-import audio.visualize.ABotVis;
 
 class Nene extends AtlasCharacter 
 {
@@ -17,13 +14,12 @@ class Nene extends AtlasCharacter
     function new() {
 		super('nene');
 	}
-
+    
     var abot:FlxAnimate;
     var pupil:FlxAnimate;
-    var abotViz:ABotVis;
+    var abotViz:ScriptedFlxSpriteGroup;
 	var stereoBG:FunkinSprite;
 	var eyeWhites:FunkinSprite;
-
     var folder:String = 'characters/abot/';
     function onCreate(event:ScriptEvent) 
     {
@@ -33,20 +29,16 @@ class Nene extends AtlasCharacter
         eyeWhites = new FunkinSprite().makeSolidColor(160, 60);
 
         pupil = new FlxAnimate(this.x, this.y, Paths.animateAtlas(folder + "systemEyes"));
-        pupil.anim.addBySymbolIndices('lookleft', 'a bot eyes lookin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 24, false);
-		pupil.anim.addBySymbolIndices('lookright', 'a bot eyes lookin', [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], 24, false);
-		pupil.anim.play('lookright', true);
-        pupil.anim.curFrame = pupil.anim.length - 1;
-		pupil.zIndex = this.zIndex - 5;
+        pupil.anim.addBySymbol('idle', 'a bot eyes lookin', 24, false);
+		pupil.anim.play('idle', true);
+		pupil.anim.curFrame = pupil.anim.length - 1;
 
         abot = new FlxAnimate(this.x, this.y, Paths.animateAtlas(folder + "abotSystem"));
         abot.anim.addBySymbol('idle', 'Abot System', 24, false);
 		abot.anim.play('idle', true);
 		abot.anim.curFrame = abot.anim.length - 1;
-		abot.zIndex = this.zIndex - 1;
 
-		abotViz = new ABotVis(this.x, this.y);
-		abotViz.zIndex = abot.zIndex + 1;
+		abotViz = ScriptedFlxSpriteGroup.init('ABotVis', this.x, this.y);
     }
 
     var VULTURE_THRESHOLD = 0.25 * 2;
@@ -85,32 +77,64 @@ class Nene extends AtlasCharacter
         }
     }
 
-    function onSongEvent(event:SongEventScriptEvent)
-    {
-        super.onSongEvent(event);
+    public override function onSongEvent(scriptEvent:SongEventScriptEvent)
+	{
+		super.onSongEvent(scriptEvent);
+		if (scriptEvent.eventData.eventKind == "FocusCamera")
+		{
+			var eventProps = scriptEvent.eventData.value;
+			switch (Std.parseInt(eventProps.char)) {
+				case 0:
+					movePupilsRight();
+				case 1:
+					movePupilsLeft();
+				default:
+			}
+		}
 
-        if (event.eventData.eventKind == "FocusCamera")
-        {
-            var char = Std.parseInt(event.eventData.value.char);
-            pupil.anim.play((char == 0) ? 'lookright' : 'lookleft', true);
-        }
-    }
+	}
 
     function onSongStart(event:ScriptEvent)
     {
-		abotViz.initAnalyzer(FlxG.sound.music);
+        abotViz.scriptCall('initAnalyzer', [FlxG.sound.music]);
     }
 
-    override function set_alpha(val:Float):Float
-    {
-        super.set_alpha(val);
-        abotViz.visible = abot.visible = pupil.visible = eyeWhites.visible = stereoBG.visible = val;
-    }
+    //This is dumb but it might work :/
+    override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+        
+		abot.update(elapsed);
+        abotViz.update(elapsed);
+        eyeWhites.update(elapsed);
+        stereoBG.update(elapsed);
+        pupil.update(elapsed);
+	}
 
-    override function set_visible(val:Bool):Bool
+    public override function draw()
     {
-        super.set_visible(val);
-        abotViz.visible = abot.visible = pupil.visible = eyeWhites.visible = stereoBG.visible = val;
+        
+        eyeWhites.x = abot.x + 40;
+        eyeWhites.y = abot.y + 250;
+        eyeWhites.draw();
+
+        pupil.x = abot.x + 60;
+        pupil.y = abot.y + 240;
+        pupil.draw();
+
+        stereoBG.x = abot.x + 150;
+		stereoBG.y = abot.y + 30;
+        stereoBG.draw();
+
+		abotViz.x = abot.x + 200;
+		abotViz.y = abot.y + 84;
+		abotViz.draw();
+
+        abot.x = this.x - 100;
+		abot.y = this.globalOffsets[1] + 540; // 764 - 740
+		abot.draw();
+
+        super.draw();
     }
 
     var refershed:Bool = false;
@@ -118,37 +142,6 @@ class Nene extends AtlasCharacter
     {
         super.onUpdate(event);
 
-		if (!refershed)
-        {
-            abot.x = this.x - 100;
-			abot.y = this.y + 216; // 764 - 740
-			abot.zIndex = this.zIndex - 10;
-            PlayState.instance.stage.add(abot);
-
-			abotViz.x = abot.x + 200;
-			abotViz.y = abot.y + 84;
-			abotViz.zIndex = abot.zIndex - 1;
-			PlayState.instance.stage.add(abotViz);
-
-			eyeWhites.x = abot.x + 40;
-			eyeWhites.y = abot.y + 250;
-			eyeWhites.zIndex = abot.zIndex - 10;
-			PlayState.instance.stage.add(eyeWhites);
-
-			pupil.x = abot.x - 507;
-			pupil.y = abot.y - 492;
-			pupil.zIndex = eyeWhites.zIndex + 5;
-			PlayState.instance.stage.add(pupil);
-
-			stereoBG.x = abot.x + 150;
-			stereoBG.y = abot.y + 30;
-			stereoBG.zIndex = abot.zIndex - 8;
-			PlayState.instance.stage.add(stereoBG);
-
-			PlayState.instance.stage.refresh();
-			refershed = true;
-        }
-     
         transitionState();
     }
 
@@ -225,4 +218,21 @@ class Nene extends AtlasCharacter
 				currentState = STATE_DEFAULT;
 		}
     }
+
+    var pupilState:Int = 0;
+	var PUPIL_STATE_NORMAL = 0;
+	var PUPIL_STATE_LEFT = 1;
+    function movePupilsLeft():Void {
+		if (pupilState == PUPIL_STATE_LEFT) return;
+		trace('Move pupils left');
+		pupil.anim.play('idle', true);
+		pupil.anim.curFrame = 0;
+	}
+
+	function movePupilsRight():Void {
+		if (pupilState == PUPIL_STATE_NORMAL) return;
+		trace('Move pupils right');
+		pupil.anim.play('idle', true);
+		pupil.anim.curFrame = 17;
+	}
 }

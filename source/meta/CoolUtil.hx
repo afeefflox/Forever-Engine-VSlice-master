@@ -83,4 +83,14 @@ class CoolUtil
 		// #end
 	}
 
+	public static function setFieldDefault<T>(v:Dynamic, name:String, defaultValue:T):T {
+		if (Reflect.hasField(v, name)) {
+			var f:Null<Dynamic> = Reflect.field(v, name);
+			if (f != null)
+				return cast f;
+		}
+		Reflect.setField(v, name, defaultValue);
+		trace('Value: ${v}, Name: ${name}, DefaultValue: ${defaultValue}');
+		return defaultValue;
+	}
 }

@@ -6,6 +6,19 @@ class MusicBeatSubState extends FlxSubState
 	{
 		super();
 		this.bgColor = bgColor;
+
+		subStateOpened.add(onOpenSubStateComplete);
+		subStateClosed.add(onCloseSubStateComplete);
+
+		Conductor.beatHit.add(this.beatHit);
+		Conductor.stepHit.add(this.stepHit);
+	}
+
+	public override function destroy():Void
+	{
+		super.destroy();
+		Conductor.beatHit.remove(this.beatHit);
+		Conductor.stepHit.remove(this.stepHit);
 	}
 
 	private var controls(get, never):Controls;
@@ -71,6 +84,17 @@ class MusicBeatSubState extends FlxSubState
 		if (event.eventCanceled) return;
 	
 		super.closeSubState();
+	}
+
+	function onOpenSubStateComplete(targetState:FlxSubState):Void
+	{
+		dispatchEvent(new SubStateScriptEvent(SUBSTATE_OPEN_END, targetState, true));
+	}
+
+	function onCloseSubStateComplete(targetState:FlxSubState):Void
+	{
+		dispatchEvent(new SubStateScriptEvent(SUBSTATE_CLOSE_END, targetState, true));
+
 	}
 
 	public function refresh() sort(SortUtil.byZIndex, FlxSort.ASCENDING);

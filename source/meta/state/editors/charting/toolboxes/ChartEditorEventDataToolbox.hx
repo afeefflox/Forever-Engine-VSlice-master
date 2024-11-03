@@ -19,6 +19,7 @@ import haxe.ui.data.ArrayDataSource;
 import haxe.ui.containers.Grid;
 import haxe.ui.components.DropDown;
 import haxe.ui.containers.Frame;
+import haxe.ui.containers.ListView;
 
 /**
  * The toolbox which allows modifying information like Song Title, Scroll Speed, Characters/Stages, and starting BPM.
@@ -142,6 +143,9 @@ class ChartEditorEventDataToolbox extends ChartEditorBaseToolbox
           case Std.isOfType(_, DropDown) => true:
             var dropDown:DropDown = cast field;
             dropDown.value = value;
+          case Std.isOfType(_, Button) => true:
+            var button:Button = cast field;
+            button.text = value;
           case Std.isOfType(_, TextField) => true:
             var textField:TextField = cast field;
             textField.text = value;
@@ -231,6 +235,29 @@ class ChartEditorEventDataToolbox extends ChartEditorBaseToolbox
           input = new TextField();
           input.id = field.name;
           if (field.defaultValue != null) input.text = field.defaultValue;
+        case CHARACTER:
+          var dropDown:DropDown = new DropDown();
+          dropDown.id = field.name;
+          dropDown.width = 200.0;
+          dropDown.dropdownSize = 10;
+          dropDown.dropdownWidth = 300;
+          dropDown.searchable = true;
+          dropDown.dataSource = new ArrayDataSource();
+
+          var charIds:Array<String> = CharacterRegistry.listCharacterIds();
+          charIds.sort(SortUtil.alphabetically);
+          for (charId in charIds)
+          {
+            var charData:CharacterData = CharacterRegistry.fetchCharacterData(charId);
+            var icon = haxe.ui.util.Variant.fromImageData(CharacterRegistry.getIconAsset(charId));
+            dropDown.dataSource.add({value: charId, text: charData.name, image: icon});
+          }          
+          dropDown.value = field.defaultValue;
+
+          // TODO: Add an option to customize sort.
+          dropDown.dataSource.sort('text', ASCENDING);
+
+          input = dropDown;
         default:
           // Unknown type. Display a label that proclaims the type so we can debug it.
           input = new Label();
@@ -256,7 +283,7 @@ class ChartEditorEventDataToolbox extends ChartEditorBaseToolbox
       // Update the value of the event data.
       input.onChange = function(event:UIEvent) {
         var value = event.target.value;
-        if (field.type == ENUM)
+        if (field.type == ENUM || field.type == CHARACTER)
         {
           value = event.target.value.value;
         }

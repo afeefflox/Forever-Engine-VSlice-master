@@ -11,8 +11,10 @@ class SongEvent
 
     public function handleEvent(data:SongEventData):Void
     {
-        throw 'SongEvent.handleEvent() must be overridden!';
+      throw 'SongEvent.handleEvent() must be overridden!';
     }
+
+    public function precacheEvent(data:SongEventData):Void {}
 
     public function getEventSchema():SongEventSchema return null;
 

@@ -394,7 +394,7 @@ class PauseSubState extends MusicBeatSubState
 	static function quitToChartEditor(state:PauseSubState):Void
 	{
 		if (FlxG.sound.music != null) FlxG.sound.music.pause(); // Don't reset song position!
-		FlxG.switchState(new meta.state.editors.charting.ChartEditorState());
+		PlayState.instance.close();
 		state.close();
 	}
 }

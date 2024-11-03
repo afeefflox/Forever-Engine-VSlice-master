@@ -8,6 +8,7 @@ import data.importer.MaruImporter;
 import data.importer.LegacyImporter;
 import meta.state.editors.charting.dialogs.ChartEditorAboutDialog;
 import meta.state.editors.charting.dialogs.ChartEditorBaseDialog.DialogDropTarget;
+import meta.state.editors.charting.dialogs.ChartEditorCharacterIconSelectorEvent;
 import meta.state.editors.charting.dialogs.ChartEditorCharacterIconSelectorMenu;
 import meta.state.editors.charting.dialogs.ChartEditorUploadChartDialog;
 import meta.state.editors.charting.dialogs.ChartEditorWelcomeDialog;
@@ -137,6 +138,13 @@ class ChartEditorDialogHandler
     return menu;
   }
 
+  public static function openCharacterDropdownEvent(state:ChartEditorState, value:Button):Null<Menu>
+  {
+    var menu = ChartEditorCharacterIconSelectorEvent.build(state, value);
+    menu.zIndex = 1000;
+    return menu;
+  }
+
   /**
    * Builds and opens a dialog letting the user know a backup is available, and prompting them to load it.
    */
@@ -263,46 +271,6 @@ class ChartEditorDialogHandler
     };
   }
 
-  public static function openImportChartWizard(state:ChartEditorState, format:String, closable:Bool):Void
-  {
-    // Open the "Open Chart" wizard
-    // Step 1. Open Chart
-    var openChartDialog:Null<Dialog> = openImportChartDialog(state, format);
-    if (openChartDialog == null) throw 'Could not locate Import Chart dialog';
-    openChartDialog.onDialogClosed = function(event) {
-      state.isHaxeUIDialogOpen = false;
-      if (event.button == DialogButton.APPLY)
-      {
-        // Step 2. Upload instrumental
-        var uploadInstDialog:Dialog = openUploadInstDialog(state, closable);
-        uploadInstDialog.onDialogClosed = function(event) {
-          state.isHaxeUIDialogOpen = false;
-          if (event.button == DialogButton.APPLY)
-          {
-            // Step 3. Upload Vocals
-            // NOTE: Uploading vocals is optional, so we don't need to check if the user cancelled the wizard.
-            var uploadVocalsDialog:Dialog = openUploadVocalsDialog(state, closable); // var uploadVocalsDialog:Dialog
-            uploadVocalsDialog.onDialogClosed = function(_) {
-              state.isHaxeUIDialogOpen = false;
-              state.currentWorkingFilePath = null; // New file, so no path.
-              state.switchToCurrentInstrumental();
-              state.postLoadInstrumental();
-            }
-          }
-          else
-          {
-            // User cancelled the wizard! Back to the welcome dialog.
-            state.openWelcomeDialog(closable);
-          }
-        };
-      }
-      else
-      {
-        // User cancelled the wizard! Back to the welcome dialog.
-        state.openWelcomeDialog(closable);
-      }
-    };
-  }
 
   public static function openCreateSongWizardBasicOnly(state:ChartEditorState, closable:Bool):Void
   {
@@ -1025,24 +993,13 @@ class ChartEditorDialogHandler
    * @param closable
    * @return Dialog
    */
-  public static function openImportChartDialog(state:ChartEditorState, format:String, closable:Bool = true):Null<Dialog>
+  public static function openImportLeagcyChartDialog(state:ChartEditorState, closable:Bool = true):Null<Dialog>
   {
     var dialog:Null<Dialog> = openDialog(state, CHART_EDITOR_DIALOG_IMPORT_CHART_LAYOUT, true, closable);
     if (dialog == null) return null;
 
-    var prettyFormat:String = switch (format)
-    {
-      case 'legacy': 'FNF Legacy';
-      case 'maru': 'FNF Maru';
-      default: 'Unknown';
-    }
-
-    var fileFilter = switch (format)
-    {
-      case 'legacy', 'maru': {label: 'JSON Data File (.json)', extension: 'json'};
-      default: null;
-    }
-
+    var prettyFormat:String = 'FNF Legacy';
+    var fileFilter = {label: 'JSON Data File (.json)', extension: 'json'};
     dialog.title = 'Import Chart - ${prettyFormat}';
 
     var buttonCancel:Null<Button> = dialog.findComponent('dialogCancel', Button);
@@ -1074,29 +1031,19 @@ class ChartEditorDialogHandler
         {
           trace('Selected file: ' + selectedFile.fullPath);
           var selectedFileTxt:String = selectedFile.bytes.toString();
-          switch(prettyFormat)
+          var fnfLegacyData:Null<LeagcyData> = LegacyImporter.parseLegacyDataRaw(selectedFileTxt, selectedFile.fullPath);
+
+          if (fnfLegacyData == null)
           {
-            case 'leagcy':
-              var fnfLegacyData:Null<LeagcyData> = LegacyImporter.parseLegacyDataRaw(selectedFileTxt, selectedFile.fullPath);
-              var songMetadata:SongMetadata = LegacyImporter.migrateMetadata(fnfLegacyData);
-              var songChartData:SongChartData = LegacyImporter.migrateChartData(fnfLegacyData);
-              if (fnfLegacyData == null)
-              {
-                state.error('Failure', 'Failed to parse FNF chart file (${selectedFile.name})');
-                return;
-              }     
-              state.loadSong([Constants.DEFAULT_VARIATION => songMetadata], [Constants.DEFAULT_VARIATION => songChartData]);                    
-            case 'maru':
-              var fnfMaruData:Null<MaruData> = MaruImporter.parseMaruDataRaw(selectedFileTxt, selectedFile.fullPath);
-              var songMetadata:SongMetadata = MaruImporter.migrateMetadata(fnfMaruData);
-              var songChartData:SongChartData = MaruImporter.migrateChartData(fnfMaruData);
-              if (fnfMaruData == null)
-              {
-                state.error('Failure', 'Failed to parse FNF chart file (${selectedFile.name})');
-                return;
-              }   
-              state.loadSong([Constants.DEFAULT_VARIATION => songMetadata], [Constants.DEFAULT_VARIATION => songChartData]);           
+            state.error('Failure', 'Failed to parse FNF chart file (${selectedFile.name})');
+            return;
           }
+
+          var songMetadata:SongMetadata = LegacyImporter.migrateMetadata(fnfLegacyData, "normal");
+          var songChartData:SongChartData = LegacyImporter.migrateChartData(fnfLegacyData, "normal");
+
+          state.loadSong([Constants.DEFAULT_VARIATION => songMetadata], [Constants.DEFAULT_VARIATION => songChartData]);
+
           dialog.hideDialog(DialogButton.APPLY);
           state.success('Success', 'Loaded chart file (${selectedFile.name})');
         }
@@ -1106,20 +1053,87 @@ class ChartEditorDialogHandler
     onDropFile = function(pathStr:String) {
       var path:Path = new Path(pathStr);
       var selectedFileText:String = FileUtil.readStringFromPath(path.toString());
-    
-      switch(prettyFormat)
-      {
-        case 'leagcy':
-          var selectedFileData:LeagcyData = LegacyImporter.parseLegacyDataRaw(selectedFileText, path.toString());
-          var songMetadata:SongMetadata = LegacyImporter.migrateMetadata(selectedFileData);
-          var songChartData:SongChartData = LegacyImporter.migrateChartData(selectedFileData);
+      var selectedFileData:LeagcyData = LegacyImporter.parseLegacyDataRaw(selectedFileText, path.toString());
+      var songMetadata:SongMetadata = LegacyImporter.migrateMetadata(selectedFileData, "normal");
+      var songChartData:SongChartData = LegacyImporter.migrateChartData(selectedFileData, "normal");
+
+      state.loadSong([Constants.DEFAULT_VARIATION => songMetadata], [Constants.DEFAULT_VARIATION => songChartData]);
+
+      dialog.hideDialog(DialogButton.APPLY);
+      state.success('Success', 'Loaded chart file (${path.file}.${path.ext})');
+    };
+
+    state.addDropHandler({component: importBox, handler: onDropFile});
+
+    return dialog;
+  }
+
+  public static function openImportMaruChartDialog(state:ChartEditorState, closable:Bool = true):Null<Dialog>
+  {
+    var dialog:Null<Dialog> = openDialog(state, CHART_EDITOR_DIALOG_IMPORT_CHART_LAYOUT, true, closable);
+    if (dialog == null) return null;
+
+    var prettyFormat:String = 'FNF Maru';
+    var fileFilter = {label: 'JSON Data File (.json)', extension: 'json'};
+    dialog.title = 'Import Chart - ${prettyFormat}';
+
+    var buttonCancel:Null<Button> = dialog.findComponent('dialogCancel', Button);
+    if (buttonCancel == null) throw 'Could not locate dialogCancel button in Import Chart dialog';
+
+    state.isHaxeUIDialogOpen = true;
+    buttonCancel.onClick = function(_) {
+      state.isHaxeUIDialogOpen = false;
+      dialog.hideDialog(DialogButton.CANCEL);
+    }
+
+    var importBox:Null<Box> = dialog.findComponent('importBox', Box);
+    if (importBox == null) throw 'Could not locate importBox in Import Chart dialog';
+
+    importBox.onMouseOver = function(_) {
+      importBox.swapClass('upload-bg', 'upload-bg-hover');
+      Cursor.cursorMode = Pointer;
+    }
+    importBox.onMouseOut = function(_) {
+      importBox.swapClass('upload-bg-hover', 'upload-bg');
+      Cursor.cursorMode = Default;
+    }
+
+    var onDropFile:String->Void;
+
+    importBox.onClick = function(_) {
+      Dialogs.openBinaryFile('Import Chart - ${prettyFormat}', fileFilter != null ? [fileFilter] : [], function(selectedFile:SelectedFileInfo) {
+        if (selectedFile != null && selectedFile.bytes != null)
+        {
+          trace('Selected file: ' + selectedFile.fullPath);
+          var selectedFileTxt:String = selectedFile.bytes.toString();
+          var fnfLegacyData:Null<MaruData> = MaruImporter.parseMaruDataRaw(selectedFileTxt, selectedFile.fullPath);
+
+          if (fnfLegacyData == null)
+          {
+            state.error('Failure', 'Failed to parse FNF chart file (${selectedFile.name})');
+            return;
+          }
+
+          var songMetadata:SongMetadata = MaruImporter.migrateMetadata(fnfLegacyData, "normal");
+          var songChartData:SongChartData = MaruImporter.migrateChartData(fnfLegacyData, "normal");
+
           state.loadSong([Constants.DEFAULT_VARIATION => songMetadata], [Constants.DEFAULT_VARIATION => songChartData]);
-        case 'maru':
-          var selectedFileData:MaruData = MaruImporter.parseMaruDataRaw(selectedFileText, path.toString());
-          var songMetadata:SongMetadata = MaruImporter.migrateMetadata(selectedFileData);
-          var songChartData:SongChartData = MaruImporter.migrateChartData(selectedFileData);
-          state.loadSong([Constants.DEFAULT_VARIATION => songMetadata], [Constants.DEFAULT_VARIATION => songChartData]);
-      }
+
+          dialog.hideDialog(DialogButton.APPLY);
+          state.success('Success', 'Loaded chart file (${selectedFile.name})');
+        }
+      });
+    }
+
+    onDropFile = function(pathStr:String) {
+      var path:Path = new Path(pathStr);
+      var selectedFileText:String = FileUtil.readStringFromPath(path.toString());
+      var selectedFileData:MaruData = MaruImporter.parseMaruDataRaw(selectedFileText, path.toString());
+      var songMetadata:SongMetadata = MaruImporter.migrateMetadata(selectedFileData, "normal");
+      var songChartData:SongChartData = MaruImporter.migrateChartData(selectedFileData, "normal");
+
+      state.loadSong([Constants.DEFAULT_VARIATION => songMetadata], [Constants.DEFAULT_VARIATION => songChartData]);
+
       dialog.hideDialog(DialogButton.APPLY);
       state.success('Success', 'Loaded chart file (${path.file}.${path.ext})');
     };

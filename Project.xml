@@ -35,28 +35,39 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 
 	<source path="source" />
 	<assets path="assets" />
-	<assets path="FE-CrashDialog.exe" type="template" if="windows release" />
 
+
+	<assets path="FE-CrashDialog.exe" type="template" if="windows release" />
+	<assets path="assets/exclude" embed="true"/>
+	<assets path="assets/ui" embed="true"/>
+	<assets path="assets/fonts" embed="true" />
 	<!-- _______________________________ Libraries ______________________________ -->
-	<haxelib name="lime" />
-	<haxelib name="openfl" />
-	<haxelib name="flixel" />
-	<haxelib name="flixel-addons" />
-	<haxelib name="flixel-text-input" />
-	<haxelib name="flixel-ui" />
-	<haxelib name="haxeui-core" /> 
-	<haxelib name="haxeui-flixel" />
-	<haxelib name="polymod" />
-	<haxelib name="flxanimate" />
-	<haxelib name="FlxPartialSound" />
-	<haxelib name="funkin.vis" />
-	<haxelib name="grig.audio" />
-	<haxelib name="hxvlc" if="windows || linux || android" unless="32bits"/>
+	<haxelib name="lime"/>
+	<haxelib name="openfl"/>
+	<haxelib name="flixel"/> 
+	<haxelib name="flixel-addons"/> 
+	<haxelib name="flixel-text-input"/>
+	<haxelib name="flixel-ui"/>
+	<haxelib name="haxeui-core"/> <!-- UI Framework -->
+	<haxelib name="haxeui-flixel"/> 
+
+	<haxelib name="flxanimate"/> <!-- Texture Atlas Adobe render shit -->
+	<haxelib name="hxvlc" if="windows || linux || android" unless="32bits"/>  <!-- Video Mp4 -->
+	
 	<haxelib name="hxcpp-debug-server" if="debug" />
 
-	<haxelib name="json2object" /> <!-- JSON parsing -->
-	<haxelib name="thx.core" /> <!-- General utility library, "the lodash of Haxe" -->
-	<haxelib name="thx.semver" /> <!-- Version string handling -->
+	<!-- Addtional Library -->
+	<haxelib name="polymod"/> <!-- Mod Support And HScript -->
+	<haxelib name="FlxPartialSound" /> <!-- Partial sound -->
+	<haxelib name="funkin.vis"/> 	<!-- Audio visualization -->
+	<haxelib name="grig.audio"/>	<!-- Audio data utilities -->
+
+	<haxelib name="json2object"/> <!-- JSON parsing -->
+	<haxelib name="jsonpath"/> <!-- JSON parsing -->
+	<haxelib name="jsonpatch"/> <!-- JSON parsing -->
+
+	<haxelib name="thx.core"/> <!-- General utility library, "the lodash of Haxe" -->
+	<haxelib name="thx.semver"/> <!-- Version string handling -->
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
@@ -83,6 +94,7 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 
 	<haxedef name="hscriptPos" />
 	<haxedef name="safeMode"/>
+	<haxedef name="absolute-paths"/>
 	<haxedef name="HXCPP_CHECK_POINTER" if="release" />
 	<haxedef name="HXCPP_STACK_LINE" if="release" />
 	<haxedef name="HXCPP_STACK_TRACE" if="release"/>

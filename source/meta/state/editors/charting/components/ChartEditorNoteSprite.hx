@@ -5,10 +5,6 @@ import flixel.FlxSprite;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFrame;
-import flixel.graphics.frames.FlxTileFrames;
-import flixel.math.FlxPoint;
-import haxe.ui.tooltips.ToolTipRegionOptions;
-import haxe.ui.tooltips.ToolTipManager;
 /**
  * A sprite that can be used to display a note in a chart.
  * Designed to be used and reused efficiently. Has no gameplay functionality.
@@ -32,7 +28,7 @@ class ChartEditorNoteSprite extends FlxSprite
    */
   public var noteData(default, set):Null<SongNoteData>;
 
-  public var tooltip:ToolTipRegionOptions;
+  public var noteText:FlxText;
 
   /**
    * The name of the note style currently in use.
@@ -68,8 +64,6 @@ class ChartEditorNoteSprite extends FlxSprite
 
     this.parentState = parent;
 
-    this.tooltip = HaxeUIUtil.buildTooltip('N/A');
-
     var entries:Array<String> = NoteStyleRegistry.instance.listEntryIds();
 
     if (noteFrameCollection == null)
@@ -90,6 +84,15 @@ class ChartEditorNoteSprite extends FlxSprite
     {
       addNoteStyleAnimations(fetchNoteStyle(entry));
     }
+
+
+    noteText = new FlxText(0, 0, ChartEditorState.GRID_SIZE, '', 16);
+    noteText.autoSize = false;
+    noteText.alignment = CENTER;
+    noteText.borderStyle = SHADOW;
+    noteText.shadowOffset.set(2, 2);
+    noteText.borderColor = FlxColor.BLACK;
+    noteText.scrollFactor.x = 0;    
   }
 
   static var noteFrameCollection:Null<FlxFramesCollection> = null;
@@ -154,7 +157,6 @@ class ChartEditorNoteSprite extends FlxSprite
     if (this.noteData == null)
     {
       this.kill();
-      updateTooltipPosition();
       return this.noteData;
     }
 
@@ -165,7 +167,6 @@ class ChartEditorNoteSprite extends FlxSprite
 
     // Update the position to match the note data.
     updateNotePosition();
-    updateTooltipText();
     return this.noteData;
   }
 
@@ -272,25 +273,24 @@ class ChartEditorNoteSprite extends FlxSprite
     return !aboveViewArea && !belowViewArea;
   }
 
-  public function updateTooltipText():Void
+  override public function kill():Void
   {
-    if (this.noteData == null) return;
-    this.tooltip.tipData = {text: this.noteData.buildTooltip()};
+    super.kill();
+
+    if(noteText != null) noteText.kill();
   }
 
-  public function updateTooltipPosition():Void
+  override function draw()
   {
-    if (this.noteData == null)
-      ToolTipManager.instance.unregisterTooltipRegion(this.tooltip);
-    else
-    {
-      this.tooltip.left = this.x;
-      this.tooltip.top = this.y;
-      this.tooltip.width = this.width;
-      this.tooltip.height = this.height;
+    super.draw();
 
-      // Enable the tooltip.
-      ToolTipManager.instance.registerTooltipRegion(this.tooltip);
-    }
+		if(noteText != null)
+		{
+			noteText.x = this.x + this.width/2 - noteText.width/2;
+			noteText.y = this.y + this.height/2 - noteText.height/2;
+			noteText.alpha = this.alpha;
+			noteText.draw();
+		}
+
   }
 }

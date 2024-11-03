@@ -258,7 +258,9 @@ class Strumline extends FlxSpriteGroup
 
     function updateNotes():Void
     {
-        var songStart:Float = 0;
+        if (noteData.length == 0) return;
+
+        var songStart:Float = PlayState.instance?.startTimestamp ?? 0.0;
         var hitWindowStart:Float = Conductor.instance.songPosition - Constants.HIT_WINDOW_MS;
         var renderWindowStart:Float = Conductor.instance.songPosition + RENDER_DISTANCE_MS;
 
@@ -364,6 +366,14 @@ class Strumline extends FlxSpriteGroup
     }
     public function handleSkippedNotes():Void
     {
+        for (note in notes.members)
+        {
+            if (note == null || note.hasBeenHit) continue;
+			var hitWindowEnd = note.strumTime + Constants.HIT_WINDOW_MS;
+		  
+			if (Conductor.instance.songPosition > hitWindowEnd) note.handledMiss = true;
+        }
+
         clean();
         nextNoteIndex = 0;
     }
@@ -535,11 +545,11 @@ class Strumline extends FlxSpriteGroup
             //Setup Notetype :/
             switch(note.kind)
             {
-                case 'default-gf':
+                case 'gf':
                     noteSprite.gf = true;
-                case 'default-noAnim':
+                case 'noAnim':
                     noteSprite.noAnim = true;
-                case 'default-alt':
+                case 'alt':
                     noteSprite.suffix = "-alt";
             }
 

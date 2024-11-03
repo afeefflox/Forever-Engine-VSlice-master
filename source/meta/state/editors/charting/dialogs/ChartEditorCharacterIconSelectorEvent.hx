@@ -1,0 +1,94 @@
+package meta.state.editors.charting.dialogs;
+
+import flixel.math.FlxPoint;
+import meta.state.editors.charting.dialogs.ChartEditorBaseDialog.DialogParams;
+import haxe.ui.components.Label;
+import haxe.ui.containers.Grid;
+import haxe.ui.containers.HBox;
+import haxe.ui.containers.ScrollView;
+import haxe.ui.containers.ScrollView;
+import haxe.ui.core.Screen;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
+
+// @:nullSafety // TODO: Fix null safety when used with HaxeUI build macros.
+@:access(meta.state.editors.charting.ChartEditorState)
+@:build(haxe.ui.ComponentBuilder.build("assets/exclude/ui/chart-editor/dialogs/character-icon-selector.xml"))
+class ChartEditorCharacterIconSelectorEvent extends ChartEditorBaseMenu
+{
+  public var charSelectScroll:ScrollView;
+  public var charIconName:Label;
+  public function new(chartEditorState2:ChartEditorState, value:Button)
+  {
+    super(chartEditorState2);
+
+    initialize(value);
+    this.alpha = 0;
+    this.y -= 10;
+    FlxTween.tween(this, {alpha: 1, y: this.y + 10}, 0.2, {ease: FlxEase.quartOut});
+  }
+
+  function initialize(button:Button)
+  {
+    this.x = Screen.instance.currentMouseX;
+    this.y = Screen.instance.currentMouseY;
+
+    var charGrid = new Grid();
+    charGrid.columns = 5;
+    charGrid.width = this.width;
+    charSelectScroll.addComponent(charGrid);
+
+    var charIds:Array<String> = CharacterRegistry.listCharacterIds();
+    charIds.sort(SortUtil.alphabetically);
+
+    var defaultText:String = '(choose a character)';
+
+    for (charIndex => charId in charIds)
+    {
+      var charData:CharacterData = CharacterRegistry.fetchCharacterData(charId);
+
+      var charButton = new haxe.ui.components.Button();
+      charButton.width = 70;
+      charButton.height = 70;
+      charButton.padding = 8;
+      charButton.iconPosition = "top";
+
+      if (charId == button.text)
+      {
+        // Scroll to the character if it is already selected.
+        charSelectScroll.hscrollPos = Math.floor(charIndex / 5) * 80;
+        charButton.selected = true;
+
+        defaultText = '${charData.name} [${charId}]';
+      }
+
+      var LIMIT = 6;
+      charButton.icon = haxe.ui.util.Variant.fromImageData(CharacterRegistry.getCharPixelIconAsset(charId));
+      charButton.text = charData.name.length > LIMIT ? '${charData.name.substr(0, LIMIT)}.' : '${charData.name}';
+
+      charButton.onClick = _ -> {
+        button.text = charId;
+        chartEditorState.refreshToolbox(ChartEditorState.CHART_EDITOR_TOOLBOX_EVENT_DATA_LAYOUT);
+      };
+
+      charButton.onMouseOver = _ -> {
+        charIconName.text = '${charData.name} [${charId}]';
+      };
+      charButton.onMouseOut = _ -> {
+        charIconName.text = defaultText;
+      };
+      charGrid.addComponent(charButton);
+    }
+
+    charIconName.text = defaultText;
+  }
+
+  public static function build(chartEditorState:ChartEditorState, value:Button):ChartEditorCharacterIconSelectorEvent
+  {
+    var menu = new ChartEditorCharacterIconSelectorEvent(chartEditorState, value);
+
+    Screen.instance.addComponent(menu);
+
+    return menu;
+  }
+}

@@ -1,10 +1,9 @@
-package audio.visualize;
-
-import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
+import meta.modding.base.ScriptedFlxSpriteGroup;
 import flixel.sound.FlxSound;
 import funkin.vis.dsp.SpectralAnalyzer;
-
-class ABotVis extends FlxTypedSpriteGroup<FlxSprite>
+import graphics.FunkinSprite;
+import Lambda;
+class ABotVis extends ScriptedFlxSpriteGroup
 {
     public function new(x:Float, y:Float)
     {
@@ -15,31 +14,28 @@ class ABotVis extends FlxTypedSpriteGroup<FlxSprite>
 
         for (i in 1...8)
         {
-            var posX:Float = 0;
-            var posY:Float = 0;            
-            posX += positionX[i-1];
-			posY += positionY[i-1];
-      
+            var sum = function(num:Float, total:Float) return total += num;
+            var posX:Float = Lambda.fold(positionX.slice(0, i), sum, 0);
+            var posY:Float = Lambda.fold(positionY.slice(0, i), sum, 0);
+
             var viz:FunkinSprite = new FunkinSprite(posX, posY).loadFrame('characters/abot/viz');
-            viz.animation.addByPrefix('VIZ', 'viz$i', 0);
+            viz.animation.addByPrefix('VIZ', 'viz' + i, 0);
             viz.animation.play('VIZ', false, false, 6);
             add(viz);
         }
     }
 
-    static inline function min(x:Int, y:Int):Int return x > y ? y : x;
+    function min(x:Int, y:Int):Int
+    {
+        return x > y ? y : x;
+    }
 
-
-    #if funkin.vis
     var analyzer:SpectralAnalyzer;
 
     public function initAnalyzer(snd:FlxSound)
     {
-        @:privateAccess
         analyzer = new SpectralAnalyzer(snd._channel.__audioSource, 7, 0.1, 40);
-        #if desktop
-		analyzer.fftN = 256;
-		#end
+        analyzer.fftN = 256;
     }
 
     override function draw()
@@ -58,9 +54,7 @@ class ABotVis extends FlxTypedSpriteGroup<FlxSprite>
             animFrame = Math.floor(Math.min(5, animFrame));
             animFrame = Math.floor(Math.max(0, animFrame));
             animFrame = Std.int(Math.abs(animFrame - 5)); // shitty dumbass flip, cuz dave got da shit backwards lol!
-            group.members[i].animation.curAnim.curFrame = animFrame;
+            members[i].animation.curAnim.curFrame = animFrame;
         }
     }
-
-    #end
 }

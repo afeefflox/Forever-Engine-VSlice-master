@@ -208,7 +208,14 @@ class StickerSprite extends FunkinSprite
     public function new(x:Float, y:Float, stickerSet:String, stickerName:String):Void
     {
         super(x, y);
-        loadImage('transitionSwag/' + stickerSet + '/' + stickerName);
+        if(Paths.getExistAtlas('transitionSwag/$stickerSet/$stickerName'))
+        {
+          loadFrame('transitionSwag/$stickerSet/$stickerName');
+          FlxAnimationUtil.addAtlasAnimation(this, {name: "idle", looped: true, frameIndices: [for(i in 0...this.frames.frames.length) i]});
+          animation.play('idle', true);
+        }
+        else
+          loadImage('transitionSwag/$stickerSet/$stickerName');
         updateHitbox();
         scrollFactor.set();
     }

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<collapsible-dialog title="Character Properties" width="325" height="465">
+  <vbox width="100%" height="100%">
+    <section-header text="Character Offset"/>
+    <hbox width="100%">
+      <number-stepper id="characterPosXStepper" precision="2"/>
+      <number-stepper id="characterPosYStepper" precision="2"/>
+    </hbox>
+
+    <section-header text="Image"/>
+    <hbox width="100%">
+      <box width="175" height="175" style="border:1px dashed $normal-border-color">
+        <scrollview width="100%" height="100%" styleName="no-padding">
+          <image id="objectImagePreview" imageScale=".5"/>
+        </scrollview>
+      </box>
+      <button id="charLoadImageButton" text="Load Image"/>
+    </hbox>
+
+    <collapsible text="Icon" width="100%">
+      <vbox width="100%">
+        <section-header text="Icon (in Game)"/>
+        <hbox width="100%">
+          <box width="150" height="150" style="border:1px dashed $normal-border-color">
+            <scrollview width="100%" height="100%" styleName="no-padding">
+              <image id="iconImagePreview"/>
+            </scrollview>
+          </box>
+          <vbox>
+            <textfield id="iconName" text="bf" placeholder="Icon Name"/>
+          </vbox>
+        </hbox>
+
+        <section-header text="Icon (in Freeplay)"/>
+        <hbox width="100%">
+          <box width="150" height="150" style="border:1px dashed $normal-border-color">
+            <scrollview width="100%" height="100%" styleName="no-padding">
+              <image id="freeplayIconImagePreview" imageScale="6"/>
+            </scrollview>
+          </box>
+          <vbox>
+            <textfield id="iconFreeplayName" text="bf" placeholder="Icon Name"/>
+          </vbox>
+        </hbox>
+      </vbox>
+    </collapsible>
+
+    <section-header text="Camera Offset"/>
+    <hbox width="100%">
+      <number-stepper id="characterCamXStepper" precision="1"/>
+      <number-stepper id="characterCamYStepper" precision="1"/>
+    </hbox>
+
+    <section-header text="Scale"/>
+    <hbox width="100%">
+      <slider id="characterScaleSlider" pos="1" step="0.05" min="0.05" max="10" majorTicks="1" minorTicks="0.25"/>
+    </hbox>
+
+    <collapsible text="Extra" width="100%">
+      <hbox width="100%">
+        <textfield id="charName" placeholder="Character Name (in Editor)"/>
+        <checkbox id="flipXCheckBox" text="Flip X" />
+        <checkbox id="isPlayerCheckBox" text="Playable Character" />
+        <checkbox id="antialiasing" text="Antialiasing"/>
+      </hbox>
+    </collapsible>
+
+  </vbox>
+</collapsible-dialog>

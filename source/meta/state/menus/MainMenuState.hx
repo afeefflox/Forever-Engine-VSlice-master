@@ -37,7 +37,6 @@ class MainMenuState extends MusicBeatState
 		
 		if (stickers != null)
 			stickerSubState = stickers;
-
 	}
 
 	// the create 'state'
@@ -258,8 +257,15 @@ class MainMenuState extends MusicBeatState
 		{
 			persistentUpdate = false;
 
-			FlxG.state.openSubState(new meta.subState.DebugMenuSubState());
+			openSubState(new meta.subState.DebugMenuSubState());
 			// reset camera when debug menu is closed
+			subStateClosed.addOnce(_ -> resetCamStuff());
+		}
+
+		if (FlxG.keys.justPressed.TAB)
+		{
+			persistentUpdate = false;
+			openSubState(new meta.subState.ModMenuSubState());
 			subStateClosed.addOnce(_ -> resetCamStuff());
 		}
 

@@ -2250,22 +2250,23 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
   {
     // Can't use filter() because of null safety checking!
     var filteredWorkingFilePaths:Array<String> = [];
-    for (chartPath in previousWorkingFilePaths)
-      if (chartPath != null) filteredWorkingFilePaths.push(chartPath);
-    if(chartEditorSave.data.chartEditorPreviousFiles != null) chartEditorSave.data.chartEditorPreviousFiles = filteredWorkingFilePaths;
+    for (chartPath in previousWorkingFilePaths) filteredWorkingFilePaths.push(chartPath);
+    chartEditorSave.data.chartEditorPreviousFiles = filteredWorkingFilePaths;
 
     if (hasBackup) trace('Queuing backup prompt for next time!');
-    if(chartEditorSave.data.chartEditorHasBackup != null) chartEditorSave.data.chartEditorHasBackup = hasBackup;
+    chartEditorSave.data.chartEditorHasBackup = hasBackup;
 
-    if(chartEditorSave.data.chartEditorNoteQuant != null) chartEditorSave.data.chartEditorNoteQuant = noteSnapQuantIndex;
-    if(chartEditorSave.data.chartEditorLiveInputStyle != null) chartEditorSave.data.chartEditorLiveInputStyle = currentLiveInputStyle;
-    if(chartEditorSave.data.chartEditorDownscroll != null)  chartEditorSave.data.chartEditorDownscroll = isViewDownscroll;
-    if(chartEditorSave.data.chartEditorPlaytestStartTime != null) chartEditorSave.data.chartEditorPlaytestStartTime = playtestStartTime;
-    if(chartEditorSave.data.chartEditorTheme != null) chartEditorSave.data.chartEditorTheme = currentTheme;
-    if(chartEditorSave.data.chartEditorMetronomeVolume != null) chartEditorSave.data.chartEditorMetronomeVolume = metronomeVolume;
-    if(chartEditorSave.data.chartEditorHitsoundVolumePlayer != null) chartEditorSave.data.chartEditorHitsoundVolumePlayer = hitsoundVolumePlayer;
-    if(chartEditorSave.data.chartEditorHitsoundVolumeOpponent != null) chartEditorSave.data.chartEditorHitsoundVolumeOpponent = hitsoundVolumeOpponent;
-    if(chartEditorSave.data.chartEditorThemeMusic != null) chartEditorSave.data.chartEditorThemeMusic = this.welcomeMusic.active;
+    chartEditorSave.data.chartEditorNoteQuant = noteSnapQuantIndex;
+    chartEditorSave.data.chartEditorLiveInputStyle = currentLiveInputStyle;
+    chartEditorSave.data.chartEditorDownscroll = isViewDownscroll;
+    chartEditorSave.data.chartEditorPlaytestStartTime = playtestStartTime;
+    chartEditorSave.data.chartEditorTheme = currentTheme;
+    chartEditorSave.data.chartEditorMetronomeVolume = metronomeVolume;
+    chartEditorSave.data.chartEditorHitsoundVolumePlayer = hitsoundVolumePlayer;
+    chartEditorSave.data.chartEditorHitsoundVolumeOpponent = hitsoundVolumeOpponent;
+    chartEditorSave.data.chartEditorThemeMusic = this.welcomeMusic.active;
+
+    chartEditorSave.flush();
 
     // save.chartEditorInstVolume = audioInstTrack.volume;
     // save.chartEditorVoicesVolume = audioVocalTrackGroup.volume;
@@ -3127,7 +3128,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     saveDataDirty = false;
 
     // Auto-save preferences.
-    chartEditorSave.flush();
+
     writePreferences(needsAutoSave);
 
     // Auto-save the chart.
@@ -3185,7 +3186,6 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     trace('Should save chart? $saveDataDirty');
 
     var needsAutoSave:Bool = saveDataDirty;
-    chartEditorSave.flush();
     writePreferences(needsAutoSave);
 
     if (needsAutoSave)
@@ -3513,9 +3513,9 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         // The note sprite handles animation playback and positioning.
         noteSprite.noteData = noteData;
         noteSprite.noteStyle = NoteKindManager.getNoteStyleId(noteData.kind, currentSongNoteStyle) ?? currentSongNoteStyle;
+        noteSprite.noteText.text = noteData.kind ?? '';
         noteSprite.overrideStepTime = null;
         noteSprite.overrideData = null;
-        noteSprite.updateTooltipPosition();
 
         // Setting note data resets the position relative to the group!
         // If we don't update the note position AFTER setting the note data, the note will be rendered offscreen at y=5000.
@@ -3678,7 +3678,6 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
           var stepLength = noteSprite.noteData.getStepLength();
           selectionSquare.height = (stepLength <= 0) ? GRID_SIZE : ((stepLength + 1) * GRID_SIZE);
         }
-        if (noteTooltipsDirty) noteSprite.updateTooltipText();
       }
 
       for (eventSprite in renderedEvents.members)
@@ -5597,6 +5596,11 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     playbackRate = Math.floor(playbackRate / 0.05) * 0.05; // Round to nearest 5%
     playbackRate = Math.max(0.05, Math.min(2.0, playbackRate)); // Clamp to 5% to 200%
 
+    subStateClosed.add(reviveUICamera);
+    subStateClosed.add(resetConductorAfterTest);
+    FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = false;
+    
+
     var targetSong:Song;
     try
     {
@@ -5620,8 +5624,18 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         playbackRate: playbackRate,
         overrideMusic: true,
       };
+
+
+      if (audioInstTrack != null) FlxG.sound.music = audioInstTrack;
+
+    uiCamera.kill();
+    FlxG.cameras.remove(uiCamera, false);
+    FlxG.cameras.reset(new FunkinCamera());
+    this.persistentDraw = this.persistentUpdate = false;
     stopWelcomeMusic();
-    LoadingSubState.loadPlayState(targetStateParams, true);
+    LoadingSubState.loadPlayState(targetStateParams, false, true, function(targetState) {
+      targetState.vocals = audioVocalTrackGroup;
+    });
   }
 
   /**

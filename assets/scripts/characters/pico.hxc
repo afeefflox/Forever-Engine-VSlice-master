@@ -1,0 +1,90 @@
+
+import flixel.FlxG;
+import gameObjects.character.MultiAtlasCharacter;
+import meta.subState.GameOverSubState;
+import meta.subState.PauseSubState;
+import gameObjects.character.CharacterType;
+import meta.state.PlayState;
+import graphics.FunkinSprite;
+
+class Pico extends MultiAtlasCharacter 
+{
+	function new() 
+    {
+		super('pico');
+	}
+
+	function onCreate(event:ScriptEvent) {
+		super.onCreate(event);
+
+		if(PlayState.instance.currentVariation == 'pico')
+		{
+			GameOverSubState.musicSuffix = '-pico';
+			GameOverSubState.blueBallSuffix = '-pico';
+			PauseSubState.musicSuffix = '-pico';
+		}
+
+	}
+
+	override function onSongRetry(event:ScriptEvent):Void 
+	{
+		super.onSongRetry(event);
+		if(PlayState.instance.currentVariation == 'pico')
+		{
+			GameOverSubState.musicSuffix = '-pico';
+			GameOverSubState.blueBallSuffix = '-pico';
+			PauseSubState.musicSuffix = '-pico';
+		}
+
+	}
+
+    var deathSpriteRetry:FunkinSprite;
+	var deathSpriteNene:FunkinSprite;
+    function createDeathSprites() 
+    {
+        deathSpriteRetry = new FunkinSprite().loadFrame('characters/Pico_Death_Retry');
+		deathSpriteRetry.animation.addByPrefix('idle', "Retry Text Loop", 24, true);
+		deathSpriteRetry.animation.addByPrefix('confirm', "Retry Text Confirm", 24, false);
+		deathSpriteRetry.visible = false;
+
+        deathSpriteNene = new FunkinSprite().loadFrame('characters/NeneKnifeToss');
+		deathSpriteNene.x = this.x - 320;// + 280;
+		deathSpriteNene.y = this.y - 200;// + 70;
+		deathSpriteNene.animation.addByPrefix('throw', "knife toss", 24, false);
+		deathSpriteNene.visible = true;
+		deathSpriteNene.animation.finishCallback = function(name:String) {
+			deathSpriteNene.visible = false;
+		}
+    }
+
+    override function playAnim(name:String, restart:Bool, ignoreOther:Bool, reversed:Bool) 
+    {
+        super.playAnim(name, restart, ignoreOther, reversed);
+
+        if (name == "firstDeath") {
+            createDeathSprites();
+            GameOverSubState.instance.add(deathSpriteRetry);
+            GameOverSubState.instance.add(deathSpriteNene);
+            deathSpriteNene.animation.play("throw");
+		} else if (name == "deathConfirm") {
+			deathSpriteRetry.animation.play('confirm');
+			deathSpriteRetry.x -= 250;
+			deathSpriteRetry.y -= 200;
+		}
+    }
+
+    function onAnimationFrame(name:String, frameNumber:Int, frameIndex:Int) 
+    {
+        super.onAnimationFrame(name, frameNumber, frameIndex);
+
+		if (name == "firstDeath" && frameNumber == 35) {
+			deathSpriteRetry.animation.play('idle');
+			deathSpriteRetry.visible = true;
+            GameOverSubState.instance.startDeathMusic(1.0, false);
+			GameOverSubState.instance.boyfriend.playAnim('deathLoop');
+
+			deathSpriteRetry.x = this.x + 195;
+			deathSpriteRetry.y = this.y - 70;
+		}
+    }
+}

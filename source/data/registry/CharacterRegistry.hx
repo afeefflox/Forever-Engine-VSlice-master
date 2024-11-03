@@ -440,4 +440,45 @@ class CharacterRegistry {
   
       return frame;
     }
+
+    public static function getIconAsset(char:String):FlxFrame
+    {
+      var charPath:String = 'icons/icon-${fetchCharacterData(char).healthIcon.id}' ;
+      if (!Assets.exists(Paths.image(charPath)))
+      {
+        trace('[WARN] Character ${char} has no freeplay icon.');
+        return null;
+      }
+      var isAnimated = Assets.exists(Paths.file('images/$charPath.xml'));
+      var frame:FlxFrame = null;
+      if (isAnimated)
+      {
+        var frames = Paths.getSparrowAtlas(charPath);
+  
+        var idleFrame:FlxFrame = frames.frames.find(function(frame:FlxFrame):Bool {
+          return frame.name.startsWith('idle');
+        });
+  
+        if (idleFrame == null)
+        {
+          trace('[WARN] Character ${char} has no idle in their freeplay icon.');
+          return null;
+        }
+  
+        // so, haxe.ui.backend.AssetsImpl uses the parent width and height, which makes the image go crazy when rendered
+        // so this is a work around so that it uses the actual width and height
+        var imageGraphic = flixel.graphics.FlxGraphic.fromFrame(idleFrame);
+  
+        var imageFrame = flixel.graphics.frames.FlxImageFrame.fromImage(imageGraphic);
+        frame = imageFrame.frame;
+      }
+      else
+      {
+        var iconGraphic:FlxGraphic = FlxG.bitmap.add(Paths.image(charPath), false);
+        var imageFrame = flixel.graphics.frames.FlxTileFrames.fromGraphic(iconGraphic, FlxPoint.get(Std.int(iconGraphic.width * 0.5), iconGraphic.height));
+        @:privateAccess
+        frame = imageFrame.atlasFrame;
+      }
+      return frame;
+    }
 }

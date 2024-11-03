@@ -8,9 +8,11 @@ class Highscore
 {
 	public static var songScores:Map<String, Int>;
 
-	public static function saveSongScore(song:String, diff:String, score:Int = 0):Void
+	public static function saveSongScore(song:String, diff:String, variation:String, score:Int = 0):Void
 	{
-		var daSong:String = formatSave(formatSong(song), diff);
+		variation = (variation != Constants.DEFAULT_VARIATION) ? '-${variation}' : '';
+
+		var daSong:String = formatSave(formatSong(song) + variation, diff);
 		if (songScores.exists(daSong)) {
 			if (songScores.get(daSong) < score) {
 				setScore(daSong, score);
@@ -43,9 +45,11 @@ class Highscore
 		FlxG.save.flush();
 	}
 
-	public static function getScore(song:String, diff:String):Int
+	public static function getScore(song:String, diff:String, variation:String):Int
 	{
-		var daSong:String = formatSave(formatSong(song), diff);
+		variation = (variation != Constants.DEFAULT_VARIATION) ? '-${variation}' : '';
+
+		var daSong:String = formatSave(formatSong(song) + variation, diff);
 		if (!songScores.exists(daSong))
 			setScore(daSong, 0);
 		return songScores.get(daSong);
@@ -53,6 +57,7 @@ class Highscore
 
     public static function getWeekScore(week:String, diff:String):Int
 	{
+
 		var daWeek:String = formatSave(formatWeek(week), diff);
 		if (!songScores.exists(daWeek))
 			setScore(daWeek, 0);

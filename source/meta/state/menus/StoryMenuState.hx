@@ -68,12 +68,14 @@ class StoryMenuState extends MusicBeatState
 	{
 		super.create();
 
-		levelList = LevelRegistry.instance.listSortedLevelIds();
+		//**Use Week list instead listSortedLevelIds cuz they it won't rid other week :(**/
+		levelList = CoolUtil.coolTextFile(Paths.txt('levels/weeklist'));
+		levelList.sort(SortUtil.defaultsThenAlphabetically.bind(LevelRegistry.instance.listBaseGameLevelIds()));
 		levelList = levelList.filter(function(id) {
-		  var levelData = LevelRegistry.instance.fetchEntry(id);
-		  if (levelData == null) return false;
-	
-		  return levelData.isVisible();
+			var levelData = LevelRegistry.instance.fetchEntry(id);
+			if (levelData == null) return false;
+	  
+			return levelData.isVisible();
 		});
 		if (levelList.length == 0) levelList = ['tutorial']; // Make sure there's at least one level to display.
 	
@@ -140,6 +142,7 @@ class StoryMenuState extends MusicBeatState
 		add(levelTitleText);
 
 		levelProps = new FlxTypedGroup<LevelProp>();
+		levelProps.zIndex = 1000;
 		add(levelProps);
 		updateProps();
 	

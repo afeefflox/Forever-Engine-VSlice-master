@@ -14,17 +14,17 @@
 					<dropdown id="dialogStage" text="Stage..." horizontalAlign="right" width="100%">
 						<validator type="required" />
 						<data>
-							<item id="mainStage" text="Main Stage" />
-							<item id="spookyMansion" text="Spooky Mansion" />
-							<item id="phillyTrain" text="Philly Train" />
-							<item id="limoRide" text="Limo Ride" />
-							<item id="mallXmas" text="Mall (Xmas)" />
+							<item id="stage" text="Main Stage" />
+							<item id="spooky" text="Spooky Mansion" />
+							<item id="philly" text="Philly Train" />
+							<item id="limo" text="Limo Ride" />
+							<item id="mall" text="Mall (Xmas)" />
 							<item id="mallEvil" text="Mall (Evil)" />
 							<item id="school" text="School" />
 							<item id="schoolEvil" text="School (Evil)" />
-							<item id="tankmanBattlefield" text="Tankman Battlefield" />
-							<item id="phillyStreets" text="Philly Streets" />
-							<item id="phillyBlazin" text="Philly Streets (Blazin')" />
+							<item id="tankman" text="Tankman Battlefield" />
+							<item id="philly-street" text="Philly Streets" />
+							<item id="philly-blazin" text="Philly Streets (Blazin')" />
 						</data>
 					</dropdown>
 					<label text="Note Style:" verticalAlign="center" horizontalAlign="right" />
@@ -40,7 +40,7 @@
 						<validator type="required" />
 						<data>
 							<item id="bf" text="Boyfriend" />
-							<item id="pico-playable" text="Pico (Darnell)" />
+							<item id="pico" text="Pico" />
 						</data>
 					</dropdown>
 					<label text="Opponent Character:" verticalAlign="center" horizontalAlign="right" />

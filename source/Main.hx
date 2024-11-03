@@ -59,8 +59,9 @@ class Main extends Sprite
 	{
 		super();
 
-		meta.modding.PolymodHandler.loadAllMods();
-
+		PolymodHandler.loadCurrentMods();
+		PolymodHandler.loadAllonAddons();
+		
 		if (stage != null)
 			init();
 		else
