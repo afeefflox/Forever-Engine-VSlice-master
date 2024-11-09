@@ -1,27 +1,10 @@
 package gameObjects.userInterface;
 
-import flixel.FlxBasic;
-import flixel.FlxCamera;
-import flixel.FlxG;
-import flixel.FlxObject;
-import flixel.FlxSprite;
-import flixel.FlxState;
-import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.group.FlxSpriteGroup;
-import flixel.math.FlxMath;
-import flixel.text.FlxText;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
+
 import flixel.ui.FlxBar;
-import flixel.util.FlxColor;
-import flixel.util.FlxSort;
-import flixel.util.FlxTimer;
-import meta.CoolUtil;
-import meta.data.Conductor;
-import meta.data.Timings;
-import meta.state.PlayState;
 import flixel.util.FlxStringUtil;
-using StringTools;
+
+using data.registry.CharacterRegistry;
 
 class ClassHUD extends FlxTypedGroup<FlxBasic>
 {
@@ -80,12 +63,14 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 
 		var currentCharacter:SongCharacterData = PlayState.instance.currentChart.characters;
 		
-		iconP1 = new HealthIcon(CharacterRegistry.fetchCharacterData(currentCharacter.player).healthIcon.id, true);
+		iconP1 = new HealthIcon('face', true);
 		iconP1.y = healthBar.y - (iconP1.height * 0.5);
+		iconP1.initHealthIcon(CharacterRegistry.fetchCharacterData(currentCharacter.player).healthIcon);
 		add(iconP1);
 
-		iconP2 = new HealthIcon(CharacterRegistry.fetchCharacterData(currentCharacter.opponent).healthIcon.id, false);
+		iconP2 = new HealthIcon('face', false);
 		iconP2.y = healthBar.y - (iconP2.height * 0.5);
+		iconP2.initHealthIcon(CharacterRegistry.fetchCharacterData(currentCharacter.opponent).healthIcon);
 		add(iconP2);
 	}
 
@@ -194,7 +179,7 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 		{
 			var comboDisplay:String = (Timings.comboDisplay != '' ? ' [${Timings.comboDisplay}] ' : '');
 			scoreDisplay += divider + 'Accuracy: ${Math.floor(Timings.getAccuracy() * 100) / 100}%' + comboDisplay;
-			scoreDisplay += divider + 'Combo Breaks: ${game.misses}';
+			scoreDisplay += divider + 'Combo Breaks: ${Highscore.instance.tallies.missed}';
 			scoreDisplay += divider + 'Rank: ${Timings.returnScoreRating().toUpperCase()}';
 		}
 

@@ -243,6 +243,8 @@ class PolymodHandler
 		NoteStyleRegistry.instance.loadEntries();
 		PlayerRegistry.instance.loadEntries();
 		StageRegistry.instance.loadEntries();
+		AlbumRegistry.instance.loadEntries();
+		FreeplayStyleRegistry.instance.loadEntries();
 
 		//Non BaseRegistry
 		SongEventRegistry.loadEventCache();

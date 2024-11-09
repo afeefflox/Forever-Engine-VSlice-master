@@ -31,6 +31,7 @@ import gameObjects.userInterface.notes.Strumline;
 import gameObjects.userInterface.menu.Checkmark;
 import gameObjects.userInterface.menu.AttachedSprite;
 import gameObjects.userInterface.Countdown;
+import gameObjects.userInterface.PixelatedIcon;
 //gameObjects
 import gameObjects.character.BaseCharacter;
 import gameObjects.character.*;
@@ -55,6 +56,8 @@ import data.LevelData;
 import data.StageData;
 import data.NoteStyleData;
 import data.PlayerData;
+import data.AlbumData;
+import data.FreeplayStyleData;
 
 //Registry
 import data.registry.LevelRegistry;
@@ -64,6 +67,8 @@ import data.registry.NoteStyleRegistry;
 import data.registry.SongRegistry;
 import data.registry.SongEventRegistry;
 import data.registry.PlayerRegistry;
+import data.registry.AlbumRegistry;
+import data.registry.FreeplayStyleRegistry;
 
 //SONG DATA
 import data.SongData.SongMetadata;
@@ -93,9 +98,14 @@ import meta.data.SongSerializer;
 import meta.data.events.SongEvent;
 import meta.data.Conductor;
 import meta.data.Highscore;
+import meta.data.Highscore.SaveScoreData;
+import meta.data.Highscore.Tallies;
+import meta.data.Scoring;
 import meta.data.PlayerSettings;
 import meta.data.Timings;
 import meta.data.VideoCutscene;
+import meta.data.Album;
+import meta.data.FreeplayStyle;
 
 import meta.data.dependency.Discord;
 import meta.data.dependency.FNFSprite;
@@ -122,6 +132,13 @@ import meta.state.menus.*;
 import meta.state.*;
 import meta.subState.*;
 import meta.ui.*;
+
+import meta.subState.ResultSubState.ResultsStateParams;
+import meta.state.menus.FreeplayState.FreeplaySongData;
+import meta.state.menus.FreeplayState.FreeplayStateParams;
+import meta.state.menus.FreeplayState.FromResultsParams;
+import meta.state.menus.FreeplayState.ExitMoverData;
+import meta.state.menus.FreeplayState.MoveData;
 
 //Haxeflixel shit
 import flixel.FlxG;

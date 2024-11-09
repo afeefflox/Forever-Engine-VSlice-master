@@ -1376,26 +1376,26 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     return currentSongMetadata.playData.noteStyle = value;
   }
 
-  var currentSongFreeplayPreviewStart(get, set):Int;
+  var currentSongFreeplayPreviewStart(get, set):Float;
 
-  function get_currentSongFreeplayPreviewStart():Int
+  function get_currentSongFreeplayPreviewStart():Float
   {
     return currentSongMetadata.playData.previewStart;
   }
 
-  function set_currentSongFreeplayPreviewStart(value:Int):Int
+  function set_currentSongFreeplayPreviewStart(value:Float):Float
   {
     return currentSongMetadata.playData.previewStart = value;
   }
 
-  var currentSongFreeplayPreviewEnd(get, set):Int;
+  var currentSongFreeplayPreviewEnd(get, set):Float;
 
-  function get_currentSongFreeplayPreviewEnd():Int
+  function get_currentSongFreeplayPreviewEnd():Float
   {
     return currentSongMetadata.playData.previewEnd;
   }
 
-  function set_currentSongFreeplayPreviewEnd(value:Int):Int
+  function set_currentSongFreeplayPreviewEnd(value:Float):Float
   {
     return currentSongMetadata.playData.previewEnd = value;
   }
@@ -5063,6 +5063,9 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     playbarNoteSnap.text = '1/${noteSnapQuant}';
     playbarDifficulty.text = '${selectedDifficulty.toTitleCase()}';
     playbarBPM.text = 'BPM: ${(Conductor.instance.bpm ?? 0.0)}';
+    playbarTime.text = 'Time: ${(Conductor.instance.songPosition)}';
+    playbarStep.text = 'Step: ${(Conductor.instance.currentStep)}';
+    playbarBeat.text = 'Beat: ${(Conductor.instance.currentBeat)}';
   }
 
   function handlePlayhead():Void

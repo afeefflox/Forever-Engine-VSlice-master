@@ -96,7 +96,7 @@ class Timings
 			comboDisplay = judgementsMap.get(smallestRating)[4];
 		else
 		{
-			if (PlayState.instance.misses < 10)
+			if (Highscore.instance.tallies.missed < 10)
 				comboDisplay = 'SDCB';
 		}
 

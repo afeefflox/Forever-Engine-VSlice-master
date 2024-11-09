@@ -71,6 +71,7 @@ class OptionsMenuState extends MusicBeatState
 					['', null],
 					['Display Accuracy', getFromOption],
 					['Skip Text', getFromOption],
+					['Skip Result Screen', getFromOption],
 					['', null],
 					['Meta Settings', null],
 					['', null],

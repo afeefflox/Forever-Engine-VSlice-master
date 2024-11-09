@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "bgAsset": "menus/base/freeplay/freeplayBGdad",
+  "selectorAsset": "menus/base/freeplay/freeplaySelector/freeplaySelector_pico",
+  "numbersAsset": "menus/base/freeplay/digital_numbers_pico",
+  "capsuleAsset": "menus/base/freeplay/freeplayCapsule/capsule/freeplayCapsule_pico",
+  "capsuleTextColors": ["#CC6600", "#CC9900"],
+  "startDelay": 1.45
+}

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "name": "Pico",
+  "name": "pico",
   "ownedChars": [
     "pico",
     "pico-playable",
@@ -12,7 +12,7 @@
   "unlocked": true,
   "freeplayStyle": "pico",
   "freeplayDJ": {
-    "assetPath": "freeplay/freeplay-pico",
+    "assetPath": "menus/base/freeplay/freeplay-pico",
     "text1": "PICO",
     "text2": "GOD DAMN HE DOWN ON THE NUT",
     "text3": "ZEBOIM DAMN IMA NUT",
@@ -73,24 +73,23 @@
   "charSelect": {
     "position": 3,
     "gf": {
-      "assetPath": "charSelect/neneChill",
-      "animInfoPath": "charSelect/neneAnimInfo",
+      "assetPath": "menus/base/charSelect/chill/nene",
+      "animInfoPath": "menus/base/charSelect/chill/nene/animInfo",
       "visualizer": true
     }
   },
   "results": {
     "music": {
-      "PERFECT_GOLD": "resultsPERFECT-pico",
-      "PERFECT": "resultsPERFECT-pico",
-      "EXCELLENT": "resultsEXCELLENT-pico",
-      "GREAT": "resultsNORMAL-pico",
-      "GOOD": "resultsNORMAL-pico",
-      "SHIT": "resultsSHIT-pico"
+      "PERFECT_GOLD": "perfect-pico",
+      "PERFECT": "perfect-pico",
+      "EXCELLENT": "excellent-pico",
+      "GREAT": "normal-pico",
+      "GOOD": "normal-pico",
+      "SHIT": "shit-pico"
     },
     "perfectGold": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-pico/resultsPERFECT",
+        "assetPath": "menus/base/resultScreen/results-pico/resultsPERFECT",
         "zIndex": 500,
         "scale": 0.88,
         "offsets": [385, 82],
@@ -99,8 +98,7 @@
     ],
     "perfect": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-pico/resultsPERFECT",
+        "assetPath": "menus/base/resultScreen/results-pico/resultsPERFECT",
         "zIndex": 500,
         "scale": 0.88,
         "offsets": [385, 82],
@@ -109,8 +107,7 @@
     ],
     "excellent": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-pico/resultsGREAT",
+        "assetPath": "menus/base/resultScreen/results-pico/resultsGREAT",
         "zIndex": 500,
         "scale": 1.25,
         "offsets": [350, 25],
@@ -120,8 +117,7 @@
     ],
     "great": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-pico/resultsGREAT",
+        "assetPath": "menus/base/resultScreen/results-pico/resultsGREAT",
         "zIndex": 500,
         "scale": 1.25,
         "offsets": [350, 25],
@@ -131,8 +127,7 @@
     ],
     "good": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-pico/resultsGOOD",
+        "assetPath": "menus/base/resultScreen/results-pico/resultsGOOD",
         "zIndex": 500,
         "scale": 1.25,
         "offsets": [350, 25],
@@ -141,8 +136,7 @@
     ],
     "loss": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-pico/resultsSHIT",
+        "assetPath": "menus/base/resultScreen/results-pico/resultsSHIT",
         "zIndex": 500,
         "offsets": [-185, -125],
         "loopFrame": 0

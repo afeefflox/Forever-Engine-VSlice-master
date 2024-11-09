@@ -73,6 +73,19 @@ interface INoteScriptedClass extends IScriptedClass
   public function onNoteMiss(event:NoteScriptEvent):Void;
 }
 
+interface IBPMSyncedScriptedClass extends IScriptedClass
+{
+ /**
+   * Called once every step of the song.
+   */
+  public function onStepHit(event:SongTimeScriptEvent):Void;
+
+  /**
+   * Called once every beat of the song.
+   */
+  public function onBeatHit(event:SongTimeScriptEvent):Void;  
+}
+
 /**
  * Developer note:
  *
@@ -86,7 +99,7 @@ interface INoteScriptedClass extends IScriptedClass
 /**
  * Defines a set of callbacks available to scripted classes that involve the lifecycle of the Play State.
  */
-interface IPlayStateScriptedClass extends INoteScriptedClass
+interface IPlayStateScriptedClass extends INoteScriptedClass extends IBPMSyncedScriptedClass
 {
   /**
    * Called when the game is paused.
@@ -104,6 +117,13 @@ interface IPlayStateScriptedClass extends INoteScriptedClass
    * Called when the song starts (conductor time is 0 seconds).
    */
   public function onSongStart(event:ScriptEvent):Void;
+
+  
+  /**
+   * Called when the song has been parsed, before notes have been placed.
+   * Use this to mutate the chart.
+   */
+  public function onSongLoaded(event:SongLoadScriptEvent):Void;
 
   /**
    * Called when the song ends and the song is about to be unloaded.
@@ -129,17 +149,6 @@ interface IPlayStateScriptedClass extends INoteScriptedClass
    * Called when the song reaches an event.
    */
    public function onSongEvent(event:SongEventScriptEvent):Void;
-
-  /**
-   * Called once every step of the song.
-   */
-  public function onStepHit(event:SongTimeScriptEvent):Void;
-
-  /**
-   * Called once every beat of the song.
-   */
-  public function onBeatHit(event:SongTimeScriptEvent):Void;
-
   /**
    * Called when the countdown of the song starts.
    */

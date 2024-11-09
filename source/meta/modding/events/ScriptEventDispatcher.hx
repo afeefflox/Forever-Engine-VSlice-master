@@ -70,6 +70,21 @@ class ScriptEventDispatcher
       }
     }
 
+    if (Std.isOfType(target, IBPMSyncedScriptedClass))
+      {
+        var t:IBPMSyncedScriptedClass = cast(target, IBPMSyncedScriptedClass);
+        switch (event.type)
+        {
+          case SONG_BEAT_HIT:
+            t.onBeatHit(cast event);
+            return;
+          case SONG_STEP_HIT:
+            t.onStepHit(cast event);
+            return;
+          default: // Continue;
+        }
+      }
+
     if (Std.isOfType(target, IPlayStateScriptedClass))
     {
       var t:IPlayStateScriptedClass = cast(target, IPlayStateScriptedClass);
@@ -77,12 +92,6 @@ class ScriptEventDispatcher
       {
         case NOTE_GHOST_MISS:
           t.onNoteGhostMiss(cast event);
-          return;
-        case SONG_BEAT_HIT:
-          t.onBeatHit(cast event);
-          return;
-        case SONG_STEP_HIT:
-          t.onStepHit(cast event);
           return;
         case SONG_START:
           t.onSongStart(event);
@@ -102,6 +111,9 @@ class ScriptEventDispatcher
         case RESUME:
           t.onResume(event);
           return;
+        case SONG_EVENT:
+          t.onSongEvent(cast event);
+          return;
         case COUNTDOWN_START:
           t.onCountdownStart(cast event);
           return;
@@ -110,6 +122,9 @@ class ScriptEventDispatcher
           return;
         case COUNTDOWN_END:
           t.onCountdownEnd(cast event);
+          return;
+        case SONG_LOADED:
+          t.onSongLoaded(cast event);
           return;
         default: // Continue;
       }

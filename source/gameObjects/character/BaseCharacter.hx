@@ -153,7 +153,7 @@ class BaseCharacter extends Bopper
         this.updateHitbox();
         if (resetCamera) this.resetCameraFocusPoint();
     }
-
+    
     public function setScale(scale:Null<Float>):Void
     {
         if (scale == null) scale = 1.0;

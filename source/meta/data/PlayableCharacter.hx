@@ -33,6 +33,45 @@ class PlayableCharacter implements IRegistryEntry<PlayerData>
     public function getFreeplayDJData():Null<PlayerFreeplayDJData> return _data?.freeplayDJ;
     public function getFreeplayDJText(index:Int):String return _data?.freeplayDJ?.getFreeplayDJText(index) ?? 'GET FREAKY ON A FRIDAY';
     public function getCharSelectData():Null<PlayerCharSelectData> return _data?.charSelect;
+    public function getResultsAnimationDatas(rank:ScoringRank):Array<PlayerResultsAnimationData>
+    {
+        if (_data == null || _data.results == null) return [];
+        switch (rank)
+        {
+          case PERFECT_GOLD:
+            return _data.results.perfectGold;
+          case PERFECT:
+            return _data.results.perfect;
+          case EXCELLENT:
+            return _data.results.excellent;
+          case GREAT:
+            return _data.results.great;
+          case GOOD:
+            return _data.results.good;
+          case SHIT:
+            return _data.results.loss;
+        }
+    }
+    public function getResultsMusicPath(rank:ScoringRank):String
+    {
+        switch (rank)
+        {
+          case PERFECT_GOLD:
+            return _data?.results?.music?.PERFECT_GOLD ?? "prefect";
+          case PERFECT:
+            return _data?.results?.music?.PERFECT ?? "prefect";
+          case EXCELLENT:
+            return _data?.results?.music?.EXCELLENT ?? "excellent";
+          case GREAT:
+            return _data?.results?.music?.GREAT ?? "normal";
+          case GOOD:
+            return _data?.results?.music?.GOOD ?? "normal";
+          case SHIT:
+            return _data?.results?.music?.SHIT ?? "shit";
+          default:
+            return _data?.results?.music?.GOOD ?? "normal";
+        }        
+    }
     public function isUnlocked():Bool return _data?.unlocked ?? true;
     public function destroy():Void {}
     public function toString():String return 'PlayableCharacter($id)';

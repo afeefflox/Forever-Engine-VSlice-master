@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 	This component imitates the playback controls like on a music player.
+
+
 -->
 <box id="playbar" width="100%" height="48" styleName="playbar">
-	<hbox>
-		<label horizontalAlign="left" id="playbarSongPos" text="0:32" styleName="playbarDuration" />
+	<hbox horizontalAlign="left">
+		<label id="playbarSongPos" text="0:32" styleName="playbarDuration" />
+		<label id="playbarTime" verticalAlign="center" text="Time: 0" styleName="playbarStatus"/>
+		<rule direction="vertical" height="80%" />
+		<label id="playbarStep" verticalAlign="center" text="Step: 0" styleName="playbarStatus"/>
+		<rule direction="vertical" height="80%" />
+		<label id="playbarBeat" verticalAlign="center" text="Beat: 0" styleName="playbarStatus"/>
 	</hbox>
 	<hbox horizontalAlign="center">
 		<button allowFocus="false" styleName="playbarButton" tooltip="Skip to Start" id="playbarStart" text="|<" />

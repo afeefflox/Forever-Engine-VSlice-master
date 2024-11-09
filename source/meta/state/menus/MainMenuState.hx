@@ -31,12 +31,15 @@ class MainMenuState extends MusicBeatState
 	var optionShit:Array<String> = ['story mode', 'freeplay', 'options'];
 	var canSnap:Array<Float> = [];
 	var stickerSubState:StickerSubState;
-	public function new(?stickers:StickerSubState)
+	var overrideMusic:Bool = false;
+	public function new(?stickers:StickerSubState, ?_overrideMusic:Bool = false)
 	{
 		super();
 		
 		if (stickers != null)
 			stickerSubState = stickers;
+
+		overrideMusic = _overrideMusic;
 	}
 
 	// the create 'state'
@@ -49,7 +52,8 @@ class MainMenuState extends MusicBeatState
 		transOut = FlxTransitionableState.defaultTransOut;
 
 		// make sure the music is playing
-		ForeverTools.resetMenuMusic();
+		
+		if (!overrideMusic) ForeverTools.resetMenuMusic();
 
 		#if discord_rpc
 		Discord.changePresence('MENU SCREEN', 'Main Menu');
@@ -118,19 +122,19 @@ class MainMenuState extends MusicBeatState
 			menuItem.scrollFactor.set();
 			menuItem.antialiasing = true;
 			menuItem.updateHitbox();
-
-			/*
-				FlxTween.tween(menuItem, {alpha: 1, x: ((FlxG.width * 0.5) - (menuItem.width * 0.5))}, 0.35, {
-					ease: FlxEase.smootherStepInOut,
-					onComplete: function(tween:FlxTween)
-					{
-						canSnap[i] = 0;
-					}
-			});*/
 		}
 
 		// set the camera to actually follow the camera object that was created before
 		resetCamStuff();
+		subStateClosed.add(_ -> resetCamStuff(false));
+		subStateOpened.add(sub -> {
+			if (Type.getClass(sub) == FreeplayState)
+			{
+				new FlxTimer().start(0.5, _ -> {
+					magenta.visible = false;
+				});
+			}
+		});
 
 		updateSelection();
 
@@ -152,13 +156,12 @@ class MainMenuState extends MusicBeatState
 		//
 	}
 
-	function resetCamStuff():Void
+	function resetCamStuff(?snap:Bool = true):Void
 	{
 		var camLerp = Main.framerateAdjust(0.10);
 		FlxG.camera.follow(camFollow, null, camLerp);
-		FlxG.camera.snapToTarget();
+		if (snap) FlxG.camera.snapToTarget();
 	}
-	  
 
 	// var colorTest:Float = 0;
 	var selectedSomethin:Bool = false;
@@ -244,7 +247,11 @@ class MainMenuState extends MusicBeatState
 							case 'story mode':
 								Main.switchState(new StoryMenuState());
 							case 'freeplay':
-								Main.switchState(new FreeplayState());
+								persistentDraw = true;
+								persistentUpdate = false;
+								// Freeplay has its own custom transition
+								FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
+								openSubState(new FreeplayState());
 							case 'options':
 								Main.switchState(new OptionsMenuState());
 						}
@@ -256,19 +263,14 @@ class MainMenuState extends MusicBeatState
 		if (FlxG.keys.justPressed.SEVEN)
 		{
 			persistentUpdate = false;
-
 			openSubState(new meta.subState.DebugMenuSubState());
-			// reset camera when debug menu is closed
-			subStateClosed.addOnce(_ -> resetCamStuff());
 		}
 
 		if (FlxG.keys.justPressed.TAB)
 		{
 			persistentUpdate = false;
 			openSubState(new meta.subState.ModMenuSubState());
-			subStateClosed.addOnce(_ -> resetCamStuff());
 		}
-
 
 		if (Math.floor(curSelected) != lastCurSelected)
 			updateSelection();

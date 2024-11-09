@@ -322,28 +322,13 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
       FlxG.sound.music.kill();
     }
 
-    if (params?.mapTimeChanges ?? true)
-    {
-      var songMusicData:Null<SongMusicData> = SongRegistry.instance.parseMusicData(key);
-      // Will fall back and return null if the metadata doesn't exist or can't be parsed.
-      if (songMusicData != null)
-      {
-        Conductor.instance.mapTimeChanges(songMusicData.timeChanges);
-
-        if (songMusicData.looped != null && params.loop == null) params.loop = songMusicData.looped;
-      }
-      else
-      {
-        FlxG.log.warn('Tried and failed to find music metadata for $key');
-      }
-    }
     var pathsFunction = params.pathsFunction ?? MUSIC;
     var suffix = params.suffix ?? '';
     var pathToUse = switch (pathsFunction)
     {
-      case MUSIC: Paths.music('$key/$key');
+      case MUSIC: Paths.music('$key');
       case INST: Paths.inst('$key', suffix);
-      default: Paths.music('$key/$key');
+      default: Paths.music('$key');
     }
 
     var shouldLoadPartial = params.partialParams?.loadPartial ?? false;
@@ -484,6 +469,7 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
   {
     var promise:lime.app.Promise<Null<FunkinSound>> = new lime.app.Promise<Null<FunkinSound>>();
 
+    trace('Partial Start: ${start}, Partial End: ${end}');
     // split the path and get only after first :
     // we are bypassing the openfl/lime asset library fuss on web only
     #if web
@@ -604,12 +590,6 @@ typedef FunkinSoundPlayMusicParams =
    * @default `true`
    */
   var ?loop:Bool;
-
-  /**
-   * Whether to check for `SongMusicData` to update the Conductor with.
-   * @default `true`
-   */
-  var ?mapTimeChanges:Bool;
 
   /**
    * Which Paths function to use to load a song

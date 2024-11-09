@@ -81,6 +81,8 @@ class Module implements IPlayStateScriptedClass implements IStateChangingScripte
 
   public function onSongEnd(event:ScriptEvent) {}
 
+  public function onSongLoaded(event:SongLoadScriptEvent) {}
+
   public function onGameOver(event:ScriptEvent) {}
 
   public function onNoteIncoming(event:NoteScriptEvent) {}

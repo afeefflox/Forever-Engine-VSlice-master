@@ -388,7 +388,7 @@ class PauseSubState extends MusicBeatSubState
 		PlayState.instance.deathCounter = 0;
 		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
 		PlayState.resetMusic();
-		state.openSubState(new StickerSubState(null, (sticker) -> PlayStatePlaylist.isStoryMode ? new StoryMenuState(sticker) :  new FreeplayState(sticker)));
+		state.openSubState(new StickerSubState(null, (sticker) -> PlayStatePlaylist.isStoryMode ? new StoryMenuState(sticker) : FreeplayState.build(null, sticker)));
 	}
 
 	static function quitToChartEditor(state:PauseSubState):Void

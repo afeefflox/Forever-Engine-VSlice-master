@@ -196,6 +196,8 @@ class Song implements IPlayStateScriptedClass implements IRegistryEntry<SongMeta
 				difficulty.noteStyle = metadata.playData.noteStyle;
 		
 				difficulty.characters = metadata.playData.characters;
+				difficulty.previewStart = metadata.playData.previewStart;
+				difficulty.previewEnd = metadata.playData.previewEnd;
 				difficultyMap.set(diffId, difficulty);
 			}
 			difficulties.set(metadata.variation, difficultyMap);
@@ -394,6 +396,7 @@ class Song implements IPlayStateScriptedClass implements IRegistryEntry<SongMeta
 	public function onPause(event:PauseScriptEvent):Void {};
 	public function onResume(event:ScriptEvent):Void {};
 	public function onSongStart(event:ScriptEvent):Void {};
+	public function onSongLoaded(event:SongLoadScriptEvent):Void {};
 	public function onSongEnd(event:ScriptEvent):Void {};
 	public function onGameOver(event:ScriptEvent):Void {};
 	public function onSongRetry(event:ScriptEvent):Void {};
@@ -455,6 +458,8 @@ class SongDifficulty
 	public var offsets:SongOffsets = new SongOffsets();
 	public var generatedBy:String = SongRegistry.DEFAULT_GENERATEDBY;
 	public var timeChanges:Array<SongTimeChange> = [];
+	public var previewStart:Float = 0.0;
+	public var previewEnd:Float = 0.0;
 
 	public var stage:String = Constants.DEFAULT_STAGE;
 	public var noteStyle:String = Constants.DEFAULT_NOTE_STYLE;

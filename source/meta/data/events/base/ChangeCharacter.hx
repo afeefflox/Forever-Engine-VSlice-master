@@ -1,5 +1,7 @@
 package meta.data.events.base;
 
+using data.registry.CharacterRegistry;
+
 class ChangeCharacter extends SongEvent
 {
     public function new() 
@@ -8,20 +10,44 @@ class ChangeCharacter extends SongEvent
     }
 
 
-    var charMap:Map<String, BaseCharacter> = new Map<String, BaseCharacter>();
+
+    var boyfriendMap:Map<String, BaseCharacter> = new Map<String, BaseCharacter>();
+	var dadMap:Map<String, BaseCharacter> = new Map<String, BaseCharacter>();
+	var gfMap:Map<String, BaseCharacter> = new Map<String, BaseCharacter>();
 
     public override function precacheEvent(data:SongEventData)
     {
         if (PlayState.isNull()) return;
 
+        var type:Null<Int> = data.getInt('char');
+        if (type == null) type = cast data.value;
+
         var charId:Null<String> = data.getString('id').toLowerCase();
         if (charId == null) charId = 'bf';
 
-        if(!charMap.exists(charId)) 
+        var newChar:BaseCharacter = BaseCharacter.fetchData(charId);
+
+        switch(type) 
         {
-            var character = BaseCharacter.fetchData(charId);
-            charMap.set(charId, character);
-            trace('Preacahe Character Id: ${charId}');
+            case 0:
+                if(!boyfriendMap.exists(charId)) {
+                    newChar.characterType = CharacterType.BF;
+					boyfriendMap.set(charId, newChar);
+                    trace('Precache Player: ${charId}');
+				}
+                
+            case 1:
+                if(!dadMap.exists(charId)) {
+                    newChar.characterType = CharacterType.DAD;
+					dadMap.set(charId, newChar);
+                    trace('Precache Opponent: ${charId}');
+				}
+            case 2:
+                if(!gfMap.exists(charId)) {
+                    newChar.characterType = CharacterType.GF;
+					gfMap.set(charId, newChar);
+                    trace('Precache Girlfriend: ${charId}');
+				}
         }
     }
 
@@ -36,36 +62,31 @@ class ChangeCharacter extends SongEvent
         if (charId == null) charId = 'bf';
 
         var stage = PlayState.instance.stage;
-        var character:BaseCharacter = charMap.get(charId);
+        var uiHUD = PlayState.instance.uiHUD;
 
         switch(char)
         {
             case 0:
-                if(charCheck(stage.getBoyfriend(), character)) return;
-                
+                var newChar:BaseCharacter = boyfriendMap.get(charId);
+                if(charCheck(stage.getBoyfriend(), newChar)) return;
                 stage.getBoyfriend().destroy();
-                if (character != null) {
-                    character.characterType = CharacterType.BF;
-                    stage.addCharacter(character, CharacterType.BF);
-                    PlayState.instance.uiHUD.iconP1.char = character._data.healthIcon.id;
+                if (newChar != null) {
+                    stage.addCharacter(newChar, newChar.characterType);
+                    uiHUD.iconP1.initHealthIcon(newChar._data.healthIcon);
                 }
             case 1:
-                if(charCheck(stage.getDad(), character)) return;
-
+                var newChar:BaseCharacter = dadMap.get(charId);
+                if(charCheck(stage.getDad(), newChar)) return;
                 stage.getDad().destroy();
-                if (character != null) {
-                    character.characterType = CharacterType.DAD;
-                    stage.addCharacter(character, CharacterType.DAD);
-                    PlayState.instance.uiHUD.iconP2.char = character._data.healthIcon.id;
+                if (newChar != null) {
+                    stage.addCharacter(newChar, newChar.characterType);
+                    uiHUD.iconP2.initHealthIcon(newChar._data.healthIcon);
                 }
             case 2:
-                if(charCheck(stage.getGirlfriend(), character)) return;
-
+                var newChar:BaseCharacter = gfMap.get(charId);
+                if(charCheck(stage.getGirlfriend(), newChar)) return;
                 stage.getGirlfriend().destroy();
-                if (character != null) {
-                    character.characterType = CharacterType.GF;
-                    stage.addCharacter(character, CharacterType.GF);
-                }
+                if (newChar != null)  stage.addCharacter(newChar, newChar.characterType);
         }
         stage.refresh(); 
     }

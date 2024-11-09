@@ -317,11 +317,6 @@ typedef PlayerResultsMusicData =
 
 typedef PlayerResultsAnimationData =
 {
-  /**
-   * `sparrow` or `animate` or whatever
-   */
-  var renderType:String;
-
   var assetPath:String;
 
   @:optional

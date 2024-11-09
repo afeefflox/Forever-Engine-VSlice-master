@@ -332,6 +332,48 @@ class KeyboardInputScriptEvent extends ScriptEvent
   }
 }
 
+class SongLoadScriptEvent extends ScriptEvent
+{
+  /**
+   * The note associated with this event.
+   * You cannot replace it, but you can edit it.
+   */
+   public var notes(default, set):Array<SongNoteData>;
+
+   public var events(default, set):Array<SongEventData>;
+ 
+   public var id(default, null):String;
+ 
+   public var difficulty(default, null):String;
+ 
+   function set_notes(notes:Array<SongNoteData>):Array<SongNoteData>
+   {
+     this.notes = notes;
+     return this.notes;
+   }
+ 
+   function set_events(events:Array<SongEventData>):Array<SongEventData>
+   {
+     this.events = events;
+     return this.events;
+   }
+ 
+   public function new(id:String, difficulty:String, notes:Array<SongNoteData>, events:Array<SongEventData>):Void
+   {
+     super(SONG_LOADED, false);
+     this.id = id;
+     this.difficulty = difficulty;
+     this.notes = notes;
+     this.events = events;
+   }
+ 
+   public override function toString():String
+   {
+     var noteStr = notes == null ? 'null' : 'Array(' + notes.length + ')';
+     return 'SongLoadScriptEvent(notes=$noteStr, id=$id, difficulty=$difficulty)';
+   }
+}
+
 /**
  * An event that is fired when moving out of or into an FlxState.
  */

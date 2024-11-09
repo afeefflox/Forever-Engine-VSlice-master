@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "name": "OST Expansion Vol. 2",
+  "artists": ["Kawai Sprite"],
+  "albumArtAsset": "menus/base/freeplay/albumRoll/expansion2",
+  "albumTitleAsset": "menus/base/freeplay/albumRoll/expansion2-text"
+}

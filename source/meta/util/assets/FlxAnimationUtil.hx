@@ -20,15 +20,25 @@ class FlxAnimationUtil
       target.animation.addByPrefix(anim.name, anim.prefix, frameRate, looped);
   }
 
+  /**
+  * Basically Animate Atlas support with labels and Symbol instead of only labels :/
+  **/
   public static function addAnimateAtlasAnimation(target:FlxAnimate, anim:AnimationData)
   {
     var frameRate = anim.frameRate == null ? 24 : anim.frameRate;
     var looped = anim.looped == null ? false : anim.looped;
 
-    if (anim.frameIndices != null && anim.frameIndices.length > 0)
-      target.anim.addBySymbolIndices(anim.name, anim.prefix, anim.frameIndices, frameRate, looped);
-    else
-      target.anim.addBySymbol(anim.name, anim.prefix, frameRate, looped);
+
+    if(target.anim.symbolDictionary.exists(anim.name)) //if Symbol exist :/
+    {
+      if (anim.frameIndices != null && anim.frameIndices.length > 0)
+        target.anim.addBySymbolIndices(anim.name, anim.prefix, anim.frameIndices, frameRate, looped);
+      else
+        target.anim.addBySymbol(anim.name, anim.prefix, frameRate, looped);
+    }
+    else //use Labels :/
+      target.anim.addByFrameLabel(anim.name, anim.prefix, frameRate, looped);
+
   }
 
   /**

@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "name": "Boyfriend",
+  "name": "bf",
   "ownedChars": ["bf", "bf-car", "bf-pixel", "bf-christmas", "bf-holding-gf"],
   "showUnownedChars": true,
   "unlocked": true,
   "freeplayStyle": "bf",
   "freeplayDJ": {
-    "assetPath": "freeplay/freeplay-boyfriend",
+    "assetPath": "menus/base/freeplay/freeplay-boyfriend",
     "cartoon": {
       "soundClickFrame": 80,
       "soundCartoonFrame": 85,
@@ -84,31 +84,29 @@
   "charSelect": {
     "position": 4,
     "gf": {
-      "assetPath": "charSelect/gfChill",
-      "animInfoPath": "charSelect/gfAnimInfo",
+      "assetPath": "menus/base/charSelect/chill/gf",
+      "animInfoPath": "menus/base/charSelect/chill/gf/animInfo",
       "visualizer": false
     }
   },
   "results": {
     "music": {
-      "PERFECT_GOLD": "resultsPERFECT",
-      "PERFECT": "resultsPERFECT",
-      "EXCELLENT": "resultsEXCELLENT",
-      "GREAT": "resultsNORMAL",
-      "GOOD": "resultsNORMAL",
-      "SHIT": "resultsSHIT"
+      "PERFECT_GOLD": "perfect",
+      "PERFECT": "perfect",
+      "EXCELLENT": "excellent",
+      "GREAT": "normal",
+      "GOOD": "normal",
+      "SHIT": "shit"
     },
     "perfectGold": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsPERFECT",
         "zIndex": 500,
         "offsets": [1342, 370],
         "loopFrame": 137
       },
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT/hearts",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsPERFECT/hearts",
         "zIndex": 501,
         "delay": 4.41,
         "offsets": [1342, 370],
@@ -117,15 +115,13 @@
     ],
     "perfect": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsPERFECT",
         "zIndex": 500,
         "offsets": [1342, 370],
         "loopFrame": 137
       },
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT/hearts",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsPERFECT/hearts",
         "zIndex": 501,
         "delay": 4.41,
         "offsets": [1342, 370],
@@ -134,8 +130,7 @@
     ],
     "excellent": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsEXCELLENT",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsEXCELLENT",
         "zIndex": 500,
         "offsets": [1329, 429],
 
@@ -144,8 +139,7 @@
     ],
     "great": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsGREAT/gf",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsGREAT/gf",
         "scale": 0.93,
         "delay": 0.25,
         "offsets": [802, 331],
@@ -154,8 +148,7 @@
         "loopFrame": 9
       },
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsGREAT/bf",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsGREAT/bf",
         "scale": 0.93,
         "zIndex": 500,
         "offsets": [929, 363],
@@ -165,16 +158,14 @@
     ],
     "good": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsGOOD/bf",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsGOOD/bf",
         "zIndex": 501,
         "offsets": [662, 371],
 
         "loopFrame": 14
       },
       {
-        "renderType": "sparrow",
-        "assetPath": "shared:resultScreen/results-bf/resultsGOOD/resultGirlfriendGOOD",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsGOOD/resultGirlfriendGOOD",
         "zIndex": 500,
         "delay": 0.91,
         "offsets": [629, 323],
@@ -183,8 +174,7 @@
     ],
     "loss": [
       {
-        "renderType": "animateatlas",
-        "assetPath": "shared:resultScreen/results-bf/resultsSHIT",
+        "assetPath": "menus/base/resultScreen/results-bf/resultsSHIT",
         "zIndex": 500,
         "offsets": [0, 20],
         "loopFrameLabel": "Loop Start"

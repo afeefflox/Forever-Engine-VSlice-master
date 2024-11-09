@@ -53,10 +53,6 @@ class PlayState extends MusicBeatSubState
 	}
 
 	var songEvents:Array<SongEventData>;
-	private var ratingArray:Array<String> = [];
-
-	// if you ever wanna add more keys
-	public static var numberOfKeys:Int = 4;
 
 	public var cameraFollowPoint:FlxObject;
 	public var cameraFollowTween:FlxTween;
@@ -83,17 +79,11 @@ class PlayState extends MusicBeatSubState
 	public static var songDetails:String = "";
 	public static var detailsSub:String = "";
 	public static var detailsPausedText:String = "";
-
 	private static var prevCamFollow:FlxObject;
-
-	private var curSong:String = "";
-	private var gfSpeed:Int = 1;
 
 	public var health:Float = Constants.HEALTH_STARTING;
 	public var songScore:Int = 0;
 	public var deathCounter:Int = 0;
-	public var combo:Int = 0;
-	public var misses:Int = 0;
 
 	public var startTimestamp:Float = 0.0;
 	public var playbackRate:Float = 1.0;
@@ -492,12 +482,19 @@ class PlayState extends MusicBeatSubState
 
 	function regenNoteData(startTime:Float = 0):Void
 	{
-		songEvents = currentChart.events;
+		Highscore.instance.tallies.combo = 0;
+
+		var event:SongLoadScriptEvent = new SongLoadScriptEvent(currentChart.song.id, currentChart.difficulty, currentChart.notes.copy(), currentChart.events);
+		dispatchEvent(event);
+
+		if(event.eventCanceled) return;
+		
+		songEvents = event.events;
 		SongEventRegistry.resetEvents(songEvents);
 
 		var playerNoteData:Array<SongNoteData> = [];
 		var opponentNoteData:Array<SongNoteData> = [];
-		for (songNote in currentChart.notes)
+		for (songNote in event.notes)
 		{
 			if (songNote == null) continue;
 
@@ -508,6 +505,7 @@ class PlayState extends MusicBeatSubState
 			{
 				case 0:
 					playerNoteData.push(songNote);
+					Highscore.instance.tallies.totalNotes++;
 				case 1:
 					opponentNoteData.push(songNote);
 			}
@@ -613,8 +611,9 @@ class PlayState extends MusicBeatSubState
 
 			paused = isPlayerDying = false;
 			persistentDraw = persistentUpdate = startingSong = true;
-			songScore = combo = misses = 0;
-			
+			songScore = 0;
+			Highscore.instance.tallies.combo = 0;
+
 			Timings.callAccuracy();
 			Timings.updateAccuracy(0);
 
@@ -1182,6 +1181,8 @@ class PlayState extends MusicBeatSubState
 				isComboBreak = true;
 		}
 
+		
+
 		strumline.hitNote(note, isComboBreak);
 		strumline.playNoteSplash(note.noteData.getDirection());
 		if (note.holdNoteSprite != null) strumline.playNoteHoldCover(note.holdNoteSprite);
@@ -1191,6 +1192,8 @@ class PlayState extends MusicBeatSubState
 		dispatchEvent(event);
 
 		if (event.eventCanceled) return;
+
+		Highscore.instance.tallies.totalNotesHit++;
 
 		if (canDisplayJudgement)
 		{
@@ -1312,6 +1315,18 @@ class PlayState extends MusicBeatSubState
 		// set up the rating
 		var score:Int = 50;
 		displayRating(baseRating, isLate);
+		switch (baseRating)
+		{
+			case 'sick':
+				Highscore.instance.tallies.sick += 1;
+			case 'good':
+				Highscore.instance.tallies.good += 1;
+			case 'bad':
+				Highscore.instance.tallies.bad += 1;
+			case 'shit':
+				Highscore.instance.tallies.shit += 1;
+		}
+
 		Timings.updateAccuracy(Timings.judgementsMap.get(baseRating)[3]);
 		score = Std.int(Timings.judgementsMap.get(baseRating)[2]);
 
@@ -1323,17 +1338,17 @@ class PlayState extends MusicBeatSubState
 	function decreaseCombo(?popMiss:Bool = false)
 	{
 		// painful if statement
-		if (((combo > 5) || (combo < 0)) && (gf != null && gf.animOffsets.exists('sad')))
+		if (((Highscore.instance.tallies.combo > 5) || (Highscore.instance.tallies.combo < 0)) && (gf != null && gf.animOffsets.exists('sad')))
 			gf.playAnim('sad');
 
-		if (combo > 0)
-			combo = 0; // bitch lmao
+		if (Highscore.instance.tallies.combo > 0)
+			Highscore.instance.tallies.combo = 0; // bitch lmao
 		else
-			combo--;
+			Highscore.instance.tallies.combo--;
 
 		// misses
 		songScore -= 10;
-		misses++;
+		Highscore.instance.tallies.missed++;
 
 		// display negative combo
 		if (popMiss)
@@ -1355,9 +1370,11 @@ class PlayState extends MusicBeatSubState
 		{
 			if (Timings.judgementsMap.get(baseRating)[3] > 0)
 			{
-				if (combo < 0)
-					combo = 0;
-				combo += 1;
+				if (Highscore.instance.tallies.combo < 0)
+					Highscore.instance.tallies.combo = 0;
+				Highscore.instance.tallies.combo += 1;
+
+				if (Highscore.instance.tallies.combo > Highscore.instance.tallies.maxCombo) Highscore.instance.tallies.maxCombo = Highscore.instance.tallies.combo;
 			}
 			else
 				missNoteCheck(direction, false, true);
@@ -1435,15 +1452,14 @@ class PlayState extends MusicBeatSubState
 
 	function popUpCombo(?cache:Bool = false)
 	{
-		var comboString:String = Std.string(combo);
+		var comboString:String = Std.string(Highscore.instance.tallies.combo);
 		var negative = false;
-		if ((comboString.startsWith('-')) || (combo == 0))
+		if ((comboString.startsWith('-')) || (Highscore.instance.tallies.combo == 0))
 			negative = true;
 		var stringArray:Array<String> = comboString.split("");
 
 		for (scoreInt in 0...stringArray.length)
 		{
-			// numScore.loadGraphic(Paths.image('UI/' + pixelModifier + 'num' + stringArray[scoreInt]));
 			var numScore = ForeverAssets.generateCombo('combo', stringArray[scoreInt], false, currentChart.noteStyle, negative, createdColor, scoreInt);
 			if (cache) numScore.alpha = 0.000001;
 			comboGroup.add(numScore);
@@ -1509,6 +1525,8 @@ class PlayState extends MusicBeatSubState
 		vocals.pitch = playbackRate;
 		vocals.time = FlxG.sound.music.time;
 		resyncVocals();
+
+		camAlt.visible = true;
 
 		#if desktop
 		// Song duration in a float, useful for the time left feature
@@ -1741,20 +1759,66 @@ class PlayState extends MusicBeatSubState
 		if (event.eventCanceled) return;
 
 		deathCounter = 0;
-		
-		if (currentSong != null && currentSong.validScore) Highscore.saveSongScore(currentSong.id, currentDifficulty, currentVariation, songScore);
+
+		var suffixedDifficulty = (currentVariation != Constants.DEFAULT_VARIATION && currentVariation != 'erect') ? '$currentDifficulty-${currentVariation}' : currentDifficulty;
+		var isNewHighscore = false;
+		var prevScoreData:Null<SaveScoreData> = Highscore.instance.getSongScore(currentSong.id, suffixedDifficulty);
+		if (currentSong != null && currentSong.validScore)
+		{
+			var data = {
+				score: songScore,
+				tallies: 
+				{
+					sick: Highscore.instance.tallies.sick,
+					good: Highscore.instance.tallies.good,
+					bad: Highscore.instance.tallies.bad,
+					shit: Highscore.instance.tallies.shit,
+					missed: Highscore.instance.tallies.missed,
+					combo: Highscore.instance.tallies.combo,
+					maxCombo: Highscore.instance.tallies.maxCombo,
+					totalNotesHit: Highscore.instance.tallies.totalNotesHit,
+					totalNotes: Highscore.instance.tallies.totalNotes,
+				}
+			};
+			Highscore.instance.talliesLevel = Highscore.instance.combineTallies(Highscore.instance.tallies, Highscore.instance.talliesLevel);
+
+			if (!isPracticeMode && !isBotPlayMode)
+			{
+				isNewHighscore = Highscore.instance.isSongHighScore(currentSong.id, suffixedDifficulty, data);
+				Highscore.instance.applySongRank(currentSong.id, suffixedDifficulty, data);
+			}
+		}
 
 		if (PlayStatePlaylist.isStoryMode)
 		{
+			isNewHighscore = false;
 			PlayStatePlaylist.campaignScore += songScore;
 			var targetSongId:String = PlayStatePlaylist.playlistSongIds.shift();
 
 			if (targetSongId == null)
 			{
 				ForeverTools.resetMenuMusic();
-				if (currentSong.validScore) Highscore.saveWeekScore(currentSong.id, currentDifficulty, PlayStatePlaylist.campaignScore);
-				openSubState(new StickerSubState(null, (sticker) -> new StoryMenuState(sticker)));
-				FlxG.save.flush();
+				var data = {
+					score: PlayStatePlaylist.campaignScore,
+					tallies:
+					{
+						sick: 0,
+						good: 0,
+						bad: 0,
+						shit: 0,
+						missed: 0,
+						combo: 0,
+						maxCombo: 0,
+						totalNotesHit: 0,
+						totalNotes: 0						
+					}
+				};
+				if (Highscore.instance.isLevelHighScore(PlayStatePlaylist.campaignId, PlayStatePlaylist.campaignDifficulty, data))
+				{
+					Highscore.instance.setLevelScore(PlayStatePlaylist.campaignId, PlayStatePlaylist.campaignDifficulty, data);
+					isNewHighscore = true;
+				}
+				zoomIntoResultsScreen(isNewHighscore, prevScoreData);
 			}
 			else
 			{
@@ -1778,7 +1842,124 @@ class PlayState extends MusicBeatSubState
 			}
 		}
 		else
-			openSubState(new StickerSubState(null, (sticker) -> new FreeplayState(sticker)));
+		{
+			zoomIntoResultsScreen(isNewHighscore, prevScoreData);
+		}
+	}
+
+	function zoomIntoResultsScreen(isNewHighscore:Bool, ?prevScoreData:SaveScoreData):Void
+	{
+		cameraZoomRate = 0;	
+		cancelAllCameraTweens();
+		cancelScrollSpeedTweens();
+
+		var targetDad:Bool = dad != null && dad.id == 'gf';
+		var targetBF:Bool = gf == null && !targetDad;
+
+		if (targetBF)
+			FlxG.camera.follow(boyfriend, null, 0.05);
+		else if (targetDad)
+			FlxG.camera.follow(dad, null, 0.05);
+		else
+			FlxG.camera.follow(gf, null, 0.05);
+
+
+		FlxG.camera.targetOffset.y -= 350;
+		FlxG.camera.targetOffset.x += 20;
+	
+		// Replace zoom animation with a fade out for now.
+		FlxG.camera.fade(FlxColor.BLACK, 0.6);
+		var talliesToUse:Tallies = PlayStatePlaylist.isStoryMode ? Highscore.instance.talliesLevel : Highscore.instance.tallies;
+		var scoreData = {
+			score: PlayStatePlaylist.isStoryMode ? PlayStatePlaylist.campaignScore : songScore,
+			tallies: {
+				sick: talliesToUse.sick,
+				good: talliesToUse.good,
+				bad: talliesToUse.bad,
+				shit: talliesToUse.shit,
+				missed: talliesToUse.missed,
+				combo: talliesToUse.combo,
+				maxCombo: talliesToUse.maxCombo,
+				totalNotesHit: talliesToUse.totalNotesHit,
+				totalNotes: talliesToUse.totalNotes,
+			}
+		}
+
+		var rank:ScoringRank = Scoring.calculateRank(scoreData) ?? SHIT;
+
+
+		FlxTween.tween(camHUD, {alpha: 0}, 0.6,{onComplete: function(_) {
+			if(!skipResultScreen())
+				moveToResultsScreen(isNewHighscore, prevScoreData);
+			else
+			{
+				if(PlayStatePlaylist.isStoryMode)
+					FlxG.switchState(new StoryMenuState());
+				else
+				{
+					//if they skip result screen give them chance what you got lmao
+					if (rank > Scoring.calculateRank(prevScoreData))
+					{
+						FlxG.switchState(FreeplayState.build({character: PlayerRegistry.instance.getCharacterOwnerId(currentChart.characters.player) ?? "bf",
+						fromResults: {
+							oldRank: Scoring.calculateRank(prevScoreData),
+							newRank: rank,
+							songId: currentChart.song.id,
+							difficultyId: currentDifficulty,
+							playRankAnim: true
+						}}));
+					}
+					else
+					{
+						FlxG.switchState(FreeplayState.build());
+					}
+				}
+			}
+		}});
+
+		new FlxTimer().start(0.8, function(_) {
+			if (targetBF)
+				boyfriend.playAnim('hey', true);
+			else if (targetDad)
+				dad.playAnim('cheer', true);
+			else
+				gf.playAnim('cheer', true);
+		});
+	}
+
+	function moveToResultsScreen(isNewHighscore:Bool, ?prevScoreData:SaveScoreData):Void
+	{
+		persistentUpdate = false;
+		vocals.stop();
+		camHUD.alpha = 1;
+	
+		var talliesToUse:Tallies = PlayStatePlaylist.isStoryMode ? Highscore.instance.talliesLevel : Highscore.instance.tallies;
+
+		var res:ResultSubState = new ResultSubState({
+			storyMode: PlayStatePlaylist.isStoryMode,
+			songId: currentChart.song.id,
+			difficultyId: currentDifficulty,
+			characterId: currentChart.characters.player,
+			title: PlayStatePlaylist.isStoryMode ? ('${PlayStatePlaylist.campaignTitle}') : ('${currentChart.songName} by ${currentChart.songArtist}'),
+			prevScoreData: prevScoreData,
+			scoreData: {
+				score: PlayStatePlaylist.isStoryMode ? PlayStatePlaylist.campaignScore : songScore,
+				tallies: {
+					sick: talliesToUse.sick,
+					good: talliesToUse.good,
+					bad: talliesToUse.bad,
+					shit: talliesToUse.shit,
+					missed: talliesToUse.missed,
+					combo: talliesToUse.combo,
+					maxCombo: talliesToUse.maxCombo,
+					totalNotesHit: talliesToUse.totalNotesHit,
+					totalNotes: talliesToUse.totalNotes,
+				}
+			},
+			isNewHighscore: isNewHighscore
+		});
+		this.persistentDraw = false;
+		openSubState(res);
 	}
 
 	public static function skipCutscenes():Bool
@@ -1792,6 +1973,23 @@ class PlayState extends MusicBeatSubState
 					return false;
 				case 'freeplay only':
 						return !PlayStatePlaylist.isStoryMode;
+				default:
+					return true;
+			}
+		}
+		return false;
+	}
+
+	public static function skipResultScreen():Bool
+	{
+		if (Init.trueSettings.get('Skip Result Screen') != null && Std.isOfType(Init.trueSettings.get('Skip Result Screen'), String))
+		{
+			switch (cast(Init.trueSettings.get('Skip Result Screen'), String))
+			{
+				case 'never':
+					return false;
+				case 'freeplay only':
+					return !PlayStatePlaylist.isStoryMode;
 				default:
 					return true;
 			}

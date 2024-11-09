@@ -78,13 +78,14 @@ class SongMetadata implements ICloneable<SongMetadata>
         return result;
     }
 
-    public function serialize(pretty:Bool = true):String
+    public function serialize():String
     {
         updateVersionToLatest();
 
         var ignoreNullOptionals = true;
         var writer = new json2object.JsonWriter<SongMetadata>(ignoreNullOptionals);
-        return writer.write(this, pretty ? '  ' : null);
+        var data:String = writer.write(this, "\t");
+        return data.trim();
     }
 
     public function updateVersionToLatest():Void
@@ -342,12 +343,12 @@ class SongPlayData implements ICloneable<SongPlayData>
     public var album:Null<String>;
 
     @:optional
-    @:default(0)
-    public var previewStart:Int;
+    @:default(0.0)
+    public var previewStart:Float;
     
     @:optional
-    @:default(15000)
-    public var previewEnd:Int;
+    @:default(0.5)
+    public var previewEnd:Float;
   
     public function new()
     {
@@ -487,13 +488,14 @@ class SongChartData implements ICloneable<SongChartData>
         return value;
     }
 
-    public function serialize(pretty:Bool = true):String
+    public function serialize():String
     {
         updateVersionToLatest();
 
         var ignoreNullOptionals = true;
         var writer = new json2object.JsonWriter<SongChartData>(ignoreNullOptionals);
-        return writer.write(this, pretty ? '  ' : null);
+        var data:String = writer.write(this, "\t");
+        return data.trim();
     }
 
     public function updateVersionToLatest():Void

@@ -150,6 +150,13 @@ class Init extends FlxState
 			NOT_FORCED,
 			['never', 'freeplay only', 'always']
 		],
+		'Skip Result Screen' => [
+			'freeplay only',
+			Selector,
+			'Decides whether to skip result screen. May be always, only in freeplay, or never.',
+			NOT_FORCED,
+			['never', 'freeplay only', 'always']
+		],
 		'Fixed Judgements' => [
 			false,
 			Checkmark,
@@ -206,8 +213,6 @@ class Init extends FlxState
 
 		FlxG.save.bind('foreverengine-options');
 		PlayerSettings.init();
-		Highscore.load();
-
 		loadSettings();
 		loadControls();
 		
@@ -224,6 +229,8 @@ class Init extends FlxState
 		NoteStyleRegistry.instance.loadEntries();
 		PlayerRegistry.instance.loadEntries();
 		StageRegistry.instance.loadEntries();
+		AlbumRegistry.instance.loadEntries();
+		FreeplayStyleRegistry.instance.loadEntries();
 
 		//Non BaseRegistry
 		SongEventRegistry.loadEventCache();
