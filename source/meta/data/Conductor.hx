@@ -233,23 +233,38 @@ class Conductor
    * No matter if you're using a local conductor or not, this always loads
    * to/from the save file
    */
-  public var inputOffset(default, set):Int;
+  public var inputOffset(get, set):Int;
 
   /**
    * An offset set by the user to compensate for audio/visual lag
    * No matter if you're using a local conductor or not, this always loads
    * to/from the save file
    */
-  public var audioVisualOffset(default, set):Int;
+  public var audioVisualOffset(get, set):Int;
+
+  function get_inputOffset():Int
+  {
+    return Init.trueSettings.get('Input Offset');
+  }
+
 
   function set_inputOffset(value:Int):Int
   {
-    return inputOffset = value;
+    Init.trueSettings.set('Input Offset', value);
+    Init.saveSettings();
+    return Init.trueSettings.get('Input Offset');
+  }
+
+  function get_audioVisualOffset():Int
+  {
+    return Init.trueSettings.get('Audio Visual Offset');
   }
 
   function set_audioVisualOffset(value:Int):Int
   {
-    return audioVisualOffset = value;
+    Init.trueSettings.set('Audio Visual Offset', value);
+    Init.saveSettings();
+    return Init.trueSettings.get('Audio Visual Offset');
   }
 
   public var combinedOffset(get, never):Float;

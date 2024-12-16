@@ -488,7 +488,6 @@ class DialogueBox extends FlxSpriteGroup
 	public function closeDialog()
 	{
 		whenDaFinish();
-		alphabetText.playSounds = false;
 		kill();
 	}
 

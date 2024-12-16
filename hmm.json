@@ -45,7 +45,7 @@
          "name": "polymod",
          "type": "git",
          "dir": null,
-         "ref": "0fbdf27fe124549730accd540cec8a183f8652c0",
+         "ref": "experiment/static-fields",
          "url": "https://github.com/larsiusprime/polymod"
       },
       {
@@ -57,10 +57,8 @@
       },
       {
          "name": "lime",
-         "type": "git",
-         "dir": null,
-         "ref": "fe3368f611a84a19afc03011353945ae4da8fffd",
-         "url": "https://github.com/FunkinCrew/lime"
+         "type": "haxelib",
+         "version": null 
       },
       {
          "name": "funkin.vis",
@@ -78,10 +76,8 @@
       },
       {
          "name": "openfl",
-         "type": "git",
-         "dir": null,
-         "ref": "8306425c497766739510ab29e876059c96f77bd2",
-         "url": "https://github.com/FunkinCrew/openfl"
+         "type": "haxelib",
+         "version": null 
       },
       {
          "name": "hscript",

@@ -32,13 +32,10 @@ class FlxAnimationUtil
     if(target.anim.symbolDictionary.exists(anim.name)) //if Symbol exist :/
     {
       if (anim.frameIndices != null && anim.frameIndices.length > 0)
-        target.anim.addBySymbolIndices(anim.name, anim.prefix, anim.frameIndices, frameRate, looped);
+        target.anim.addBySymbolIndices(anim.name, anim.prefix, anim.frameIndices, frameRate);
       else
-        target.anim.addBySymbol(anim.name, anim.prefix, frameRate, looped);
+        target.anim.addBySymbol(anim.name, anim.prefix, frameRate);
     }
-    else //use Labels :/
-      target.anim.addByFrameLabel(anim.name, anim.prefix, frameRate, looped);
-
   }
 
   /**

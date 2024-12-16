@@ -97,6 +97,9 @@ enum abstract ScriptEventType(String) from String to String
    */
   var NOTE_GHOST_MISS = 'NOTE_GHOST_MISS';
 
+
+  var SUSTAIN_HIT = 'SUSTAIN_HIT';
+
   /**
    * Called when a song event is reached in the chart.
    *

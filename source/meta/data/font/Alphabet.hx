@@ -1,20 +1,5 @@
 package meta.data.font;
 
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.group.FlxSpriteGroup;
-import flixel.math.FlxMath;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxTimer;
-
-using StringTools;
-
-/**
- * Loosley based on FlxTypeText lolol
- */
 class Alphabet extends FlxSpriteGroup
 {
 	public var textSpeed:Float = 0.06;
@@ -128,8 +113,10 @@ class Alphabet extends FlxSpriteGroup
 
 			var isNumber:Bool = AlphaCharacter.numbers.contains(character);
 			var isSymbol:Bool = AlphaCharacter.symbols.contains(character);
+			var isAlphabet:Bool = AlphaCharacter.alphabet.indexOf(character.toLowerCase()) != -1;
+			var isAlphabetOther:Bool = AlphaCharacter.otherAlphabet.indexOf(character.toLowerCase()) != -1;
 
-			if ((AlphaCharacter.alphabet.indexOf(character.toLowerCase()) != -1) || (AlphaCharacter.numbers.contains(character)))
+			if (isAlphabet || isAlphabetOther || isNumber || isSymbol)
 			{
 				if (xPosResetted)
 				{
@@ -151,7 +138,14 @@ class Alphabet extends FlxSpriteGroup
 				var letter:AlphaCharacter = new AlphaCharacter(xPos, 0, textSize);
 
 				if (isBold)
-					letter.createBold(character);
+				{
+					if (isNumber)
+						letter.createNumber(character, true);
+					else if (isSymbol)
+						letter.createSymbol(character, true);
+					else
+						letter.createBold(character);
+				}
 				else
 				{
 					if (isNumber)
@@ -209,15 +203,11 @@ class Alphabet extends FlxSpriteGroup
 				lastWasSpace = true;
 			}
 
-			#if (haxe >= "4.0.0")
 			var isNumber:Bool = AlphaCharacter.numbers.contains(splitWords[loopNum]);
 			var isSymbol:Bool = AlphaCharacter.symbols.contains(splitWords[loopNum]);
-			#else
-			var isNumber:Bool = AlphaCharacter.numbers.indexOf(splitWords[loopNum]) != -1;
-			var isSymbol:Bool = AlphaCharacter.symbols.indexOf(splitWords[loopNum]) != -1;
-			#end
-
-			if (AlphaCharacter.alphabet.indexOf(splitWords[loopNum].toLowerCase()) != -1 || isNumber || isSymbol)
+			var isAlphabet:Bool = AlphaCharacter.alphabet.indexOf(splitWords[loopNum].toLowerCase()) != -1;
+			var isAlphabetOther:Bool = AlphaCharacter.otherAlphabet.indexOf(splitWords[loopNum].toLowerCase()) != -1;
+			if (isAlphabet || isAlphabetOther || isNumber || isSymbol)
 			{
 				if (lastSprite != null && !xPosResetted)
 				{
@@ -239,7 +229,12 @@ class Alphabet extends FlxSpriteGroup
 				letter.row = curRow;
 				if (isBold)
 				{
-					letter.createBold(splitWords[loopNum]);
+					if (isNumber)
+						letter.createNumber(splitWords[loopNum], true);
+					else if (isSymbol)
+						letter.createSymbol(splitWords[loopNum], true);
+					else
+						letter.createBold(splitWords[loopNum]);
 				}
 				else
 				{
@@ -262,7 +257,7 @@ class Alphabet extends FlxSpriteGroup
 						var cur = FlxG.random.int(0, soundChoices.length - 1);
 						var daSound:String = beginPath + soundChoices[cur] + "." + Paths.SOUND_EXT;
 
-						FlxG.sound.play(openfl.media.Sound.fromFile(daSound));
+						FlxG.sound.play(daSound);
 					}
 				}
 				else
@@ -317,13 +312,12 @@ class Alphabet extends FlxSpriteGroup
 	}
 }
 
-class AlphaCharacter extends FlxSprite
+class AlphaCharacter extends FunkinSprite
 {
 	public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
-
+	public static var otherAlphabet:String = "áéíóúàèìòùâêîôûãëïõüäöåøæñçšžýÿ";
 	public static var numbers:String = "1234567890";
-
-	public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
+	public static var symbols:String = "ß&()[]*+-<>'\"!?.❝❞_#$%:;@^,\\/|~¡¿{}•";
 
 	public var row:Int = 0;
 
@@ -333,85 +327,88 @@ class AlphaCharacter extends FlxSprite
 	{
 		super(x, y);
 		this.textSize = textSize;
-		var tex = Paths.getSparrowAtlas('UI/base/alphabet');
-		frames = tex;
-
-		antialiasing = true;
+		loadFrame('UI/base/alphabet');
 	}
 
-	public function createBold(letter:String)
+	public function createBold(letter:String, ?bold:Bool = false)
 	{
-		if (AlphaCharacter.alphabet.indexOf(letter.toLowerCase()) != -1)
-		{
-			// or just load regular text
-			animation.addByPrefix(letter, letter.toUpperCase() + " bold", 24);
-			animation.play(letter);
-			scale.set(textSize, textSize);
-			updateHitbox();
-		}
+		animation.addByPrefix(letter, '${letter.toLowerCase()} bold', 24);
+		animation.play(letter);
+		scale.set(textSize, textSize);
+		updateHitbox();
 	}
 
 	public function createLetter(letter:String):Void
 	{
 		var letterCase:String = "lowercase";
-		if (letter.toLowerCase() != letter)
-		{
-			letterCase = 'capital';
-		}
+		if (letter.toLowerCase() != letter) letterCase = 'uppercase';
 
-		animation.addByPrefix(letter, letter + " " + letterCase, 24);
+		animation.addByPrefix(letter, '${letter.toLowerCase()} $letterCase', 24);
 		animation.play(letter);
 		scale.set(textSize, textSize);
 		updateHitbox();
-
-		FlxG.log.add('the row' + row);
 
 		y = (110 - height);
 		y += row * 50;
 	}
 
-	public function createNumber(letter:String):Void
+	public function createNumber(letter:String, ?bold:Bool = false):Void
 	{
-		animation.addByPrefix(letter, letter, 24);
-		animation.play(letter);
+		var type:String = "normal";
+		if(bold) type = "bold";
 
+		animation.addByPrefix(letter, '$letter $type', 24);
+		animation.play(letter);
 		updateHitbox();
 	}
 
-	public function createSymbol(letter:String)
+	public function createSymbol(letter:String, ?bold:Bool = false)
 	{
+		var type:String = "normal";
+		if(bold) type = "bold";
+
 		switch (letter)
 		{
 			case '.':
-				animation.addByPrefix(letter, 'period', 24);
+				animation.addByPrefix(letter, 'period $type', 24);
 				animation.play(letter);
-				setGraphicSize(8, 8);
-				y += 48;
 			case "'":
-				animation.addByPrefix(letter, 'apostraphie', 24);
+				animation.addByPrefix(letter, 'apostrophe $type', 24);
 				animation.play(letter);
-				setGraphicSize(10, 10);
-				y += 20;
 			case "?":
-				animation.addByPrefix(letter, 'question mark', 24);
+				animation.addByPrefix(letter, 'question $type', 24);
 				animation.play(letter);
-				setGraphicSize(20, 40);
-				y += 16;
 			case "!":
-				animation.addByPrefix(letter, 'exclamation point', 24);
+				animation.addByPrefix(letter, 'exclamation $type', 24);
 				animation.play(letter);
-				setGraphicSize(10, 40);
-				y += 16;
 			case ",":
-				animation.addByPrefix(letter, 'comma', 24);
+				animation.addByPrefix(letter, 'comma $type', 24);
 				animation.play(letter);
-				setGraphicSize(10, 10);
-				y += 48;
+			case "❝":
+				animation.addByPrefix(letter, 'start quote $type', 24);
+				animation.play(letter);
+			case "❞":
+				animation.addByPrefix(letter, 'end quote $type', 24);
+				animation.play(letter);
+			case "\\":
+				animation.addByPrefix(letter, 'back slash $type', 24);
+				animation.play(letter);
+			case "/":
+				animation.addByPrefix(letter, 'forward slash $type', 24);
+				animation.play(letter);
+			case "¡":
+				animation.addByPrefix(letter, 'inverted exclamation $type', 24);
+				animation.play(letter);
+			case "¿":
+				animation.addByPrefix(letter, 'inverted question $type', 24);
+				animation.play(letter);
+			case "•":
+				animation.addByPrefix(letter, 'bullet $type', 24);
+				animation.play(letter);
 			default:
-				animation.addByPrefix(letter, letter, 24);
+				animation.addByPrefix(letter, '$letter $type', 24);
 				animation.play(letter);
 		}
-
 		updateHitbox();
 	}
 }

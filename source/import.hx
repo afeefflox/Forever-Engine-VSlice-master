@@ -112,6 +112,7 @@ import meta.data.dependency.FNFSprite;
 import meta.data.dependency.FNFTransition;
 import meta.data.font.Alphabet;
 import meta.data.font.Dialogue;
+import meta.data.font.AtlasText;
 import meta.data.PlayStateData.PlayStatePlaylist;
 import meta.data.PlayStateData.PlayStateParams;
 
@@ -126,6 +127,7 @@ import audio.*;
 import meta.util.JsonUtil.FunkyJson;
 import meta.util.*;
 import meta.util.assets.*;
+import meta.util.pulgins.*;
 
 //State
 import meta.state.menus.*;

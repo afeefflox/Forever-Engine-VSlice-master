@@ -182,10 +182,12 @@ class ChartEditorEventDataToolbox extends ChartEditorBaseToolbox
 
       // Add an input field for the data field.
       var input:Component;
+
       switch (field.type)
       {
         case INTEGER:
           var numberStepper:NumberStepper = new NumberStepper();
+
           numberStepper.id = field.name;
           numberStepper.step = field.step ?? 1.0;
           if (field.min != null) numberStepper.min = field.min;
@@ -258,6 +260,29 @@ class ChartEditorEventDataToolbox extends ChartEditorBaseToolbox
           dropDown.dataSource.sort('text', ASCENDING);
 
           input = dropDown;
+        case STAGE:
+          var dropDown:DropDown = new DropDown();
+          dropDown.id = field.name;
+          dropDown.width = 200.0;
+          dropDown.dropdownSize = 10;
+          dropDown.dropdownWidth = 300;
+          dropDown.searchable = true;
+          dropDown.dataSource = new ArrayDataSource();
+                
+          var charIds:Array<String> = DataAssets.listDataFilesInPath('stages/');
+          charIds.sort(SortUtil.alphabetically);
+          for (charId in charIds)
+          {
+            trace('Stage id: ${charId}');
+            var stageData:StageData = StageRegistry.instance.parseEntryDataWithMigration(charId, StageRegistry.instance.fetchEntryVersion(charId));
+            dropDown.dataSource.add({value: charId, text: stageData.name});
+          }          
+          dropDown.value = field.defaultValue;
+
+          // TODO: Add an option to customize sort.
+          dropDown.dataSource.sort('text', ASCENDING);
+
+          input = dropDown;
         default:
           // Unknown type. Display a label that proclaims the type so we can debug it.
           input = new Label();
@@ -283,7 +308,7 @@ class ChartEditorEventDataToolbox extends ChartEditorBaseToolbox
       // Update the value of the event data.
       input.onChange = function(event:UIEvent) {
         var value = event.target.value;
-        if (field.type == ENUM || field.type == CHARACTER)
+        if (field.type == ENUM || field.type == CHARACTER || field.type == STAGE)
         {
           value = event.target.value.value;
         }

@@ -16,19 +16,30 @@ class SustainTrail extends FlxSprite
     public var fullSustainLength:Float = 0;
     public var noteData:Null<SongNoteData>;
     public var parentStrumline:Strumline;
-    public var lane:Int = 0;
-    public var gf:Bool = false;
-    public var suffix:String = "";
-
     public var data(get, never):Int;
     function get_data():Int
         return noteData.getDirection();
+
+    public var kind(get, set):Null<String>;
+    function get_kind():Null<String>
+        return this.noteData?.kind;
+
+    function set_kind(value:String):String
+    {
+        if (this.noteData == null) return value;
+        return this.noteData.kind = value;
+    }
   
     public var cover:NoteHoldCover = null;
 
     public var hitNote:Bool = false;
     public var missedNote:Bool = false;
     public var handledMiss:Bool = false;
+    public var ignore:Bool = false;
+    public var gf:Bool = false;
+    public var noAnim:Bool = false;
+    public var suffix:String = "";
+    public var lane:Int = 0;
     public var vertices:DrawData<Float> = new DrawData<Float>();
     public var indices:DrawData<Int> = new DrawData<Int>();
     public var uvtData:DrawData<Float> = new DrawData<Float>();
@@ -273,6 +284,10 @@ class SustainTrail extends FlxSprite
     
         hitNote = false;
         missedNote = false;
+        ignore = false;
+        gf = false;
+        noAnim = false;
+        suffix = "";
       }
     
       public override function revive():Void
@@ -288,6 +303,10 @@ class SustainTrail extends FlxSprite
         hitNote = false;
         missedNote = false;
         handledMiss = false;
+        ignore = false;
+        gf = false;
+        noAnim = false;
+        suffix = "";
       }
     
       override public function destroy():Void

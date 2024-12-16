@@ -51,6 +51,8 @@ class NoteKind implements INoteScriptedClass
     public function onNoteHit(event:HitNoteScriptEvent):Void {}
   
     public function onNoteMiss(event:NoteScriptEvent):Void {}
+
+    public function onSustainHit(event:SustainScriptEvent):Void {}
 }
 
 abstract NoteKindParamType(String) from String to String

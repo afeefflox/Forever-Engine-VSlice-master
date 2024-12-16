@@ -66,6 +66,9 @@ class ScriptEventDispatcher
         case NOTE_MISS:
           t.onNoteMiss(cast event);
           return;
+        case SUSTAIN_HIT:
+          t.onSustainHit(cast event);
+          return;
         default: // Continue;
       }
     }

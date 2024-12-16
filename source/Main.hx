@@ -58,9 +58,6 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
-
-		PolymodHandler.loadCurrentMods();
-		PolymodHandler.loadAllonAddons();
 		
 		if (stage != null)
 			init();
@@ -73,6 +70,7 @@ class Main extends Sprite
 		if (hasEventListener(Event.ADDED_TO_STAGE))
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 		setupGame();
+		LogsUtil.init();
 	}
 
 	function setupGame():Void
@@ -190,6 +188,30 @@ class Main extends Sprite
 		haxe.ui.focus.FocusManager.instance.autoFocus = false;
 		Cursor.registerHaxeUICursors();
 		haxe.ui.tooltips.ToolTipManager.defaultDelay = 200;
+	}
+
+	//**Me stole from maru what a akward**/
+	public static function resizeGame(resolution:String) 
+	{
+		#if desktop
+		var resize = function (w:Int, h:Int) {
+			FlxG.resizeWindow(w, h);
+			Lib.application.window.x = Std.int((FlxG.stage.fullScreenWidth - w) * 0.5);
+			Lib.application.window.y = Std.int((FlxG.stage.fullScreenHeight - h) * 0.5);
+		}
+		
+		switch (resolution) {
+			case "544x416": resize(544, 416);
+			case "256x144": resize(256, 144);
+			case "640x360": resize(640, 360);
+			case "854x480": resize(854, 480);
+			case "960x540": resize(960, 540);
+			case "1024x576": resize(1024, 576);
+			case "1280x720": resize(1280, 720);
+			case "native": resize(FlxG.stage.fullScreenWidth, FlxG.stage.fullScreenHeight);
+			default: resize(FlxG.initialWidth, FlxG.initialHeight);
+		}
+		#end
 	}
 }
 

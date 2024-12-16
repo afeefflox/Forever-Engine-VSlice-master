@@ -10,12 +10,17 @@ class BaseCharacter extends Bopper
     public var characterName(default, null):String;
 
     public var characterType(default, set):CharacterType = OTHER;
+    public var customType(default, set):String = "NONE"; //For Extra Char?
 
     function set_characterType(value:CharacterType):CharacterType
         return this.characterType = value;
 
+    function set_customType(value:String):String
+        return this.customType = value.toUpperCase();
+
     public var holdTimer:Float = 0;
     public var isDead:Bool = false;
+    public var isSing(get, never):Bool;
     public var debug:Bool = false;
     public var _data:CharacterData;
     public var characterOrigin(get, never):FlxPoint;
@@ -181,8 +186,6 @@ class BaseCharacter extends Bopper
         this.cameraFocusPoint = new FlxPoint(charCenterX + _data.cameraOffsets[0], charCenterY + _data.cameraOffsets[1]);        
     }
 
-    var eventElapsed:Float = 0;
-    
     public override function onUpdate(event:UpdateScriptEvent):Void
     {
         super.onUpdate(event);
@@ -191,28 +194,34 @@ class BaseCharacter extends Bopper
 
         if (justPressedNote() && this.characterType == BF) holdTimer = 0;
 
+        if (isAnimationFinished() && !getCurrentAnimation().endsWith(Constants.ANIMATION_HOLD_SUFFIX) && hasAnimation(getCurrentAnimation() + Constants.ANIMATION_HOLD_SUFFIX))
+            playAnim(getCurrentAnimation() + Constants.ANIMATION_HOLD_SUFFIX);
 
-
-        eventElapsed = event.elapsed;
-
-        //No need to bf input shit cuz that will not to retrun idle if bf was oppoennt lol
-
-        if (getCurrentAnimation().startsWith('sing'))
+        if (isSing)
         {
             holdTimer += event.elapsed;
-            var singTimeSec:Float = 8 * (Conductor.instance.stepLengthMs / Constants.MS_PER_SEC);
-            if (getCurrentAnimation().endsWith('miss')) singTimeSec *= 2; 
+            var singTimeSec:Float = 8 * (Conductor.instance.stepLengthMs / Constants.MS_PER_SEC); // x beats, to ms.
+
+            if (getCurrentAnimation().endsWith('miss')) singTimeSec *= 2;
             var shouldStopSinging:Bool = (this.characterType == BF) ? !isHoldingNote() : true;
 
-            if (holdTimer > singTimeSec  && shouldStopSinging)
+            if (holdTimer > singTimeSec && shouldStopSinging)
             {
                 holdTimer = 0;
-                dance(true);
+
+                var currentAnimation:String = getCurrentAnimation();
+
+                if (currentAnimation.endsWith(Constants.ANIMATION_HOLD_SUFFIX)) 
+                    currentAnimation = currentAnimation.substring(0, currentAnimation.length - Constants.ANIMATION_HOLD_SUFFIX.length);
+
+
+                var endAnimation:String = currentAnimation + Constants.ANIMATION_END_SUFFIX;
+                if (hasAnimation(endAnimation))
+                    playAnim(endAnimation);
+                else
+                    dance(true);    
             }
         }
-        
-		if(isAnimationFinished() && animOffsets.exists('$name-loop'))
-			playAnim('$name-loop');
     }
 
     public function getAnimationPrefixes():Array<String> {
@@ -231,13 +240,13 @@ class BaseCharacter extends Bopper
 
         if (!force)
         {
-          if (getCurrentAnimation().startsWith('sing')) return;
+          if (isSing) return;
     
           var currentAnimation:String = getCurrentAnimation();
           if ((currentAnimation == 'hey' || currentAnimation == 'cheer') && !isAnimationFinished()) return;
         }
 
-        if (!force && getCurrentAnimation().startsWith('sing')) return;
+        if (!force && isSing) return;
         super.dance();
     }
 
@@ -246,19 +255,27 @@ class BaseCharacter extends Bopper
         super.onNoteHit(event);
 
         if (event.eventCanceled || event.note.noAnim) return;
-        sing(event.note);
+        onNoteSing(event.note);
     }
     
-    public function sing(note:NoteSprite, ?suffix:String = "")
+    public function onNoteSing(note:NoteSprite, ?suffix:String = "")
     {
         //so uh it will be cause duo sing it 
-        if (note.lane == 0  && characterType == BF && !note.gf
+        if ((note.lane == 0  && characterType == BF && !note.gf 
             || note.lane == 1 && characterType == DAD && !note.gf 
-            || note.gf && characterType == GF) 
+            || note.gf && characterType == GF) && (customType == "NONE")) 
         {
-            var baseString = 'sing' + Strumline.getArrowFromNumber(note.data).toUpperCase() + note.suffix + suffix;
-            this.playAnim(baseString, true);
-            this.holdTimer = 0;
+            this.playSing(note.noteData.getDirection(), note.suffix + suffix, true);
+        }
+    }
+
+    public function onSustainSing(note:SustainTrail, ?suffix:String = "")
+    {
+        if ((note.lane == 0  && characterType == BF && !note.gf 
+            || note.lane == 1 && characterType == DAD && !note.gf 
+            || note.gf && characterType == GF) && (customType == "NONE")) 
+        {
+            this.playSing(note.noteData.getDirection(), note.suffix + suffix, false);
         }
     }
 
@@ -268,7 +285,16 @@ class BaseCharacter extends Bopper
 
         if (event.eventCanceled || event.note.noAnim) return;
 
-        sing(event.note, 'miss');
+        onNoteSing(event.note, 'miss');
+    }
+
+    public override function onSustainHit(event:SustainScriptEvent)
+    {
+        super.onSustainHit(event);
+
+        if (event.eventCanceled || event.sustain.noAnim) return;
+
+        onSustainSing(event.sustain);
     }
     
     public override function onNoteGhostMiss(event:GhostMissNoteScriptEvent)
@@ -276,13 +302,32 @@ class BaseCharacter extends Bopper
         super.onNoteGhostMiss(event);
 
         if (event.eventCanceled || !event.playAnim) return;
-        
-        var baseString = 'sing' + Strumline.getArrowFromNumber(event.dir).toUpperCase() + "miss";
 
         if (characterType == BF)
         {
-            this.playAnim(baseString, true);
+            this.playSing(event.dir, 'miss');
             this.holdTimer = 0;
+        }
+    }
+
+    public var _singHoldTimer:Float = 0;
+    public function playSing(direction:NoteDirection, ?suffix:String = '', hit:Bool = true):Void
+    {
+        var baseString = 'sing${direction.nameUpper}$suffix';
+        
+        this.holdTimer = 0;
+		if (hit) {
+			this.playAnim(baseString, true);
+			this._singHoldTimer = 0;
+		}
+        else 
+        {
+            _singHoldTimer += FlxG.elapsed;
+			if (_singHoldTimer >= ((2 / 24) - 0.01))
+            {
+				this.playAnim(baseString, true);
+				this._singHoldTimer = 0;
+			}
         }
     }
 
@@ -301,6 +346,8 @@ class BaseCharacter extends Bopper
         || PlayerSettings.player1.controls.UP
         || PlayerSettings.player1.controls.RIGHT;
     }
+
+    function get_isSing():Bool return getCurrentAnimation().startsWith('sing');
 
     public override function onDestroy(event:ScriptEvent):Void
         this.characterType = OTHER;

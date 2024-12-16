@@ -12,10 +12,6 @@ class PolymodErrorHandler
    * @param name The name at the top of the popup.
    * @param desc The body text of the popup.
    */
-  public static function showAlert(name:String, desc:String):Void
-  {
-    lime.app.Application.current.window.alert(desc, name);
-  }
 
   public static function onPolymodError(error:PolymodError):Void
   {
@@ -36,12 +32,13 @@ class PolymodErrorHandler
         // A syntax error when parsing a script.
         logError(error.message);
         // Notify the user via popup.
-        showAlert('Polymod Script Parsing Error', error.message);
+        lime.app.Application.current.window.alert('Polymod Script Parsing Error', error.message);
+        //showAlert('Polymod Script Parsing Error', error.message);
       case SCRIPT_RUNTIME_EXCEPTION:
         // A runtime error when running a script.
         logError(error.message);
         // Notify the user via popup.
-        showAlert('Polymod Script Exception', error.message);
+        //showAlert('Polymod Script Exception', error.message);
       case SCRIPT_CLASS_MODULE_NOT_FOUND:
         // A scripted class tried to reference an unknown class or module.
         logError(error.message);
@@ -53,13 +50,12 @@ class PolymodErrorHandler
         msg += '\nCheck to ensure the class exists and is spelled correctly.';
 
         // Notify the user via popup.
-        showAlert('Polymod Script Import Error', msg);
+        lime.app.Application.current.window.alert('Polymod Script Import Error', msg);
       case SCRIPT_CLASS_MODULE_BLACKLISTED:
         // A scripted class tried to reference a blacklisted class or module.
         logError(error.message);
         // Notify the user via popup.
-        showAlert('Polymod Script Blacklist Violation', error.message);
-
+        lime.app.Application.current.window.alert('Polymod Script Blacklist Violation', error.message);
       default:
         // Log the message based on its severity.
         switch (error.severity)

@@ -60,14 +60,6 @@ class Dialogue extends FlxSpriteGroup
 			{
 				lastWasSpace = true;
 			}
-
-			#if (haxe >= "4.0.0")
-			var isNumber:Bool = AlphaCharacter.numbers.contains(splitWords[curRow]);
-			var isSymbol:Bool = AlphaCharacter.symbols.contains(splitWords[curRow]);
-			#else
-			var isNumber:Bool = AlphaCharacter.numbers.indexOf(splitWords[curRow]) != -1;
-			var isSymbol:Bool = AlphaCharacter.symbols.indexOf(splitWords[curRow]) != -1;
-			#end
 		});
 	}
 }

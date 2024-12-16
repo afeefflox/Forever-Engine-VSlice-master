@@ -41,12 +41,12 @@ class ResultScore extends FlxTypedSpriteGroup<ScoreNum>
         }
     }
 
-    public function new(x:Float, y:Float, digitCount:Int, scoreShit:Int = 100)
+    public function new(x:Float, y:Float, digitCount:Int, scoreShit:Int = 100, ?styleData:FreeplayStyle)
     {
         super(x, y);
 
         for (i in 0...digitCount)
-            add(new ScoreNum(x + (65 * i), y));
+            add(new ScoreNum(x + (65 * i), y, styleData ?? null));
     
         this.score = scoreShit;        
     }
@@ -136,11 +136,12 @@ class ScoreNum extends FunkinSprite
     shuffleTimer = new FlxTimer().start(interval, shuffleProgress, Std.int(duration / interval));
   }
 
-  public function new(x:Float, y:Float)
+  public function new(x:Float, y:Float, ?styleData:FreeplayStyle)
   {
     super(x, y);
 
-    loadFrame('menus/base/resultScreen/score-digital-numbers');
+    loadFrame('menus/base/resultScreen/score-digital-numbers-noColor');
+    color = styleData.getColor() ?? FlxColor.CYAN; //It cyan I guess :/
 
     for (i in 0...10)
     {

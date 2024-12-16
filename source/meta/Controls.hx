@@ -51,6 +51,9 @@ enum abstract Action(String) to String from String
 	var BACK = "back";
 	var PAUSE = "pause";
 	var RESET = "reset";
+	//I want use Q and E but FlxG.keys Fucking Hate it :(
+	var FREEPLAY_LEFT = "freeplay_left";
+	var FREEPLAY_RIGHT = "freeplay_right";
 }
 
 enum Device
@@ -78,6 +81,8 @@ enum Control
 	ACCEPT;
 	BACK;
 	PAUSE;
+	FREEPLAY_LEFT;
+	FREEPLAY_RIGHT;
 }
 
 enum KeyboardScheme
@@ -122,6 +127,8 @@ class Controls extends FlxActionSet
 	var _back = new FlxActionDigital(Action.BACK);
 	var _pause = new FlxActionDigital(Action.PAUSE);
 	var _reset = new FlxActionDigital(Action.RESET);
+	var _freeplay_left = new FlxActionDigital(Action.FREEPLAY_LEFT);
+	var _freeplay_right = new FlxActionDigital(Action.FREEPLAY_RIGHT);
 
 	var byName:Map<String, FlxActionDigital> = new Map<String, FlxActionDigital>();
 
@@ -268,6 +275,16 @@ class Controls extends FlxActionSet
 	inline function get_RESET()
 		return _reset.check();
 
+	public var FREEPLAY_LEFT(get, never):Bool;
+
+	inline function get_FREEPLAY_LEFT()
+	  return _freeplay_left.check();
+  
+	public var FREEPLAY_RIGHT(get, never):Bool;
+  
+	inline function get_FREEPLAY_RIGHT()
+	  return _freeplay_right.check();
+
 	public function new(name, scheme = None)
 	{
 		super(name);
@@ -300,6 +317,8 @@ class Controls extends FlxActionSet
 		add(_back);
 		add(_pause);
 		add(_reset);
+		add(_freeplay_left);
+		add(_freeplay_right);
 		for (action in digitalActions)
 			byName[action.name] = action;
 
@@ -353,6 +372,8 @@ class Controls extends FlxActionSet
 			case BACK: _back;
 			case PAUSE: _pause;
 			case RESET: _reset;
+			case FREEPLAY_LEFT: _freeplay_left;
+			case FREEPLAY_RIGHT: _freeplay_right;
 		}
 	}
 
@@ -411,7 +432,11 @@ class Controls extends FlxActionSet
 			case PAUSE:
 				func(_pause, JUST_PRESSED);
 			case RESET:
-				func(_reset, JUST_PRESSED);			
+				func(_reset, JUST_PRESSED);	
+			case FREEPLAY_LEFT:
+				func(_freeplay_left, JUST_PRESSED);
+			case FREEPLAY_RIGHT:
+				func(_freeplay_right, JUST_PRESSED);		
 		}
 	}
 
@@ -533,6 +558,8 @@ class Controls extends FlxActionSet
 		bindKeys(Control.BACK, [Init.gameControls.get('BACK')[0][0], Init.gameControls.get('BACK')[0][1], Init.gameControls.get('BACK')[0][2]]);
 		bindKeys(Control.PAUSE, [Init.gameControls.get('PAUSE')[0][0], Init.gameControls.get('PAUSE')[0][1]]);
 		bindKeys(Control.RESET, [Init.gameControls.get('RESET')[0][0], Init.gameControls.get('RESET')[0][1]]);
+		bindKeys(Control.FREEPLAY_LEFT,  [Init.gameControls.get('FREEPLAY_LEFT')[0][0], Init.gameControls.get('FREEPLAY_LEFT')[0][1]]);
+		bindKeys(Control.FREEPLAY_RIGHT,  [Init.gameControls.get('FREEPLAY_RIGHT')[0][0], Init.gameControls.get('FREEPLAY_RIGHT')[0][1]]);
 	}
 
 	function removeKeyboard()
@@ -592,7 +619,9 @@ class Controls extends FlxActionSet
 			Control.LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
 			Control.RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
 			Control.PAUSE => [START],
-			Control.RESET => [Y]
+			Control.RESET => [Y],
+			Control.FREEPLAY_LEFT =>  [LEFT_SHOULDER],
+			Control.FREEPLAY_RIGHT => [RIGHT_SHOULDER]
 		]);
 		#else
 		addGamepadLiteral(id, [
@@ -605,7 +634,9 @@ class Controls extends FlxActionSet
 			Control.RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT, RIGHT_STICK_DIGITAL_RIGHT],
 			Control.PAUSE => [START],
 			// Swap Y and X for switch
-			Control.RESET => [Y]
+			Control.RESET => [Y],
+			Control.FREEPLAY_LEFT =>  [LEFT_SHOULDER],
+			Control.FREEPLAY_RIGHT => [RIGHT_SHOULDER]
 		]);
 		#end
 	}

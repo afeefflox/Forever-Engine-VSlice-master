@@ -71,10 +71,11 @@ class OptionsMenuState extends MusicBeatState
 					['', null],
 					['Display Accuracy', getFromOption],
 					['Skip Text', getFromOption],
-					['Skip Result Screen', getFromOption],
+					['Skip Result', getFromOption],
 					['', null],
 					['Meta Settings', null],
 					['', null],
+					['Resolution', getFromOption],
 					['Auto Pause', getFromOption],
 					#if !neko ["Framerate Cap", getFromOption], #end
 					['FPS Counter', getFromOption],
@@ -525,6 +526,20 @@ class OptionsMenuState extends MusicBeatState
 			FlxFlicker.flicker(activeSubgroup.members[curSelection], 0.5, 0.06 * 2, true, false, function(flick:FlxFlicker)
 			{
 				openSubState(new OptionsSubstate());
+				lockedMovement = false;
+			});
+		}
+	}
+
+	public function openLatencymenu()
+	{
+		if (controls.ACCEPT)
+		{
+			FlxG.sound.play(Paths.sound('confirmMenu'));
+			lockedMovement = true;
+			FlxFlicker.flicker(activeSubgroup.members[curSelection], 0.5, 0.06 * 2, true, false, function(flick:FlxFlicker)
+			{
+				openSubState(new LatencySubState());
 				lockedMovement = false;
 			});
 		}

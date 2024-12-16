@@ -122,6 +122,19 @@ class NoteScriptEvent extends ScriptEvent
   }
 }
 
+class SustainScriptEvent extends ScriptEvent 
+{
+  public var sustain(default, null):SustainTrail;
+
+  public function new(sustain:SustainTrail):Void
+  {
+    super(SUSTAIN_HIT, cancelable);
+    this.sustain = sustain;
+  }
+
+  public override function toString():String return 'SustainScriptEvent(type=' + type + ', cancelable=' + cancelable + ', note=' + sustain + ')';
+}
+
 class SongEventScriptEvent extends ScriptEvent
 {
   public var eventData(default, null):SongEventData;

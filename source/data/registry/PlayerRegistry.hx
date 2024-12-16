@@ -59,7 +59,7 @@ class PlayerRegistry extends BaseRegistry<PlayableCharacter, PlayerData>
 
     public function hasNewCharacter():Bool
     {
-        var charactersSeen = Init.trueSettings.get('Playable Character Seen').clone();
+        var charactersSeen = Init.trueSettings.get('Playable Character');
         for (charId in listEntryIds())
         {
             var player = fetchEntry(charId);
@@ -78,7 +78,7 @@ class PlayerRegistry extends BaseRegistry<PlayableCharacter, PlayerData>
 
     public function listNewCharacters():Array<String>
     {
-        var charactersSeen = Init.trueSettings.get('Playable Character').clone();
+        var charactersSeen = Init.trueSettings.get('Playable Character');
         var result = [];
     
         for (charId in listEntryIds())

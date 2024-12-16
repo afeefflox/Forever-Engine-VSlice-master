@@ -165,6 +165,7 @@
         "loopFrame": 14
       },
       {
+        "renderType": "atlas",
         "assetPath": "menus/base/resultScreen/results-bf/resultsGOOD/resultGirlfriendGOOD",
         "zIndex": 500,
         "delay": 0.91,

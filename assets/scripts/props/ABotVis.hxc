@@ -2,6 +2,7 @@ import meta.modding.base.ScriptedFlxSpriteGroup;
 import flixel.sound.FlxSound;
 import funkin.vis.dsp.SpectralAnalyzer;
 import graphics.FunkinSprite;
+import flixel.math.FlxMath;
 import Lambda;
 class ABotVis extends ScriptedFlxSpriteGroup
 {
@@ -25,36 +26,25 @@ class ABotVis extends ScriptedFlxSpriteGroup
         }
     }
 
-    function min(x:Int, y:Int):Int
-    {
-        return x > y ? y : x;
-    }
-
     var analyzer:SpectralAnalyzer;
-
     public function initAnalyzer(snd:FlxSound)
     {
         analyzer = new SpectralAnalyzer(snd._channel.__audioSource, 7, 0.1, 40);
         analyzer.fftN = 256;
     }
 
-    override function draw()
+    override function update(elapsed:Float)
     {
-        if (analyzer != null) drawFFT();
-        super.draw();
-    }
+        super.update(elapsed);
+		if(analyzer == null) return;
 
-    function drawFFT():Void
-    {
-        var levels = analyzer.getLevels();
-
-        for (i in 0...min(members.length, levels.length))
+        levels = analyzer.getLevels(levels);
+	
+        for (i in 0...Std.int(Math.min(members.length, levels.length)))
         {
             var animFrame:Int = Math.round(levels[i].value * 5);
-            animFrame = Math.floor(Math.min(5, animFrame));
-            animFrame = Math.floor(Math.max(0, animFrame));
-            animFrame = Std.int(Math.abs(animFrame - 5)); // shitty dumbass flip, cuz dave got da shit backwards lol!
-            members[i].animation.curAnim.curFrame = animFrame;
+			animFrame = Std.int(Math.abs(FlxMath.bound(animFrame, 0, 5) - 5)); // shitty dumbass flip, cuz dave got da shit backwards lol!
+			members[i].animation.curAnim.curFrame = animFrame;
         }
     }
 }

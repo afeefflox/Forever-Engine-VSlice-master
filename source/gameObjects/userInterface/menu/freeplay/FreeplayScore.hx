@@ -27,13 +27,13 @@ class FreeplayScore extends FlxTypedSpriteGroup<ScoreNum>
         return val;
     }
 
-    public function new(x:Float, y:Float, digitCount:Int, scoreShit:Int = 100)
+    public function new(x:Float, y:Float, digitCount:Int, scoreShit:Int = 100, ?styleData:FreeplayStyle)
     {
         super(x, y);
 
         for (i in 0...digitCount)
         {
-            add(new ScoreNum(x + (45 * i), y, 0));
+            add(new ScoreNum(x + (45 * i), y, 0, styleData ?? null));
         }
     
         this.score = scoreShit;
@@ -63,13 +63,13 @@ class ScoreNum extends FlxSprite
     }
     
     var numToString:Array<String> = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"];
-    var folder:String = "menus/base/freeplay";
-    public function new(x:Float, y:Float, ?initDigit:Int = 0)
+
+    public function new(x:Float, y:Float, ?initDigit:Int = 0, ?styleData:FreeplayStyle)
     {
         super(x, y);
 
-        frames = Paths.getSparrowAtlas('$folder/digital_numbers');
-
+        frames = Paths.getSparrowAtlas(styleData.getNumbersAssetKey() ?? 'menus/base/freeplay/digital_numbers_noColor');
+        color = styleData.getColor() ?? FlxColor.CYAN; //It cyan I guess :/
         for (i in 0...10)
         {
             var stringNum:String = numToString[i];

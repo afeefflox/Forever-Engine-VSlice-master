@@ -34,6 +34,11 @@ typedef FreeplayStyleData =
   public var capsuleTextColors:Array<String>;
 
   /**
+  * Number Color or Result state
+  **/
+  public var color:String;
+
+  /**
    * Delay time after confirming a song selection, before entering PlayState.
    * Useful for letting longer animations play out.
    */

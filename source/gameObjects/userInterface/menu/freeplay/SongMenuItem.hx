@@ -51,7 +51,7 @@ class SongMenuItem extends FlxSpriteGroup
         super(x, y);
 
         capsule = new FlxSprite();
-        capsule.frames = Paths.getSparrowAtlas('$folder/freeplayCapsule/freeplayCapsule');
+        capsule.frames = Paths.getSparrowAtlas('$folder/freeplayCapsule/capsule/default');
         capsule.animation.addByPrefix('selected', 'mp3 capsule w backing0', 24);
         capsule.animation.addByPrefix('unselected', 'mp3 capsule w backing NOT SELECTED', 24);
         add(capsule);
@@ -364,13 +364,18 @@ class SongMenuItem extends FlxSpriteGroup
         updateSelected();
     }
 
-    public function init(?x:Float, ?y:Float, freeplayData:Null<FreeplaySongData>):Void
+    public function init(?x:Float, ?y:Float, freeplayData:Null<FreeplaySongData>, ?styleData:FreeplayStyle = null):Void
     {
         if (x != null) this.x = x;
         if (y != null) this.y = y;
         this.freeplayData = freeplayData;
 
-
+        if(styleData != null)
+        {
+            capsule.frames = Paths.getSparrowAtlas(styleData.getCapsuleAssetKey());
+            songText.applyStyle(styleData);
+        }
+        
         updateScoringRank(freeplayData?.scoringRank);
         favIcon.animation.curAnim.curFrame = favIcon.animation.curAnim.numFrames - 1;
         favIconBlurred.animation.curAnim.curFrame = favIconBlurred.animation.curAnim.numFrames - 1;
@@ -550,6 +555,8 @@ class FreeplayRank extends FlxSprite
             {
                 case GOOD, GREAT:
                     offset.y -= 8;
+                case SHIT, EXCELLENT, PERFECT, PERFECT_GOLD:
+                    //Do Nothing lol
                 default:
                     centerOffsets(false);
                     this.visible = false;
@@ -596,12 +603,8 @@ class CapsuleNumber extends FlxSprite
       case 3:
         offset.x -= 1;
 
-      case 6:
-
-      case 4:
-        // offset.y += 5;
-      case 9:
-        // offset.y += 5;
+      case 6, 4, 9:
+        //do nothing
       default:
         centerOffsets(false);
     }

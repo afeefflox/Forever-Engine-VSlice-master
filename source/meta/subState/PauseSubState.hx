@@ -341,6 +341,14 @@ class PauseSubState extends MusicBeatSubState
 	static function openOption(state:PauseSubState):Void
 	{
 		meta.state.menus.OptionsMenuState.isPlayState = true;
+
+		PlayState.instance.deathCounter = PlayState.instance.songScore = 0;
+		PlayState.resetMusic();
+		
+		Highscore.instance.resetTallies();
+		Timings.callAccuracy();
+		Timings.updateAccuracy(0);
+		
 		Main.switchState(new meta.state.menus.OptionsMenuState());
 		state.close();
 	}
@@ -385,9 +393,15 @@ class PauseSubState extends MusicBeatSubState
 	static function quitToMenu(state:PauseSubState):Void
 	{
 		state.allowInput = false;
-		PlayState.instance.deathCounter = 0;
 		FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
+
+		PlayState.instance.deathCounter = PlayState.instance.songScore = 0;
 		PlayState.resetMusic();
+		
+		Highscore.instance.resetTallies();
+		Timings.callAccuracy();
+		Timings.updateAccuracy(0);
+
 		state.openSubState(new StickerSubState(null, (sticker) -> PlayStatePlaylist.isStoryMode ? new StoryMenuState(sticker) : FreeplayState.build(null, sticker)));
 	}
 

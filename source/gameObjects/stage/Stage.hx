@@ -119,7 +119,7 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
         var assetList = [];
         for (anim in dataProp.animations)
         {
-          if (anim.assetPath != null && !assetList.contains(_data.folder + anim.assetPath))
+          if (anim.assetPath != null && anim.assetPath != "" && !assetList.contains(_data.folder + anim.assetPath))
           {
             assetList.push(_data.folder + anim.assetPath);
           }
@@ -696,6 +696,8 @@ class Stage extends FlxSpriteGroup implements IPlayStateScriptedClass implements
   public function onNoteHit(event:HitNoteScriptEvent) {}
 
   public function onNoteMiss(event:NoteScriptEvent) {}
+
+  public function onSustainHit(event:SustainScriptEvent) {}
 
   public function onSongEvent(event:SongEventScriptEvent):Void {};
 

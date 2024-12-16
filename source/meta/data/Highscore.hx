@@ -10,7 +10,11 @@ class Highscore
 	public var talliesLevel:Tallies = new Tallies();
 	public var songData:FlxSave;
 
-	var highscoreData:SaveHighScoresData;
+	var highscoreData:SaveHighScoresData = {
+		songs: [],
+		levels: []
+	};
+	var songFav:Array<String> = [];
 
 	public static var instance(get, never):Highscore;
 	static var _instance:Null<Highscore> = null;
@@ -26,14 +30,28 @@ class Highscore
 		tallies = new Tallies();
 		songData = new FlxSave();
 		songData.bind('songData_save', CoolUtil.getSavePath());
-		highscoreData = {
-			songs: [],
-			levels: []
-		}
-		if(songData.data.scores == null) 
-			songData.data.scores = highscoreData;
+		
+		if(songData.data.favorite != null)
+			songFav = songData.data.favorite;
 		else
+			songData.data.favorite = songFav;
+
+		if(songData.data.scores != null) 
 			highscoreData = songData.data.scores;
+		else
+			songData.data.scores = highscoreData;
+	}
+
+	public function resetTallies()
+	{
+		tallies.missed = 0;
+		tallies.shit = 0;
+		tallies.good = 0;
+		tallies.sick = 0;
+		tallies.totalNotes = 0;
+		tallies.totalNotesHit = 0;
+		tallies.combo = 0;
+		tallies.maxCombo = 0;
 	}
 
 	public function combineTallies(newTally:Tallies, baseTally:Tallies):Tallies
@@ -237,23 +255,16 @@ class Highscore
 		return false;
 	}
 
-	public function isSongFavorited(id:String):Bool
-	{
-		if (songData.data.favorite == null)
-		{
-			songData.data.favorite = [];
-			songData.flush();
-		};
+	public function isSongFavorited(id:String):Bool return songFav.contains(id);
 		
-		return songData.data.favorite.contains(id);
-	}
 
 	
 	public function favoriteSong(id:String):Void
 	{
 		if (!isSongFavorited(id))
 		{
-			songData.data.favorite.push(id);
+			songFav.push(id);
+			songData.data.favorite = songFav;
 			songData.flush();
 		}
 	}
@@ -262,8 +273,9 @@ class Highscore
 	{
 		if (isSongFavorited(id))
 		{
-			songData.data.favorite.remove(id);
-			songData.data.flush();
+			songFav.remove(id);
+			songData.data.favorite = songFav;
+			songData.flush();
 		}
 	}
 }

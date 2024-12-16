@@ -37,6 +37,7 @@ class ResultSubState extends MusicBeatSubState
     }> = [];
 
     var playerCharacterId:Null<String>;
+    var playerCharacter:Null<PlayableCharacter>;
 
     var introMusicAudio:Null<FunkinSound>;
   
@@ -52,7 +53,7 @@ class ResultSubState extends MusicBeatSubState
 
         this.params = params;
     
-        rank = Scoring.calculateRank(params.scoreData) ?? SHIT;
+        rank = params.validScore ? Scoring.calculateRank(params.scoreData) : SHIT;
 
         cameraBG = cameraScroll = cameraEverything = new FunkinCamera();
         
@@ -76,7 +77,13 @@ class ResultSubState extends MusicBeatSubState
         ratingsPopin = new FunkinSprite(-135, 135).loadFrame('$folder/ratingsPopin');
         scorePopin = new FunkinSprite(-180, 515).loadFrame('$folder/scorePopin');
         highscoreNew = new FunkinSprite(44, 557).loadFrame('$folder/highscoreNew');
-        score = new ResultScore(35, 305, 10, params.scoreData.score);
+
+
+        playerCharacterId = PlayerRegistry.instance.getCharacterOwnerId(params.characterId);
+        playerCharacter = PlayerRegistry.instance.fetchEntry(playerCharacterId ?? 'bf');
+        var styleData = FreeplayStyleRegistry.instance.fetchEntry(playerCharacter.getFreeplayStyleID());
+
+        score = new ResultScore(35, 305, 10, params.scoreData.score, styleData ?? null);
         rankBg = new FunkinSprite().makeSolidColor(FlxG.width, FlxG.height, 0xFF000000);
     }
 
@@ -118,8 +125,6 @@ class ResultSubState extends MusicBeatSubState
         soundSystem.zIndex = 1100;
         add(soundSystem);
 
-        playerCharacterId = PlayerRegistry.instance.getCharacterOwnerId(params.characterId);
-        var playerCharacter:Null<PlayableCharacter> = PlayerRegistry.instance.fetchEntry(playerCharacterId ?? 'bf');
         var playerAnimationDatas:Array<PlayerResultsAnimationData> = playerCharacter != null ? playerCharacter.getResultsAnimationDatas(rank) : [];
         for (animData in playerAnimationDatas)
         {
@@ -127,7 +132,7 @@ class ResultSubState extends MusicBeatSubState
 
             var animPath:String = Paths.stripLibrary(animData.assetPath);
             var offsets = animData.offsets ?? [0, 0];
-            if(Paths.getExistAtlas(animPath))
+            if(animData.renderType != 'animate')
             {
                 var animation:FunkinSprite = new FunkinSprite(offsets[0], offsets[1]).loadFrame(animPath);
                 animation.animation.addByPrefix('idle', '', 24, false, false, false);
@@ -310,7 +315,7 @@ class ResultSubState extends MusicBeatSubState
             {
                 introMusicAudio = FunkinSound.load(introMusic, 1.0, false, true, true, () -> {
                     introMusicAudio = null;
-                    FunkinSound.playMusic(getMusicPath(playerCharacter, rank),
+                    FunkinSound.playMusic('results/${getMusicPath(playerCharacter, rank)}',
                     {
                         startingVolume: 1.0,
                         overrideExisting: true,
@@ -339,8 +344,8 @@ class ResultSubState extends MusicBeatSubState
         super.create();
     }
 
-    function getMusicPath(playerCharacter:Null<PlayableCharacter>, rank:ScoringRank):String 
-        return playerCharacter?.getResultsMusicPath(rank) ?? 'normal';
+    function getMusicPath(player:Null<PlayableCharacter>, rank:ScoringRank):String 
+        return player?.getResultsMusicPath(rank) ?? 'normal';
 
     var rankTallyTimer:Null<FlxTimer> = null;
     var clearPercentTarget:Int = 100;
@@ -584,27 +589,25 @@ class ResultSubState extends MusicBeatSubState
                     }
                 });
             }
-        }
 
-        var targetState:flixel.FlxState = new MainMenuState();
-        var shouldTween = false;
-        var shouldUseSubstate = false;
-  
-        if (params.storyMode)
-        {
-            shouldTween = false;
-            shouldUseSubstate = true;
-            targetState = new StickerSubState(null, (sticker) -> new StoryMenuState(sticker));
-        }
-        else
-        {
-            if (rank > Scoring.calculateRank(params?.prevScoreData))
+            var targetState:flixel.FlxState = new MainMenuState();
+            var shouldTween = false;
+            var shouldUseSubstate = false;
+      
+            if (params.storyMode)
             {
-                trace('THE RANK IS Higher.....');
-
-                shouldTween = true;
-                targetState = FreeplayState.build({
-                    {
+                shouldTween = false;
+                shouldUseSubstate = true;
+                targetState = new StickerSubState(null, (sticker) -> new StoryMenuState(sticker));
+            }
+            else
+            {
+                if (rank > Scoring.calculateRank(params?.prevScoreData))
+                {
+                    trace('THE RANK IS Higher.....');
+    
+                    shouldTween = true;
+                    targetState = FreeplayState.build({
                         character: playerCharacterId ?? "bf",
                         fromResults:
                         {
@@ -614,35 +617,42 @@ class ResultSubState extends MusicBeatSubState
                             difficultyId: params.difficultyId,
                             playRankAnim: true
                         }
+                    });
+                }
+                else
+                {
+                    shouldTween = false;
+                    shouldUseSubstate = true;
+                    targetState = new StickerSubState(null, (sticker) -> FreeplayState.build(null, sticker));
+                }
+            }
+    
+            if (shouldTween)
+            {
+                FlxTween.tween(rankBg, {alpha: 1}, 0.5,{
+                    ease: FlxEase.expoOut,
+                    onComplete: function(_) {
+                        if (shouldUseSubstate && targetState is FlxSubState)
+                            openSubState(cast targetState);
+                        else
+                            FlxG.switchState(targetState);
                     }
                 });
             }
             else
             {
-                shouldTween = false;
-                shouldUseSubstate = true;
-                targetState = new StickerSubState(null, (sticker) -> FreeplayState.build(null, sticker));
+                if (shouldUseSubstate && targetState is FlxSubState)
+                    openSubState(cast targetState);
+                else
+                    FlxG.switchState(targetState);
             }
-        }
 
-        if (shouldTween)
-        {
-            FlxTween.tween(rankBg, {alpha: 1}, 0.5,{
-                ease: FlxEase.expoOut,
-                onComplete: function(_) {
-                    if (shouldUseSubstate && targetState is FlxSubState)
-                        openSubState(cast targetState);
-                    else
-                        FlxG.switchState(targetState);
-                }
-            });
-        }
-        else
-        {
-            if (shouldUseSubstate && targetState is FlxSubState)
-                openSubState(cast targetState);
-            else
-                FlxG.switchState(targetState);
+
+            //Idk Result Score after you put score it ok then :/
+            PlayState.instance.songScore = 0;
+			Highscore.instance.resetTallies();
+			Timings.callAccuracy();
+			Timings.updateAccuracy(0);
         }
     }
 }
@@ -656,4 +666,5 @@ typedef ResultsStateParams = {
     var ?difficultyId:String;
     var scoreData:SaveScoreData;
     var ?prevScoreData:SaveScoreData;
+    var ?validScore:Bool;
 }

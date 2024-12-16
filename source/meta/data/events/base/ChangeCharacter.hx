@@ -22,7 +22,7 @@ class ChangeCharacter extends SongEvent
         var type:Null<Int> = data.getInt('char');
         if (type == null) type = cast data.value;
 
-        var charId:Null<String> = data.getString('id').toLowerCase();
+        var charId:Null<String> = data.getString('charId').toLowerCase();
         if (charId == null) charId = 'bf';
 
         var newChar:BaseCharacter = BaseCharacter.fetchData(charId);
@@ -58,7 +58,7 @@ class ChangeCharacter extends SongEvent
         var char:Null<Int> = data.getInt('char');
         if (char == null) char = cast data.value;
 
-        var charId:Null<String> = data.getString('id').toLowerCase();
+        var charId:Null<String> = data.getString('charId').toLowerCase();
         if (charId == null) charId = 'bf';
 
         var stage = PlayState.instance.stage;
@@ -110,7 +110,7 @@ class ChangeCharacter extends SongEvent
                 keys: ["Player" => 0, "Opponent" => 1, "Girlfriend" => 2]
             },
             {
-                name: "id",
+                name: "charId",
                 title: "Character Name",
                 defaultValue: "bf",
                 type: SongEventFieldType.CHARACTER,

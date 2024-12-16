@@ -100,10 +100,18 @@ xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/
 	<haxedef name="HXCPP_STACK_TRACE" if="release"/>
 
 	<haxeflag name="-dce no" />
-	<define name="CUSTOM_CLASSES" />
-	<haxeflag name="--macro" value="macros.ScriptsMacro.addAdditionalClasses()" />
+	<haxeflag name="--macro" value="macros.Macros.addAdditionalClasses()" />
+
 	
 	<haxedef name="message.reporting" value="pretty" />
+
+	<!-- Comment this out to prevent unused classes from being compiled.
+		 Reduces compilation time at the cost of limited HScript flexibility. !-->
+	<define name="COMPILE_ALL_CLASSES" />
+
+	<!-- Comment this out to prevent extending classes in hscript.
+		 Reduces compilation time at the cost of limited HScript flexibility. !-->
+	<define name="CUSTOM_CLASSES" />
 
 	<section if="polymod">
         <!-- Turns on additional debug logging. -->

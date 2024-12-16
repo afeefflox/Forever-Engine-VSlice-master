@@ -77,15 +77,13 @@ class SongMetadata implements ICloneable<SongMetadata>
     
         return result;
     }
-
+    
     public function serialize():String
     {
         updateVersionToLatest();
 
-        var ignoreNullOptionals = true;
-        var writer = new json2object.JsonWriter<SongMetadata>(ignoreNullOptionals);
-        var data:String = writer.write(this, "\t");
-        return data.trim();
+        var writer = new json2object.JsonWriter<SongMetadata>(true);
+        return writer.write(this, '\t');
     }
 
     public function updateVersionToLatest():Void
@@ -488,13 +486,54 @@ class SongChartData implements ICloneable<SongChartData>
         return value;
     }
 
+    //**Make Cleaner Chart**/
     public function serialize():String
     {
-        updateVersionToLatest();
+        var chartData = {
+            version: "2.0.0",
+            events: [],
+            scrollSpeed: ['yourmom' => 9.9],
+            notes: ['yourmom' => []],
+            generatedBy: SongRegistry.DEFAULT_GENERATEDBY
+        };
 
-        var ignoreNullOptionals = true;
-        var writer = new json2object.JsonWriter<SongChartData>(ignoreNullOptionals);
-        var data:String = writer.write(this, "\t");
+        for(eventData in this.events)
+        {
+            chartData.events.push({
+                t: eventData.time,
+                e: eventData.eventKind,
+                v: eventData.value
+            });
+        }
+
+        for (keyNote in this.notes.keys())
+        {
+            var myNotes:Array<Dynamic> = [];
+            for(note in getNotes(keyNote))
+            {
+                var funiNote:Dynamic = {t: note.time, d: note.data};
+
+                if(note.length > 0) 
+                    funiNote.l = note.length;
+                if(note.kind != null && note.kind.length > 0)
+                    funiNote.k = note.kind;
+                if(note.params != null && note.params.length > 0)
+                    funiNote.p = note.params;
+
+                myNotes.push(funiNote);
+            }
+            chartData.notes.set(keyNote, myNotes);
+        }
+
+        for (keyScrollSpeed in this.scrollSpeed.keys())
+            chartData.scrollSpeed.set(keyScrollSpeed, this.getScrollSpeed(keyScrollSpeed));
+
+        //this is Placeholder reminder to make Map work
+        chartData.scrollSpeed.remove('yourmom');
+        chartData.notes.remove('yourmom');
+
+        var data:String = FunkyJson.stringify(chartData, "\t");
+
         return data.trim();
     }
 

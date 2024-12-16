@@ -5,6 +5,8 @@ import flxanimate.FlxAnimate;
 import flixel.FlxG;
 import meta.modding.base.ScriptedFlxSpriteGroup;
 
+import flixel.group.FlxTypedSpriteGroup;
+import Paths;
 class Nene extends AtlasCharacter 
 {
     //DO NOT THINK NENE FROM HOLOLIVE
@@ -21,24 +23,34 @@ class Nene extends AtlasCharacter
 	var stereoBG:FunkinSprite;
 	var eyeWhites:FunkinSprite;
     var folder:String = 'characters/abot/';
+
+	var abotGroup:FlxTypedSpriteGroup;
     function onCreate(event:ScriptEvent) 
     {
         super.onCreate(event);
 
+		abotGroup = new FlxTypedSpriteGroup();
+		
         stereoBG = new FunkinSprite().loadImage(folder + 'stereoBG');
+		abotGroup.add(stereoBG);
+
+		abotViz = new ABotVis(this.x + 50, this.y);
+		abotGroup.add(abotViz);
+
         eyeWhites = new FunkinSprite().makeSolidColor(160, 60);
+		abotGroup.add(eyeWhites);
 
         pupil = new FlxAnimate(this.x, this.y, Paths.animateAtlas(folder + "systemEyes"));
         pupil.anim.addBySymbol('idle', 'a bot eyes lookin', 24, false);
 		pupil.anim.play('idle', true);
 		pupil.anim.curFrame = pupil.anim.length - 1;
+		abotGroup.add(pupil);
 
         abot = new FlxAnimate(this.x, this.y, Paths.animateAtlas(folder + "abotSystem"));
         abot.anim.addBySymbol('idle', 'Abot System', 24, false);
 		abot.anim.play('idle', true);
 		abot.anim.curFrame = abot.anim.length - 1;
-
-		abotViz = ScriptedFlxSpriteGroup.init('ABotVis', this.x, this.y);
+		abotGroup.add(abot);
     }
 
     var VULTURE_THRESHOLD = 0.25 * 2;
@@ -56,7 +68,7 @@ class Nene extends AtlasCharacter
     {
         if (abot != null)
             abot.anim.play('idle', force);
-
+		
         switch(currentState) 
         {
             case STATE_DEFAULT:
@@ -96,51 +108,60 @@ class Nene extends AtlasCharacter
 
     function onSongStart(event:ScriptEvent)
     {
-        abotViz.scriptCall('initAnalyzer', [FlxG.sound.music]);
+		abotViz.initAnalyzer(FlxG.sound.music);
     }
 
-    //This is dumb but it might work :/
-    override function update(elapsed:Float)
-	{
-		super.update(elapsed);
-        
-		abot.update(elapsed);
-        abotViz.update(elapsed);
-        eyeWhites.update(elapsed);
-        stereoBG.update(elapsed);
-        pupil.update(elapsed);
-	}
-
-    public override function draw()
-    {
-        
-        eyeWhites.x = abot.x + 40;
-        eyeWhites.y = abot.y + 250;
-        eyeWhites.draw();
-
-        pupil.x = abot.x + 60;
-        pupil.y = abot.y + 240;
-        pupil.draw();
-
-        stereoBG.x = abot.x + 150;
-		stereoBG.y = abot.y + 30;
-        stereoBG.draw();
-
-		abotViz.x = abot.x + 200;
-		abotViz.y = abot.y + 84;
-		abotViz.draw();
-
-        abot.x = this.x - 100;
-		abot.y = this.globalOffsets[1] + 540; // 764 - 740
-		abot.draw();
-
-        super.draw();
-    }
-
-    var refershed:Bool = false;
+	var refershed:Bool = false;
     function onUpdate(event:UpdateScriptEvent)
     {
         super.onUpdate(event);
+
+		// Set the visibility of ABot to match Nene's.
+		abotGroup.visible = this.visible;
+
+		if (pupil != null && pupil.anim.isPlaying)
+		{
+			switch (pupilState)
+			{
+				case PUPIL_STATE_NORMAL:
+					if (pupil.anim.curFrame >= 17)
+					{
+						trace('Done moving pupils left');
+						pupilState = PUPIL_STATE_LEFT;
+						pupil.anim.pause();
+					}
+				case PUPIL_STATE_LEFT:
+					if (pupil.anim.curFrame >= 30)
+					{
+						trace('Done moving pupils right');
+						pupilState = PUPIL_STATE_NORMAL;
+						pupil.anim.pause();
+					}
+			}
+		}
+
+		if (!refershed)
+		{
+			abot.x = this.x - 100;
+			abot.y = this.globalOffsets[1] + 540;
+
+			eyeWhites.x = abot.x + 40;
+			eyeWhites.y = abot.y + 250;
+	
+			pupil.x = abot.x + 60;
+			pupil.y = abot.y + 240;
+	
+			stereoBG.x = abot.x + 150;
+			stereoBG.y = abot.y + 30;
+	
+			abotViz.x = abot.x + 200;
+			abotViz.y = abot.y + 84;
+
+			abotGroup.zIndex = this.zIndex - 10;
+			PlayState.instance.stage.add(abotGroup);
+			PlayState.instance.stage.refresh();
+			refershed = true;
+		}
 
         transitionState();
     }

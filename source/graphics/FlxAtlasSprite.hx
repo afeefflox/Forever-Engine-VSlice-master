@@ -17,7 +17,7 @@ class FlxAtlasSprite extends FlxAnimate
         Reversed: false,
         ShowPivot: false,
         Antialiasing: true,
-        ScrollFactor: FlxPoint.get(1, 1),
+        ScrollFactor: null,
     }
 
     public var onAnimationFrame:FlxTypedSignal<String->Int->Void> = new FlxTypedSignal();
@@ -36,7 +36,7 @@ class FlxAtlasSprite extends FlxAnimate
 
         super(x, y, path, settings);
 
-        if (this.anim.stageInstance == null) 
+        if (this.anim.stageInstance == null)  throw 'FlxAtlasSprite not initialized properly. Are you sure the path (${path}) exists?';
 
         onAnimationComplete.add(cleanupAnimation);
 
@@ -67,25 +67,47 @@ class FlxAtlasSprite extends FlxAnimate
     var fr:FlxKeyFrame = null;
   
     var looping:Bool = false;
+
+    public var ignoreExclusionPref:Array<String> = [];
     
     public function playAnimation(id:String, restart:Bool = false, ignoreOther:Bool = false, loop:Bool = false, startFrame:Int = 0):Void
     {
+        if (!canPlayOtherAnims)
+        {
+            if (this.currentAnimation == id && restart) {}
+            else if (ignoreExclusionPref != null && ignoreExclusionPref.length > 0)
+            {
+                var detected:Bool = false;
+                for (entry in ignoreExclusionPref)
+                {
+                    if (id.startsWith(entry))
+                    {
+                        detected = true;
+                        break;
+                    }
+                }
+                if (!detected) return;
+            }
+            else
+                return;
+        }
+
         if (anim == null) return;
 
         if (id == null || id == '') id = this.currentAnimation;
-    
+
+
         if (this.currentAnimation == id && !restart)
         {
             if (!anim.isPlaying)
             {
-                if (fr != null) anim.curFrame = fr.index + startFrame;
+                if (fr != null) 
+                    anim.curFrame = fr.index + startFrame;
                 else
                     anim.curFrame = startFrame;
-          
-                  // Resume animation if it's paused.
+
                 anim.resume();
             }
-          
             return;
         }
         else if (!hasAnimation(id))
@@ -93,7 +115,6 @@ class FlxAtlasSprite extends FlxAnimate
             trace('Animation ' + id + ' not found');
             return;
         }
-
 
         this.currentAnimation = id;
         anim.onComplete.removeAll();
@@ -120,6 +141,11 @@ class FlxAtlasSprite extends FlxAnimate
             fr = anim.getFrameLabel(id);
             anim.curFrame += startFrame;
         }
+    }
+
+    override public function update(elapsed:Float)
+    {
+        super.update(elapsed);
     }
 
     public function isAnimationFinished():Bool return this.anim.finished;

@@ -12,7 +12,6 @@ class LetterSort extends FlxTypedSpriteGroup<FlxSprite>
     var leftArrow:FlxSprite;
     var rightArrow:FlxSprite;
     var grpSeperators:Array<FlxSprite> = [];
-    
     public var inputEnabled:Bool = true;
     var folder:String = "menus/base/freeplay";
     public function new(x, y)
@@ -50,6 +49,17 @@ class LetterSort extends FlxTypedSpriteGroup<FlxSprite>
         rightArrow = new FlxSprite(380, 15).loadGraphic(Paths.image('$folder/miniArrow'));
         add(rightArrow);
         changeSelection();        
+    }
+
+    override function update(elapsed:Float):Void
+    {
+        super.update(elapsed);
+
+        if (inputEnabled)
+        {
+            if (PlayerSettings.player1.controls.FREEPLAY_LEFT) changeSelection(-1);
+            if (PlayerSettings.player1.controls.FREEPLAY_RIGHT) changeSelection(1);
+        }
     }
     
     public function changeSelection(?diff:Int = 0):Void

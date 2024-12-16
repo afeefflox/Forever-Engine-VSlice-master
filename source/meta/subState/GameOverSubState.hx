@@ -135,7 +135,12 @@ class GameOverSubState extends MusicBeatSubState
 		{
 			isEnding = true;
 			blueballed = false;
-			PlayState.instance.deathCounter = 0;
+			
+			PlayState.instance.deathCounter = PlayState.instance.songScore = 0;
+			Highscore.instance.resetTallies();
+			Timings.callAccuracy();
+			Timings.updateAccuracy(0);
+
 			if (gameOverMusic != null) gameOverMusic.stop();
 
 			openSubState(new StickerSubState(null, (sticker) -> PlayStatePlaylist.isStoryMode ? new StoryMenuState(sticker) : FreeplayState.build(null, sticker)));

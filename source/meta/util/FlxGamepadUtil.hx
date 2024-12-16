@@ -24,16 +24,7 @@ class FlxGamepadUtil
     if (result == NONE) return NONE;
     return result;
   }
-
-  public static function getLimeGamepad(input:FlxGamepad):Null<LimeGamepad>
-  {
-    #if FLX_GAMEINPUT_API @:privateAccess
-    return input._device.getLimeGamepad();
-    #else
-    return null;
-    #end
-  }
-
+  
   @:privateAccess
   public static function getFlxGamepadByLimeGamepad(gamepad:LimeGamepad):FlxGamepad
   {

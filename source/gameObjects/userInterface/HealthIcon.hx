@@ -3,7 +3,7 @@ package gameObjects.userInterface;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
-import sys.FileSystem;
+import flixel.math.FlxPoint;
 
 using StringTools;
 
@@ -14,8 +14,6 @@ class HealthIcon extends FunkinSprite
 	public var isPlayer:Bool = false;
 
 	public var sprTracker:FlxSprite;
-	public var initialWidth:Float = 0;
-	public var initialHeight:Float = 0;
 
 	static final WINNING_THRESHOLD:Float = 0.8 * 2;
 	static final LOSING_THRESHOLD:Float = 0.2 * 2;
@@ -57,9 +55,6 @@ class HealthIcon extends FunkinSprite
 			loadAnimationOld();
 		}
 
-		initialWidth = this.width;
-		initialHeight = this.height;
-
 		playAnimation(Idle);
 	}
 
@@ -97,17 +92,7 @@ class HealthIcon extends FunkinSprite
 		this.animation.addByPrefix(FromWinning, FromWinning, 24, false);
 		this.animation.addByPrefix(FromLosing, FromLosing, 24, false);
 	}
-
-	public function switchAnim(anim1:String, anim2:String):Void
-	{
-		if (hasAnimation(anim1) && hasAnimation(anim2))
-		{
-			final oldAnim1 = animation.getByName(anim1).frames;
-			animation.getByName(anim1).frames = animation.getByName(anim2).frames;
-			animation.getByName(anim2).frames = oldAnim1;
-		}		
-	}
-
+	
 	public dynamic function updateAnim(health:Float)
 	{
 		switch (getCurrentAnimation())
@@ -155,6 +140,7 @@ class HealthIcon extends FunkinSprite
 			this.char = Constants.DEFAULT_HEALTH_ICON;
 			this.antialiasing = data.antialiasing;
 			this.scale.set(1.0, 1.0);
+			this.updateHitbox();
 			this.offset.x = this.offset.y = 0.0;
 			this.flipX = isPlayer;
 		}
@@ -163,12 +149,12 @@ class HealthIcon extends FunkinSprite
 			this.char = data.id;
 			this.antialiasing = data.antialiasing;
 			this.scale.set(data.scale ?? 1.0, data.scale ?? 1.0);
+			this.updateHitbox();
 			this.offset.x = (data.offsets != null) ? data.offsets[0] : 0.0;
 			this.offset.y = (data.offsets != null) ? data.offsets[1] : 0.0;
 			this.flipX = data.flipX ?? isPlayer; // Face the OTHER way by default, since that is more common.
 		}		
 	}
-
 
 	public function getCurrentAnimation():String
 	{
@@ -184,9 +170,7 @@ class HealthIcon extends FunkinSprite
 	}
 
 	public function isAnimationFinished():Bool
-	{
 		return this.animation.finished;
-	}
 
 	public function playAnimation(name:String, fallback:String = null, restart = false):Void
 	{

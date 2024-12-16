@@ -274,10 +274,6 @@ class FreeplayDJ extends FlxAtlasSprite
       playFlashAnimation(playableCharData.getAnimationPrefix('cartoon'), true, false, false, frame);
       // trace('Finished confirm');
     }
-    else if (name == playableCharData.getAnimationPrefix('newUnlock'))
-    {
-      // Animation should loop.
-    }
     else if (name == playableCharData.getAnimationPrefix('charSelect'))
     {
       onCharSelectComplete();

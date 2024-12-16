@@ -1,6 +1,6 @@
 package gameObjects.userInterface.notes;
 import flixel.util.FlxSignal.FlxTypedSignal;
-class Strumline extends FlxSpriteGroup
+class Strumline extends FlxTypedSpriteGroup<FlxSprite>
 {
     public static final DIRECTIONS:Array<NoteDirection> = [NoteDirection.LEFT, NoteDirection.DOWN, NoteDirection.UP, NoteDirection.RIGHT];
     public static final STRUMLINE_SIZE:Int = 104;
@@ -24,8 +24,8 @@ class Strumline extends FlxSpriteGroup
         scrollSpeed = PlayState.instance?.currentChart?.scrollSpeed ?? 1.0;
     }
 
-    public var notes:FlxTypedSpriteGroup<NoteSprite> = new FlxTypedSpriteGroup<NoteSprite>();
-    public var holdNotes:FlxTypedSpriteGroup<SustainTrail> = new FlxTypedSpriteGroup<SustainTrail>();
+    public var notes:FlxTypedSpriteGroup<NoteSprite>;
+    public var holdNotes:FlxTypedSpriteGroup<SustainTrail>;
   
     public var onNoteIncoming:FlxTypedSignal<NoteSprite->Void>;
   
@@ -110,7 +110,7 @@ class Strumline extends FlxSpriteGroup
         }
         this.active = true;
 
-        this.y = 25 + (downscroll ? FlxG.height - 150 : 0) - 10;
+        this.y = 25 + (downscroll ? FlxG.height - 150 : 50) - 10;
     }
 
     public function refresh():Void
@@ -136,24 +136,7 @@ class Strumline extends FlxSpriteGroup
         if (!Init.trueSettings.get('Ghost Tapping') || getNotesMayHit().length > 0 || getHoldNotesHitOrMissed().length > 0 || ghostTapTimer > 0.0)  return false;
         return true;
     }
-
-    public static function getArrowFromNumber(numb:Int)
-    {
-        var stringSect:String = '';
-		switch (numb)
-		{
-			case(0):
-				stringSect = 'left';
-			case(1):
-				stringSect = 'down';
-			case(2):
-				stringSect = 'up';
-			case(3):
-				stringSect = 'right';
-		}
-		return stringSect;
-    }
-
+    
     function updateGhostTapTimer(elapsed:Float):Void
     {
         if (getNotesOnScreen().length > 0 || !Init.trueSettings.get('Ghost Tapping')) return;
@@ -251,9 +234,7 @@ class Strumline extends FlxSpriteGroup
 
     public function calculateNoteYPos(strumTime:Float, vwoosh:Bool = true):Float
     {
-        var vwoosh:Float = 1.0;
-
-        return Constants.PIXELS_PER_MS * (Conductor.instance.songPosition - strumTime - Conductor.instance.inputOffset) * scrollSpeed * vwoosh * (downscroll ? 1 : -1);
+        return Constants.PIXELS_PER_MS * (Conductor.instance.songPosition - strumTime - Conductor.instance.inputOffset) * scrollSpeed * 1 * (downscroll ? 1 : -1);
     }
 
     function updateNotes():Void
@@ -279,7 +260,7 @@ class Strumline extends FlxSpriteGroup
 
             var noteSprite = buildNoteSprite(note);
 
-            if (note.length > 0)   noteSprite.holdNoteSprite = buildHoldNoteSprite(note);
+            if (note.length > 0)   noteSprite.holdNoteSprite = buildHoldNoteSprite(note, noteSprite);
 
             nextNoteIndex = noteIndex + 1; // Increment the nextNoteIndex rather than splicing the array, because splicing is slow.
 
@@ -288,9 +269,7 @@ class Strumline extends FlxSpriteGroup
 
         notes.forEachAlive(function(note:NoteSprite)
         {
-            var vwoosh:Bool = note.holdNoteSprite == null;
-            // Set the note's position.
-            note.y = this.y - INITIAL_OFFSET + calculateNoteYPos(note.strumTime, vwoosh);  
+            note.y = this.y - INITIAL_OFFSET + calculateNoteYPos(note.strumTime, note.holdNoteSprite == null);
             var isOffscreen = downscroll ? note.y > FlxG.height : note.y < -note.height;
             if (note.handledMiss && isOffscreen) killNote(note);
         });
@@ -316,16 +295,11 @@ class Strumline extends FlxSpriteGroup
             }
             else if (holdNote.missedNote && (holdNote.fullSustainLength > holdNote.sustainLength))
             {
-                holdNote.visible = true;
-
                 var yOffset:Float = (holdNote.fullSustainLength - holdNote.sustainLength) * Constants.PIXELS_PER_MS;
-        
-                var vwoosh:Bool = false;
-
                 if (downscroll)
-                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, vwoosh) - holdNote.height + STRUMLINE_SIZE / 2;
+                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, false) - holdNote.height + STRUMLINE_SIZE / 2;
                 else
-                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, vwoosh) + yOffset + STRUMLINE_SIZE / 2;
+                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, false) + yOffset + STRUMLINE_SIZE / 2;
 
                 if (holdNote.cover != null)
                 {
@@ -336,7 +310,6 @@ class Strumline extends FlxSpriteGroup
             else if (Conductor.instance.songPosition > holdNote.strumTime && holdNote.hitNote)
             {
                 holdConfirm(holdNote.noteDirection);
-                holdNote.visible = true;
                 holdNote.sustainLength = (holdNote.strumTime + holdNote.fullSustainLength) - Conductor.instance.songPosition;
                 if (holdNote.sustainLength <= 10)  holdNote.visible = false;
 
@@ -347,13 +320,10 @@ class Strumline extends FlxSpriteGroup
             }
             else
             {
-                holdNote.visible = true;
-                var vwoosh:Bool = false;
-        
                 if (downscroll)
-                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, vwoosh) - holdNote.height + STRUMLINE_SIZE / 2;
+                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, false) - holdNote.height + STRUMLINE_SIZE / 2;
                 else
-                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, vwoosh) + STRUMLINE_SIZE / 2;
+                    holdNote.y = this.y - INITIAL_OFFSET + calculateNoteYPos(holdNote.strumTime, false) + STRUMLINE_SIZE / 2;
             }
         });
     }
@@ -364,6 +334,7 @@ class Strumline extends FlxSpriteGroup
             return note != null && note.alive && !note.hasBeenHit;
         });
     }
+    
     public function handleSkippedNotes():Void
     {
         for (note in notes.members)
@@ -376,12 +347,6 @@ class Strumline extends FlxSpriteGroup
 
         clean();
         nextNoteIndex = 0;
-    }
-
-    public function onBeatHit():Void
-    {
-        if (notes.members.length > 1) notes.members.insertionSort(compareNoteSprites.bind(FlxSort.ASCENDING));
-        if (holdNotes.members.length > 1) holdNotes.members.insertionSort(compareHoldNoteSprites.bind(FlxSort.ASCENDING));
     }
 
     public function clean():Void
@@ -426,7 +391,7 @@ class Strumline extends FlxSpriteGroup
         this.nextNoteIndex = 0;
 
         // Sort the notes by strumtime.
-        this.noteData.insertionSort(compareNoteData.bind(FlxSort.ASCENDING));
+        this.noteData.sort(compareNoteData.bind(FlxSort.ASCENDING));
     }
 
     public function hitNote(note:NoteSprite, removeNote:Bool = true):Void
@@ -455,7 +420,7 @@ class Strumline extends FlxSpriteGroup
     {
         if (note == null) return;
         note.visible = false;
-        notes.remove(note, false);
+        notes.remove(note);
         note.kill();
     
         if (note.holdNoteSprite != null)
@@ -463,6 +428,22 @@ class Strumline extends FlxSpriteGroup
             note.holdNoteSprite.missedNote = true;
             note.holdNoteSprite.visible = false;
         }
+    }
+
+    public function getByNoteIndex(index:Int, type:String):FlxSprite
+    {
+        switch(type)
+        {
+            default:
+                return this.notes.members[index];
+            case 'holdNote':
+                return this.holdNotes.members[index];
+            case 'holdCover':
+                return this.noteHoldCovers.members[index];
+            case 'noteSplash':
+                return this.noteSplashes.members[index];
+        }
+        return null;
     }
 
     public function getByIndex(index:Int):StrumlineNote
@@ -552,19 +533,24 @@ class Strumline extends FlxSpriteGroup
                 case 'alt':
                     noteSprite.suffix = "-alt";
             }
-
             noteSprite.noteData = note;
             noteSprite.lane = this.lane;
             noteSprite.x = this.x;
             noteSprite.x += getXPos(DIRECTIONS[note.getDirection() % KEY_COUNT]);
-            noteSprite.x -= (noteSprite.width - STRUMLINE_SIZE) / 2; // Center it
-            noteSprite.x -= NUDGE;
-            noteSprite.y = -9999;
+            noteSprite.x -= (noteSprite.width - STRUMLINE_SIZE) / 2;
         }
         return noteSprite;
     }
 
-    public function buildHoldNoteSprite(note:SongNoteData):SustainTrail
+    public function setParentNote(sustain:SustainTrail, note:NoteSprite)
+    {
+        sustain.gf = note.gf;
+        sustain.noAnim = note.noAnim;
+        sustain.suffix = note.suffix;
+        sustain.lane = note.lane;
+    }
+
+    public function buildHoldNoteSprite(note:SongNoteData, noteSprite:NoteSprite):SustainTrail
     {
         var holdNoteSprite:SustainTrail = constructHoldNoteSprite();
 
@@ -587,7 +573,7 @@ class Strumline extends FlxSpriteGroup
             holdNoteSprite.x += getXPos(DIRECTIONS[note.getDirection() % KEY_COUNT]);
             holdNoteSprite.x += STRUMLINE_SIZE / 2;
             holdNoteSprite.x -= holdNoteSprite.width / 2;
-            holdNoteSprite.y = -9999;
+            setParentNote(holdNoteSprite, noteSprite);
         }
         return holdNoteSprite;
     }
@@ -697,12 +683,6 @@ class Strumline extends FlxSpriteGroup
 
     public static function compareNoteData(order:Int, a:SongNoteData, b:SongNoteData):Int
         return FlxSort.byValues(order, a.time, b.time);
-
-    public static function compareNoteSprites(order:Int, a:NoteSprite, b:NoteSprite):Int
-        return FlxSort.byValues(order, a?.strumTime, b?.strumTime);
-
-    public static function compareHoldNoteSprites(order:Int, a:SustainTrail, b:SustainTrail):Int
-        return FlxSort.byValues(order, a?.strumTime, b?.strumTime);
 
     public function pressKey(dir:NoteDirection):Void
         heldKeys[dir] = true;

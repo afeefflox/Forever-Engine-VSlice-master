@@ -14,6 +14,18 @@ using StringTools;
 #include <psapi.h>
 ')
 #end
+
+#if windows
+@:buildXml('
+<target id="haxe">
+	<lib name="dwmapi.lib" if="windows" />
+	<lib name="shell32.lib" if="windows" />
+	<lib name="gdi32.lib" if="windows" />
+	<lib name="ole32.lib" if="windows" />
+	<lib name="uxtheme.lib" if="windows" />
+</target>
+')
+#end
 class WindowUtil
 {
   /**
@@ -124,4 +136,28 @@ class WindowUtil
   {
     lime.app.Application.current.window.title = value;
   }
+
+  #if windows
+  @:functionCode('
+  	// https://stackoverflow.com/questions/15543571/allocconsole-not-displaying-cout
+
+	if (!AllocConsole())
+		return;
+
+	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
+	')
+
+  public static function allocConsole() {}
+
+  public static function clearScreen() {}
+
+  public static function setConsoleColors(color:Int) {}
+  
+  @:functionCode('
+		HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(console, color);
+	')
+  #end
 }

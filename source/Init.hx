@@ -48,7 +48,6 @@ class Init extends FlxState
 	public static var NOT_FORCED = 'not forced';
 
 	public static var gameSettings:Map<String, Dynamic> = [
-
 		'Downscroll' => [
 			false,
 			Checkmark,
@@ -136,7 +135,7 @@ class Init extends FlxState
 			"Enables Ghost Tapping, allowing you to press inputs without missing.",
 			NOT_FORCED
 		],
-		'Centered Notefield' => [false, Checkmark, "Center the notes, disables the enemy's notes."],
+		'Centered Notefield' => [false, Checkmark, "Center the notes and hide opponent notes"],
 		"Custom Titlescreen" => [
 			false,
 			Checkmark,
@@ -150,12 +149,12 @@ class Init extends FlxState
 			NOT_FORCED,
 			['never', 'freeplay only', 'always']
 		],
-		'Skip Result Screen' => [
-			'freeplay only',
+		'Skip Result' => [
+			'never',
 			Selector,
 			'Decides whether to skip result screen. May be always, only in freeplay, or never.',
 			NOT_FORCED,
-			['never', 'freeplay only', 'always']
+			['never', 'freeplay only', 'story only', 'always']
 		],
 		'Fixed Judgements' => [
 			false,
@@ -170,11 +169,20 @@ class Init extends FlxState
 			NOT_FORCED
 		],
 		'Playable Character' => [
+			['bf']
+		],
+		'Resolution' => [
+			'1280x720',
+			Selector,
+			'pick resolution that your pc fit in that it',
+			NOT_FORCED,
+			['256x144', '544x416', '640x360', '854x480', '960x540', '1024x576', '1280x720', 'native']
+		],
+		'Enabled Mods' => [
 			[]
 		],
-		'Current Mod' => [
-			""
-		]
+		'Input Offset' => [0, Selector, 'Define your maximum FPS.', NOT_FORCED, ['']],
+		'Audio Visual Offset' => [0, Selector, 'Define your maximum FPS.', NOT_FORCED, ['']],
 	];
 
 	public static var trueSettings:Map<String, Dynamic> = [];
@@ -194,12 +202,14 @@ class Init extends FlxState
 		'UI_RIGHT' => [[FlxKey.RIGHT, D], 11],
 		'VOLUME_MUTE' => [[FlxKey.ZERO, NONE], 12],
 		'VOLUME_DOWN' => [[FlxKey.NUMPADMINUS, MINUS], 13],
-		'VOLUME_UP' => [[FlxKey.NUMPADPLUS, PLUS], 14]
+		'VOLUME_UP' => [[FlxKey.NUMPADPLUS, PLUS], 14],
+		'FREEPLAY_LEFT' => [[Q, null], 15],
+		'FREEPLAY_RIGHT' => [[E, null], 16],
 	];
 
 	override public function create():Void
 	{
-		FlxSprite.defaultAntialiasing = true;
+		FlxSprite.defaultAntialiasing = !Init.trueSettings.get('Disable Antialiasing');
 		FlxG.game.focusLostFramerate = 30;
 
 		#if discord_rpc
@@ -209,12 +219,15 @@ class Init extends FlxState
 			Discord.shutdownRPC();
 		});
 		#end
-		
 
-		FlxG.save.bind('foreverengine-options');
+		FlxG.save.bind('options', CoolUtil.getSavePath());
 		PlayerSettings.init();
 		loadSettings();
 		loadControls();
+
+		CommandDebug.initialize();
+		EvacuateDebug.initialize();
+		ReloadAssetsDebug.initialize();
 		
 		#if !html5
 		Main.updateFramerate(trueSettings.get("Framerate Cap"));
@@ -324,18 +337,25 @@ class Init extends FlxState
 	{
 		FlxG.autoPause = trueSettings.get('Auto Pause');
 
+		trace('Enabled Mods: ${trueSettings.get('Enabled Mods')}');
+
+		PolymodHandler.initialize();
+
+		FlxSprite.defaultAntialiasing = !Init.trueSettings.get('Disable Antialiasing');
+
 		Overlay.updateDisplayInfo(trueSettings.get('FPS Counter'), trueSettings.get('Debug Info'), trueSettings.get('Memory Counter'));
 
 		#if !html5
 		Main.updateFramerate(trueSettings.get("Framerate Cap"));
+		Main.resizeGame(trueSettings.get("Resolution"));
 		#end
 	}
 
 	public static function reloadVolumeKeys()
 	{
-		Main.muteKeys = copyKey(Init.gameControls.get('VOLUME_MUTE')[0]);
-		Main.volumeDownKeys = copyKey(Init.gameControls.get('VOLUME_DOWN')[0]);
-		Main.volumeUpKeys = copyKey(Init.gameControls.get('VOLUME_UP')[0]);
+		Main.muteKeys = copyKey(gameControls.get('VOLUME_MUTE')[0]);
+		Main.volumeDownKeys = copyKey(gameControls.get('VOLUME_DOWN')[0]);
+		Main.volumeUpKeys = copyKey(gameControls.get('VOLUME_UP')[0]);
 		toggleVolumeKeys(true);
 	}
 

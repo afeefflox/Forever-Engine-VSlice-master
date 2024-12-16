@@ -235,7 +235,7 @@ class CharacterEditorState extends MusicBeatState
 				var spr:FlxSprite = Std.isOfType(character, AnimateAtlasCharacter) ? animateGhost : ghost;
 				if(spr != null)
 				{
-					spr.setPosition(character.x, character.y);
+					spr.setPosition(character.globalOffsets[0], character.globalOffsets[1]);
 					spr.antialiasing = character.antialiasing;
 					spr.flipX = character.flipX;
 					spr.alpha = ghostAlpha;
@@ -288,7 +288,6 @@ class CharacterEditorState extends MusicBeatState
 		check_player.callback = function()
 		{
 			character._data.isPlayer = !character._data.isPlayer;
-			character.setFlipX(flipXCheckBox.checked);
 		};
 
 		var reloadCharacter:FlxButton = new FlxButton(140, 20, "Reload Char", function()
@@ -417,7 +416,7 @@ class CharacterEditorState extends MusicBeatState
 			if(Std.isOfType(character, AnimateAtlasCharacter))
 			{
 				var atlasChar:AnimateAtlasCharacter = cast(character, AnimateAtlasCharacter);
-				FlxAnimationUtil.addAnimateAtlasAnimation(atlasChar.mainSprite, addedAnim);
+				atlasChar.addAnimation(addedAnim);
 			}
 			else
 				FlxAnimationUtil.addAtlasAnimation(character, addedAnim);
@@ -547,7 +546,6 @@ class CharacterEditorState extends MusicBeatState
 		flipXCheckBox = new FlxUICheckBox(scaleStepper.x + 80, scaleStepper.y, null, null, "Flip X", 50);
 		flipXCheckBox.callback = function() {
 			character._data.flipX = flipXCheckBox.checked;
-			character.setFlipX(flipXCheckBox.checked);
 		};
 
 		antialiasingCheckBox = new FlxUICheckBox(flipXCheckBox.x, flipXCheckBox.y + 40, null, null, "Antialiasing", 80);
@@ -662,15 +660,7 @@ class CharacterEditorState extends MusicBeatState
 		if(Std.isOfType(character, AnimateAtlasCharacter))
 		{
 			var atlasChar:AnimateAtlasCharacter = cast(character, AnimateAtlasCharacter);
-			FlxAnimationUtil.addAnimateAtlasAnimations(atlasChar.mainSprite, atlasChar._data.animations);
-    
-			for (anim in atlasChar._data.animations)
-			{
-			  if (anim.offsets == null)
-				atlasChar.setAnimationOffsets(anim.name, 0, 0);
-			  else
-				atlasChar.setAnimationOffsets(anim.name, anim.offsets[0], anim.offsets[1]);
-			}
+			for (anim in atlasChar._data.animations) atlasChar.addAnimation(anim);
 		}
 		else
 		{

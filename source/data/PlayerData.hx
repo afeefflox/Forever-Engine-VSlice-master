@@ -320,6 +320,10 @@ typedef PlayerResultsAnimationData =
   var assetPath:String;
 
   @:optional
+  @:default("animate") // I mean most sprite is animate duh
+  var renderType:String;
+  
+  @:optional
   @:default([0, 0])
   var offsets:Array<Float>;
 

@@ -35,10 +35,15 @@ class CoolUtil
 
 	public static inline function coolTextFile(path:String):Array<String>
 	{
-		var daList:Array<String> = Assets.getText(path).trim().split('\n');
-		for (i in 0...daList.length)
-			daList[i] = daList[i].trim();
-		return daList;
+		var daList:Array<String> = [];
+		if(Paths.exists(path, TEXT))
+		{
+			daList = Assets.getText(path).trim().split('\n');
+			for (i in 0...daList.length)
+				daList[i] = daList[i].trim();
+		}
+		trace('$path: $daList');
+		return daList != null && daList.length > 0 ? daList : [];
 	}
 
 	public static inline function returnAssetsLibrary(library:String, ?subDir:String = 'assets/images'):Array<String>
@@ -92,5 +97,10 @@ class CoolUtil
 		Reflect.setField(v, name, defaultValue);
 		trace('Value: ${v}, Name: ${name}, DefaultValue: ${defaultValue}');
 		return defaultValue;
+	}
+
+	public static inline function addZeros(str:String, num:Int) {
+		while(str.length < num) str = '0${str}';
+		return str;
 	}
 }

@@ -81,4 +81,5 @@ enum abstract SongEventFieldType(String) from String to String
     var BOOL = "bool";
     var ENUM = "enum";
     var CHARACTER = "character";
+    var STAGE =  "stage";
 }

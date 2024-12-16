@@ -6,7 +6,7 @@ import flixel.util.FlxStringUtil;
 
 using data.registry.CharacterRegistry;
 
-class ClassHUD extends FlxTypedGroup<FlxBasic>
+class ClassHUD extends FlxTypedSpriteGroup<FlxSprite>
 {
 	var game(get, never):PlayState;
 
@@ -148,17 +148,14 @@ class ClassHUD extends FlxTypedGroup<FlxBasic>
 
 		var iconLerp = 1 - Main.framerateAdjust(0.15);
 
-		// the new way of scaling the icons lmao
 		iconP1.scale.set(FlxMath.lerp(1, iconP1.scale.x, iconLerp), FlxMath.lerp(1, iconP1.scale.y, iconLerp));
 		iconP2.scale.set(FlxMath.lerp(1, iconP2.scale.x, iconLerp), FlxMath.lerp(1, iconP2.scale.y, iconLerp));
 
 		iconP1.updateHitbox();
 		iconP2.updateHitbox();
 
-		var iconOffset:Int = 26;
-
-		iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset);
-		iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - iconOffset);
+		iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01) - 26);
+		iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (iconP2.width - 26);
 
 		iconP1.updateAnim(healthBar.percent);
 		iconP2.updateAnim(100 - healthBar.percent);

@@ -67,15 +67,14 @@ class StoryMenuState extends MusicBeatState
 	override function create():Void
 	{
 		super.create();
-
-		//**Use Week list instead listSortedLevelIds cuz they it won't rid other week :(**/
-		levelList = CoolUtil.coolTextFile(Paths.txt('levels/weeklist'));
-		levelList.sort(SortUtil.defaultsThenAlphabetically.bind(LevelRegistry.instance.listBaseGameLevelIds()));
+		
+		levelList = CoolUtil.coolTextFile(Paths.txt('levels/list'));
 		levelList = levelList.filter(function(id) {
-			var levelData = LevelRegistry.instance.fetchEntry(id);
-			if (levelData == null) return false;
-	  
-			return levelData.isVisible();
+		  var levelData = LevelRegistry.instance.fetchEntry(id);
+		  
+		  if (levelData == null) return false;
+	
+		  return levelData.isVisible();
 		});
 		if (levelList.length == 0) levelList = ['tutorial']; // Make sure there's at least one level to display.
 	
@@ -263,13 +262,7 @@ class StoryMenuState extends MusicBeatState
 	{
 		var currentIndex:Int = levelList.indexOf(currentLevelId);
 		var prevIndex:Int = currentIndex;
-	
-		currentIndex += change;
-	
-		// Wrap around
-		if (currentIndex < 0) currentIndex = levelList.length - 1;
-		if (currentIndex >= levelList.length) currentIndex = 0;
-	
+		currentIndex = FlxMath.wrap(currentIndex + change, 0, levelList.length-1);
 		var previousLevelId:String = currentLevelId;
 		currentLevelId = levelList[currentIndex];
 
@@ -301,13 +294,8 @@ class StoryMenuState extends MusicBeatState
 
 	function changeDifficulty(change:Int = 0):Void
 	{
-		
 		var currentIndex:Int = Constants.DEFAULT_DIFFICULTY_LIST.indexOf(currentDifficultyId);
-
-		currentIndex += change;
-
-		if (currentIndex < 0) currentIndex = CoolUtil.difficultyLength - 1;
-		if (currentIndex >= CoolUtil.difficultyLength) currentIndex = 0;
+		currentIndex = FlxMath.wrap(currentIndex + change, 0, CoolUtil.difficultyLength-1);
 
 		if (currentDifficultyId != CoolUtil.difficultyFromNumber(currentIndex))
 		{

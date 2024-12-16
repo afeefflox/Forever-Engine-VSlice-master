@@ -25,6 +25,7 @@ class FreeplayStyle implements IRegistryEntry<FreeplayStyleData>
     public function getStartDelay():Float return _data.startDelay;
     public function toString():String return 'Style($id)';
     public function getCapsuleSelCol():FlxColor return FlxColor.fromString(_data.capsuleTextColors[1]);
+    public function getColor():FlxColor return FlxColor.fromString(_data.color);
     public function destroy():Void {}
     static function _fetchData(id:String):Null<FreeplayStyleData> return FreeplayStyleRegistry.instance.parseEntryDataWithMigration(id, FreeplayStyleRegistry.instance.fetchEntryVersion(id));
 }

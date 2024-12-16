@@ -37,10 +37,7 @@ class FunkinCamera extends FlxCamera
   final bgTexture:TextureBase;
   final bgBitmap:BitmapData;
   final bgFrame:FlxFrame;
-
-  final customBlendShader:RuntimeCustomBlendShader;
-  final customBlendFilter:ShaderFilter;
-
+  
   var filtersApplied:Bool = false;
   var bgItemCount:Int = 0;
 
@@ -54,8 +51,6 @@ class FunkinCamera extends FlxCamera
     bgFrame = new FlxFrame(new FlxGraphic('', null));
     bgFrame.parent.bitmap = bgBitmap;
     bgFrame.frame = new FlxRect();
-    customBlendShader = new RuntimeCustomBlendShader();
-    customBlendFilter = new ShaderFilter(customBlendShader);
   }
 
   /**
@@ -170,35 +165,6 @@ class FunkinCamera extends FlxCamera
     {
       if (--count < 0) item.render(this);
       item = item.next;
-    }
-  }
-
-  override function drawPixels(?frame:FlxFrame, ?pixels:BitmapData, matrix:FlxMatrix, ?transform:ColorTransform, ?blend:BlendMode, ?smoothing:Bool = false,
-      ?shader:FlxShader):Void
-  {
-    if (!shouldDraw) return;
-
-    if ( switch blend
-      {
-        case DARKEN | HARDLIGHT | LIGHTEN | OVERLAY: true;
-        case _: false;
-      })
-    {
-      // squash the screen
-      grabScreen(false);
-      // render without blend
-      super.drawPixels(frame, pixels, matrix, transform, null, smoothing, shader);
-      // get the isolated bitmap
-      final isolated = grabScreen(false, true);
-      // apply fullscreen blend
-      customBlendShader.blendSwag = blend;
-      customBlendShader.sourceSwag = isolated;
-      customBlendShader.updateViewInfo(FlxG.width, FlxG.height, this);
-      applyFilter(customBlendFilter);
-    }
-    else
-    {
-      super.drawPixels(frame, pixels, matrix, transform, blend, smoothing, shader);
     }
   }
 

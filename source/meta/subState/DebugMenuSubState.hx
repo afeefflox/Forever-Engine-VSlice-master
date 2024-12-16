@@ -44,7 +44,7 @@ class DebugMenuSubState extends MusicBeatSubState
             leText.y += (100 * (i - (options.length / 2))) + 50;
 			grpTexts.add(leText);
 		}
-        changeSelection();
+        changeSelection(0, true);
     }
 
     override function update(elapsed:Float)
@@ -67,31 +67,21 @@ class DebugMenuSubState extends MusicBeatSubState
 			}
             FlxG.sound.music.volume = 0;
         }
-
-        var bullShit:Int = 0;
-		for (item in grpTexts.members)
-		{
-            item.targetY = bullShit - curSelected;
-			bullShit++;
-
-			item.alpha = 0.6;
-			if (item.targetY == 0) item.alpha = 1;
-		}
-
-        camFocusPoint.setPosition(grpTexts.members[curSelected].x + grpTexts.members[curSelected].width / 2, grpTexts.members[curSelected].y + grpTexts.members[curSelected].height / 2);
-
     }
 
-    function changeSelection(change:Int = 0)
+    function changeSelection(change:Int = 0, force:Bool = false)
 	{
-		if(change != 0)
-            FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+        if (change == 0 && !force) return;
 
-		curSelected += change;
+		curSelected = FlxMath.wrap(curSelected + change, 0, options.length-1);
 
-		if (curSelected < 0)
-			curSelected = options.length - 1;
-		if (curSelected >= options.length)
-			curSelected = 0;
+		if(change != 0)  FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+
+        for(k=>grpTexts in grpTexts.members) {
+			grpTexts.alpha = 0.6;
+			grpTexts.targetY = k - curSelected;
+		}
+		grpTexts.members[curSelected].alpha = 1;
+        camFocusPoint.setPosition(grpTexts.members[curSelected].x + grpTexts.members[curSelected].width / 2, grpTexts.members[curSelected].y + grpTexts.members[curSelected].height / 2);
 	}
 }

@@ -124,7 +124,7 @@ class PlayState extends MusicBeatSubState
 	public var strumlines:FlxTypedGroup<Strumline>;
 	var strumLine:FlxObject;
 	public var comboGroup:FlxSpriteGroup;
-	public var keysArray(get, null):Array<Dynamic>;
+	public static var keysArray(get, null):Array<Dynamic>;
 	public var playerStrumline(get, never):Strumline;
 	public var opponentStrumline(get, never):Strumline;
 
@@ -140,7 +140,7 @@ class PlayState extends MusicBeatSubState
 		return strumlines.members[1];
 	}
 
-	function get_keysArray():Array<Dynamic>
+	static function get_keysArray():Array<Dynamic>
     {
         return keysArray = [
 			Init.copyKey(Init.gameControls.get('LEFT')[0]),
@@ -366,6 +366,12 @@ class PlayState extends MusicBeatSubState
 			strumlines.add(strums);
 			strums.fadeInArrows();
 		}
+
+		if(Init.trueSettings.get('Centered Notefield'))
+		{
+			playerStrumline.x = FlxG.width / 2 - playerStrumline.width / 2;
+			opponentStrumline.visible = false;
+		}
 	}
 
 	function initCameras() {
@@ -575,7 +581,8 @@ class PlayState extends MusicBeatSubState
 			stage.kill();
 			stage = null;
 		}
-		
+		FunkinSprite.preparePurgeCache();
+		FunkinSprite.purgeCache();
 		GameOverSubState.reset();
 		PauseSubState.reset();
 		Countdown.reset();
@@ -612,7 +619,7 @@ class PlayState extends MusicBeatSubState
 			paused = isPlayerDying = false;
 			persistentDraw = persistentUpdate = startingSong = true;
 			songScore = 0;
-			Highscore.instance.tallies.combo = 0;
+			Highscore.instance.resetTallies();
 
 			Timings.callAccuracy();
 			Timings.updateAccuracy(0);
@@ -1024,18 +1031,15 @@ class PlayState extends MusicBeatSubState
 
 			strumlines.members[i].holdNotes.forEachAlive(function(holdNote:SustainTrail){
 				if (holdNote.missedNote && !holdNote.handledMiss) holdNote.handledMiss = true;
+
+				if (holdNote.hitNote && !holdNote.missedNote && holdNote.sustainLength > 0)
+				{
+					var event:SustainScriptEvent = new SustainScriptEvent(holdNote);
+					dispatchEvent(event);
+					if (event.eventCanceled) return;
+				}
 			});
 		}
-	
-		opponentStrumline.holdNotes.forEachAlive(function(holdNote:SustainTrail)
-		{
-			if (holdNote.hitNote && !holdNote.missedNote && holdNote.sustainLength > 0)
-			{
-				// Make sure the opponent keeps singing while the note is held.
-				if (dad != null && dad.getCurrentAnimation().startsWith('sing')) dad.holdTimer = 0;
-			}
-		});
-
 
 		playerStrumline.notes.forEachAlive(function(note:NoteSprite)
 		{
@@ -1090,14 +1094,13 @@ class PlayState extends MusicBeatSubState
 				  }
 			  }
 
-			    if(!note.isHoldNote)
-				{
-					increaseCombo(foundRating, note.noteData.data);
-					popUpScore(foundRating, isLate);
-					healthCall(Timings.judgementsMap.get(foundRating)[3]);
-				}
-				else
-					Timings.notesHit++;
+			  increaseCombo(foundRating, note.noteData.data);
+			  popUpScore(foundRating, isLate);
+			  healthCall(Timings.judgementsMap.get(foundRating)[3]);
+			  
+			  Timings.notesHit++;
+			  Highscore.instance.tallies.totalNotesHit++;
+					
 			}
 			else if (Conductor.instance.songPosition > hitWindowStart)
 			{
@@ -1142,7 +1145,9 @@ class PlayState extends MusicBeatSubState
 				songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * elapsed);
 	  
 			  // Make sure the player keeps singing while the note is held by the bot.
-			  if (playerStrumline.botplay && boyfriend != null && boyfriend.getCurrentAnimation().startsWith('sing')) boyfriend.holdTimer = 0;
+			  var event:SustainScriptEvent = new SustainScriptEvent(holdNote);
+			  dispatchEvent(event);
+			  if (event.eventCanceled) return;
 			}
 	  
 			if (holdNote.missedNote && !holdNote.handledMiss) holdNote.handledMiss = true;
@@ -1194,17 +1199,13 @@ class PlayState extends MusicBeatSubState
 		if (event.eventCanceled) return;
 
 		Highscore.instance.tallies.totalNotesHit++;
+		healthCall(Timings.judgementsMap.get(foundRating)[3]);
+		Timings.notesHit++;
 
 		if (canDisplayJudgement)
 		{
-			if(!note.isHoldNote)
-			{
-				increaseCombo(foundRating, note.noteData.data);
-				popUpScore(foundRating, isLate);
-				healthCall(Timings.judgementsMap.get(foundRating)[3]);
-			}
-			else
-				Timings.notesHit++;
+			increaseCombo(foundRating, note.noteData.data);
+			popUpScore(foundRating, isLate);
 		}
 	}
 
@@ -1383,19 +1384,6 @@ class PlayState extends MusicBeatSubState
 
 	public function displayRating(daRating:String, isLate: Bool, ?cache:Bool = false)
 	{
-		if (Init.trueSettings.get('Simply Judgements') && comboGroup.members.length > 0)
-		{
-			for (sprite in comboGroup.members) {
-				if (sprite != null) sprite.destroy();
-				comboGroup.remove(sprite);
-			}
-		}
-
-		/* so you might be asking
-			"oh but if the rating isn't sick why not just reset it"
-			because miss judgements can pop, and they dont mess with your sick combo
-		*/
-		
 		final timing =  isLate ? "late" : "early";
 		var rating = ForeverAssets.generateRating('$daRating', false, timing, currentChart.noteStyle);
 		if (cache) rating.alpha = 0.000001;
@@ -1417,7 +1405,7 @@ class PlayState extends MusicBeatSubState
 				type: FlxTweenType.BACKWARD,
 				ease: FlxEase.circOut
 			});
-			FlxTween.tween(rating, {"scale.x": 0, "scale.y": 0}, 0.1, {
+			FlxTween.tween(rating.scale, {x: 0, y: 0}, 0.1, {
 				onComplete: function(tween:FlxTween)
 				{
 					rating.destroy();
@@ -1484,6 +1472,13 @@ class PlayState extends MusicBeatSubState
 				FlxTween.tween(numScore, {y: numScore.y + 20}, 0.1, {
 					type: FlxTweenType.BACKWARD,
 					ease: FlxEase.circOut,
+				});
+				FlxTween.tween(numScore.scale, {x: 0, y: 0}, 0.1, {
+					onComplete: function(tween:FlxTween)
+					{
+						numScore.destroy();
+					},
+					startDelay: Conductor.instance.stepLengthMs * 0.002
 				});
 			}
 			// hardcoded lmao
@@ -1681,8 +1676,7 @@ class PlayState extends MusicBeatSubState
 			cameraBopMultiplier = cameraBopIntensity;
 			camHUD.zoom += hudCameraZoomIntensity * defaultHUDCameraZoom;
 		}
-
-
+		
 		uiHUD.beatHit();
 	}
 
@@ -1739,8 +1733,6 @@ class PlayState extends MusicBeatSubState
 			if (FlxG.sound.music != null && !startingSong && !inCutscene) resyncVocals();
 
 			FlxG.camera.followLerp = Constants.DEFAULT_CAMERA_FOLLOW_RATE;
-
-			
 
 			updateRPC(false);
 		}
@@ -1818,7 +1810,11 @@ class PlayState extends MusicBeatSubState
 					Highscore.instance.setLevelScore(PlayStatePlaylist.campaignId, PlayStatePlaylist.campaignDifficulty, data);
 					isNewHighscore = true;
 				}
-				zoomIntoResultsScreen(isNewHighscore, prevScoreData);
+
+				if (isSubState)
+					this.close();
+				else
+					zoomIntoResultsScreen(isNewHighscore, prevScoreData);
 			}
 			else
 			{
@@ -1843,7 +1839,10 @@ class PlayState extends MusicBeatSubState
 		}
 		else
 		{
-			zoomIntoResultsScreen(isNewHighscore, prevScoreData);
+			if (isSubState)
+				this.close();
+			else
+				zoomIntoResultsScreen(isNewHighscore, prevScoreData);
 		}
 	}
 
@@ -1862,7 +1861,6 @@ class PlayState extends MusicBeatSubState
 			FlxG.camera.follow(dad, null, 0.05);
 		else
 			FlxG.camera.follow(gf, null, 0.05);
-
 
 		FlxG.camera.targetOffset.y -= 350;
 		FlxG.camera.targetOffset.x += 20;
@@ -1885,36 +1883,39 @@ class PlayState extends MusicBeatSubState
 			}
 		}
 
-		var rank:ScoringRank = Scoring.calculateRank(scoreData) ?? SHIT;
-
+		var rank:ScoringRank = (currentSong != null && currentSong.validScore) ? Scoring.calculateRank(scoreData) : SHIT;
 
 		FlxTween.tween(camHUD, {alpha: 0}, 0.6,{onComplete: function(_) {
-			if(!skipResultScreen())
-				moveToResultsScreen(isNewHighscore, prevScoreData);
-			else
+
+			if(PlayStatePlaylist.isStoryMode && (Init.trueSettings.get('Skip Result') == 'story only' || Init.trueSettings.get('Skip Result') == 'always'))
+				FlxG.switchState(new StoryMenuState());
+			else if(Init.trueSettings.get('Skip Result') == 'freeplay only' || Init.trueSettings.get('Skip Result') == 'always')
 			{
-				if(PlayStatePlaylist.isStoryMode)
-					FlxG.switchState(new StoryMenuState());
+				//if they skip result screen give them chance what you got lmao
+				if (rank > Scoring.calculateRank(prevScoreData))
+				{
+					FlxG.switchState(FreeplayState.build({character: PlayerRegistry.instance.getCharacterOwnerId(currentChart.characters.player) ?? "bf",
+					fromResults: {
+						oldRank: Scoring.calculateRank(prevScoreData),
+						newRank: rank,
+						songId: currentChart.song.id,
+						difficultyId: currentDifficulty,
+						playRankAnim: true
+					}}));
+				}
 				else
 				{
-					//if they skip result screen give them chance what you got lmao
-					if (rank > Scoring.calculateRank(prevScoreData))
-					{
-						FlxG.switchState(FreeplayState.build({character: PlayerRegistry.instance.getCharacterOwnerId(currentChart.characters.player) ?? "bf",
-						fromResults: {
-							oldRank: Scoring.calculateRank(prevScoreData),
-							newRank: rank,
-							songId: currentChart.song.id,
-							difficultyId: currentDifficulty,
-							playRankAnim: true
-						}}));
-					}
-					else
-					{
-						FlxG.switchState(FreeplayState.build());
-					}
+					FlxG.switchState(FreeplayState.build());
 				}
+
+				//Idk Result Score after you put score it ok then :/
+				PlayState.instance.songScore = 0;
+				Highscore.instance.resetTallies();
+				Timings.callAccuracy();
+				Timings.updateAccuracy(0);				
 			}
+			else //this is never then lol
+				moveToResultsScreen(isNewHighscore, prevScoreData);
 		}});
 
 		new FlxTimer().start(0.8, function(_) {
@@ -1956,7 +1957,8 @@ class PlayState extends MusicBeatSubState
 					totalNotes: talliesToUse.totalNotes,
 				}
 			},
-			isNewHighscore: isNewHighscore
+			isNewHighscore: isNewHighscore,
+			validScore: currentSong != null ? currentSong.validScore : false
 		});
 		this.persistentDraw = false;
 		openSubState(res);
@@ -1982,9 +1984,9 @@ class PlayState extends MusicBeatSubState
 
 	public static function skipResultScreen():Bool
 	{
-		if (Init.trueSettings.get('Skip Result Screen') != null && Std.isOfType(Init.trueSettings.get('Skip Result Screen'), String))
+		if (Init.trueSettings.get('Skip Result') != null && Std.isOfType(Init.trueSettings.get('Skip Result'), String))
 		{
-			switch (cast(Init.trueSettings.get('Skip Result Screen'), String))
+			switch (cast(Init.trueSettings.get('Skip Result'), String))
 			{
 				case 'never':
 					return false;
@@ -2024,12 +2026,5 @@ class PlayState extends MusicBeatSubState
 
 		if (instance.vocals != null)
 			instance.vocals.pause();
-	}
-
-	override function add(Object:FlxBasic):FlxBasic
-	{
-		if (Init.trueSettings.get('Disable Antialiasing') && Std.isOfType(Object, FlxSprite))
-			cast(Object, FlxSprite).antialiasing = false;
-		return super.add(Object);
 	}
 }

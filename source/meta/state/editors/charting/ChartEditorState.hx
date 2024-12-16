@@ -6196,9 +6196,9 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
       switch (noteData.getStrumlineIndex())
       {
         case 0: // Player
-          if (hitsoundVolumePlayer > 0) this.playSound(Paths.sound('chartingSounds/hitNotePlayer'), hitsoundVolumePlayer);
+          if (hitsoundVolumePlayer > 0) this.playSound(Paths.sound('soundNoteTick'), hitsoundVolumePlayer,  0.3);
         case 1: // Opponent
-          if (hitsoundVolumeOpponent > 0) this.playSound(Paths.sound('chartingSounds/hitNoteOpponent'), hitsoundVolumeOpponent);
+          if (hitsoundVolumeOpponent > 0) this.playSound(Paths.sound('soundNoteTick'), hitsoundVolumeOpponent, -0.3);
       }
     }
   }

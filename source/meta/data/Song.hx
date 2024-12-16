@@ -403,6 +403,7 @@ class Song implements IPlayStateScriptedClass implements IRegistryEntry<SongMeta
 	public function onNoteIncoming(event:NoteScriptEvent) {}
 	public function onNoteHit(event:HitNoteScriptEvent) {}
 	public function onNoteMiss(event:NoteScriptEvent):Void {};
+	public function onSustainHit(event:SustainScriptEvent) {};
 	public function onNoteGhostMiss(event:GhostMissNoteScriptEvent):Void {};
 	public function onStepHit(event:SongTimeScriptEvent):Void {};
 	public function onBeatHit(event:SongTimeScriptEvent):Void {};

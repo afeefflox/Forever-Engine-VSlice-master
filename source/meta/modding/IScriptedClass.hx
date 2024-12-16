@@ -9,11 +9,11 @@ import meta.modding.events.ScriptEvent;
  */
 interface IScriptedClass
 {
-  public function onScriptEvent(event:ScriptEvent):Void;
-
-  public function onCreate(event:ScriptEvent):Void;
-  public function onDestroy(event:ScriptEvent):Void;
-  public function onUpdate(event:UpdateScriptEvent):Void;
+    public function onScriptEvent(event:ScriptEvent):Void;
+ 
+    public function onCreate(event:ScriptEvent):Void;
+    public function onDestroy(event:ScriptEvent):Void;
+    public function onUpdate(event:UpdateScriptEvent):Void;
 }
 
 /**
@@ -22,7 +22,7 @@ interface IScriptedClass
  */
 interface IEventHandler
 {
-  public function dispatchEvent(event:ScriptEvent):Void;
+    public function dispatchEvent(event:ScriptEvent):Void;
 }
 
 /**
@@ -30,13 +30,13 @@ interface IEventHandler
  */
 interface IStateChangingScriptedClass extends IScriptedClass
 {
-  public function onStateChangeBegin(event:StateChangeScriptEvent):Void;
-  public function onStateChangeEnd(event:StateChangeScriptEvent):Void;
-
-  public function onSubStateOpenBegin(event:SubStateScriptEvent):Void;
-  public function onSubStateOpenEnd(event:SubStateScriptEvent):Void;
-  public function onSubStateCloseBegin(event:SubStateScriptEvent):Void;
-  public function onSubStateCloseEnd(event:SubStateScriptEvent):Void;
+    public function onStateChangeBegin(event:StateChangeScriptEvent):Void;
+    public function onStateChangeEnd(event:StateChangeScriptEvent):Void;
+  
+    public function onSubStateOpenBegin(event:SubStateScriptEvent):Void;
+    public function onSubStateOpenEnd(event:SubStateScriptEvent):Void;
+    public function onSubStateCloseBegin(event:SubStateScriptEvent):Void;
+    public function onSubStateCloseEnd(event:SubStateScriptEvent):Void;
 }
 
 /**
@@ -66,6 +66,8 @@ interface INoteScriptedClass extends IScriptedClass
    * Query the note attached to the event to determine if it was hit by the player or CPU.
    */
   public function onNoteHit(event:HitNoteScriptEvent):Void;
+
+  public function onSustainHit(event:SustainScriptEvent):Void;
 
   /**
    * Called when EITHER player (usually the player) misses a note.

@@ -28,7 +28,7 @@ class MultiAtlasCharacter extends BaseCharacter
       var assetList = [];
       for (anim in _data.animations)
       {
-        if (anim.assetPath != null && !assetList.contains(anim.assetPath))
+        if (anim.assetPath != null && anim.assetPath != "" && !assetList.contains(anim.assetPath))
         {
           assetList.push(anim.assetPath);
         }
@@ -63,7 +63,7 @@ class MultiAtlasCharacter extends BaseCharacter
     
           texture.addAtlas(subTexture);
         }
-    
+          
         this.frames = texture;
         this.antialiasing = _data.antialiasing;
         this.setScale(_data.scale);        
