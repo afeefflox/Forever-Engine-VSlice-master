@@ -15,8 +15,8 @@ class HealthIcon extends FunkinSprite
 
 	public var sprTracker:FlxSprite;
 
-	static final WINNING_THRESHOLD:Float = 0.8 * 2;
-	static final LOSING_THRESHOLD:Float = 0.2 * 2;
+	static final WINNING_THRESHOLD:Float = 80;
+	static final LOSING_THRESHOLD:Float = 20;
 	static final MAXIMUM_HEALTH:Float = 2;
 
 	public function new(char:String = 'bf', ?isPlayer:Bool = false)

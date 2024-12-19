@@ -136,7 +136,7 @@ class FlxAnim implements IFlxDestroyable
 	 */
 	public var symbolType(get, set):SymbolT;
 
-	var _parent:FlxAnimate;
+	var _parent:FlxSprite;
 
 	var _tick:Float;
 
@@ -145,7 +145,7 @@ class FlxAnim implements IFlxDestroyable
 	 * @param parent The `FlxAnimate` instance it's gonna control.
 	 * @param coolParsed The Animation file.
 	 */
-	public function new(parent:FlxAnimate, ?coolParsed:AnimAtlas)
+	public function new(parent:FlxSprite, ?coolParsed:AnimAtlas)
 	{
 		_tick = 0;
 		_parent = parent;
@@ -153,7 +153,7 @@ class FlxAnim implements IFlxDestroyable
 		if (coolParsed != null) _loadAtlas(coolParsed);
 	}
 	@:allow(flxanimate.FlxAnimate)
-	function _loadAtlas(animationFile:AnimAtlas)
+	public function _loadAtlas(animationFile:AnimAtlas)
 	{
 		symbolDictionary = [];
 		stageInstance = null;

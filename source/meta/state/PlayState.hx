@@ -590,6 +590,7 @@ class PlayState extends MusicBeatSubState
 	}
 
 	public var disableKeys:Bool = false;
+	public var resetScore:Bool = true;
 	override public function update(elapsed:Float)
 	{
 		if (criticalFailure) return;
@@ -618,11 +619,14 @@ class PlayState extends MusicBeatSubState
 
 			paused = isPlayerDying = false;
 			persistentDraw = persistentUpdate = startingSong = true;
-			songScore = 0;
-			Highscore.instance.resetTallies();
 
-			Timings.callAccuracy();
-			Timings.updateAccuracy(0);
+			if(resetScore)
+			{
+				songScore = 0;
+				Highscore.instance.resetTallies();
+				Timings.callAccuracy();
+				Timings.updateAccuracy(0);
+			}
 
 			if (FlxG.sound.music != null)
 			{
@@ -652,6 +656,8 @@ class PlayState extends MusicBeatSubState
 			}
 			for(i in 0...strumlines.length)  strumlines.members[i].clean();
 			
+			SongEventRegistry.precacheEvents(currentChart.events);
+
 			regenNoteData();
 			cameraBopIntensity = Constants.DEFAULT_BOP_INTENSITY;
 			hudCameraZoomIntensity = (cameraBopIntensity - 1.0) * 2.0;
@@ -739,7 +745,7 @@ class PlayState extends MusicBeatSubState
 					playerStrumline.botplay = !playerStrumline.botplay;
 					uiHUD.autoplayMark.visible = playerStrumline.botplay;
 					isBotPlayMode = !isBotPlayMode;
-					currentSong.validScore = false;
+					currentSong.validScore = !currentSong.validScore; //idc if you cheat or not lol
 				}
 			}
 
@@ -1074,10 +1080,6 @@ class PlayState extends MusicBeatSubState
 			  dispatchEvent(event);
 			  if (event.eventCanceled) return;
 
-			  playerStrumline.hitNote(note);
-			  playerStrumline.playNoteSplash(note.noteData.getDirection());
-			  if (note.holdNoteSprite != null) playerStrumline.playNoteHoldCover(note.holdNoteSprite);
-			  
 			  var noteDiff:Float = Math.abs(note.strumTime - Conductor.instance.songPosition);
 			  var isLate: Bool = note.strumTime < Conductor.instance.songPosition;
 		  
@@ -1093,6 +1095,13 @@ class PlayState extends MusicBeatSubState
 					  lowestThreshold = myThreshold;
 				  }
 			  }
+
+			  playerStrumline.hitNote(note, (foundRating != 'good' || foundRating != 'sick'));
+
+			  vocals.playerVolume = 1;
+
+			  playerStrumline.playNoteSplash(note.noteData.getDirection());
+			  if (note.holdNoteSprite != null) playerStrumline.playNoteHoldCover(note.holdNoteSprite);
 
 			  increaseCombo(foundRating, note.noteData.data);
 			  popUpScore(foundRating, isLate);
@@ -1176,19 +1185,8 @@ class PlayState extends MusicBeatSubState
 				lowestThreshold = myThreshold;
 			}
 		}
-
-		var isComboBreak:Bool = false;
-		switch(foundRating)
-		{
-			case 'good', 'sick':
-				isComboBreak = false;
-			default:
-				isComboBreak = true;
-		}
-
 		
-
-		strumline.hitNote(note, isComboBreak);
+		strumline.hitNote(note, (foundRating != 'good' || foundRating != 'sick'));
 		strumline.playNoteSplash(note.noteData.getDirection());
 		if (note.holdNoteSprite != null) strumline.playNoteHoldCover(note.holdNoteSprite);
 		vocals.playerVolume = 1;
@@ -1201,7 +1199,7 @@ class PlayState extends MusicBeatSubState
 		Highscore.instance.tallies.totalNotesHit++;
 		healthCall(Timings.judgementsMap.get(foundRating)[3]);
 		Timings.notesHit++;
-
+		
 		if (canDisplayJudgement)
 		{
 			increaseCombo(foundRating, note.noteData.data);

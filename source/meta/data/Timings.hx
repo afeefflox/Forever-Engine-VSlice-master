@@ -23,6 +23,14 @@ class Timings
 		"miss" => [4, 180, -100, -175],
 	];
 
+	public static var comboBreakMap:Map<String, Bool> = [
+		"sick" => true,
+		"good" => true,
+		"bad" => false,
+		"shit" => false,
+		"miss" => false,
+	];
+
 	public static var msThreshold:Float = 0;
 
 	// set the score judgements for later use

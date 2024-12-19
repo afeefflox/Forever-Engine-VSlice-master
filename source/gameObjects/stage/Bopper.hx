@@ -178,16 +178,7 @@ class Bopper extends StageProp implements IPlayStateScriptedClass
 
     if (shouldAlternate)
     {
-      if (hasDanced)
-      {
-        trace('DanceRight (alternate)');
-        playAnim('danceRight$idleSuffix', forceRestart);
-      }
-      else
-      {
-        trace('DanceLeft (alternate)');
-        playAnim('danceLeft$idleSuffix', forceRestart);
-      }
+      playAnim(hasDanced ? 'danceRight$idleSuffix' : 'danceLeft$idleSuffix', forceRestart);
       hasDanced = !hasDanced;
     }
     else
