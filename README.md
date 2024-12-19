@@ -1,29 +1,35 @@
-<h1 align="center">Forever Engine Legacy</h1>
+<h1 align="center">Forever Engine VSlice</h1>
 <h2 align="center">An open-source, quality of life and performance driven Friday Night Funkin' mod engine!</h2>
 
 ----------------------------------------------
 
-**FOREVER ENGINE LEGACY IS ONLY MEANT TO BE USED ON DESKTOP! I AM NOT RESPONSIBLE FOR CRASHES/PROBLEMS WITH HTML5, NOR AM I RESPONSIBLE FOR MAINTAINING HTML5.**
+**FOREVER ENGINE LEGACY OR FOREVER ENGINE V SLICE IS ONLY MEANT TO BE USED ON DESKTOP! I AM NOT RESPONSIBLE FOR CRASHES/PROBLEMS WITH HTML5, NOR AM I RESPONSIBLE FOR MAINTAINING HTML5.**
 
 ----------------------------------------------
 # Features:
-* Noteskins;
-* Custom UIs;
+* V slice Feature (like Freeplay and Char Select etc.)
+* Polymod Support (Scripting, Assets and idk)
+* Use Hscript-Improved lol (Credit by Codname dev)
 * Options Menu with FPS Capping and Adjustments;
 * A lot of modularity and freedom with options
     * (Hopefully in the future *everything* will be toggleable);
 * A restructure/partial remake of the base game's codebase;
 * ``source/`` folder abstraction;
-* More streamlined code
+* More streamlined code (most of them :/)
     * (only having to set things in one place).
 
 AND MORE!
 
 ----------------------------------------------
 # Credits:
-* [crowplexus](https://twitter.com/crowplexus) (me!):
+* [Afeefflox](https://x.com/afeefflox_lol):
+    * Make broke any Forever stuff lol
+    * Rewrite Shit stuff code on V slice
+# Forever Engine Credits (THE BASE ENGINE)
+* [crowplexus](https://twitter.com/crowplexus):
     * maintainer of the engine as of recent events.
     * she likes how the note splash looks;
+
 * Yoshubs:
     * made the engine,
     * happens to be very fucking stupid for accidentally pushing the martian mixtape source code into legacy's base github page
@@ -67,4 +73,4 @@ AND MORE!
 ## For compiling help, check out this little guide [here](/docs/COMPILE-HELP.md).
 ## To see changes made to the engine, check out the changelog [here](/CHANGELOG.md).
 ----------------------------------------------
-<h1 align="center">Thank you for checking out Forever Engine!</h1>
+<h1 align="center">Thank you for checking out Forever Engine V Slice!</h1>
